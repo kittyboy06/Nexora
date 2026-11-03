@@ -1,0 +1,125 @@
+import logging
+from contextlib import asynccontextmanager
+import httpx
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+from backend.app.api.routes.chat import router as chat_router
+from backend.app.api.routes.health import router as health_router
+from backend.app.api.routes.ollama import router as ollama_router
+from backend.app.core.config import get_settings
+from backend.app.core.exceptions import NexoraException
+from backend.app.core.guard import InferenceGuard
+from backend.app.core.logging import setup_logging
+from backend.app.models.common import ErrorDetail, ErrorResponse
+
+logger = logging.getLogger("nexora.main")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan managing logger, HTTP client, and concurrency guard."""
+    settings = get_settings()
+    setup_logging(settings)
+    logger.info("Starting %s v%s in %s mode", settings.APP_NAME, settings.APP_VERSION, settings.APP_ENV)
+
+    # Initialize shared AsyncClient
+    client = httpx.AsyncClient(
+        base_url=settings.OLLAMA_BASE_URL,
+        timeout=httpx.Timeout(
+            timeout=settings.OLLAMA_INFERENCE_TIMEOUT_SECONDS,
+            connect=settings.OLLAMA_CONNECT_TIMEOUT_SECONDS,
+        ),
+    )
+    app.state.http_client = client
+
+    # Initialize GPU inference concurrency guard
+    guard = InferenceGuard(
+        limit=settings.INFERENCE_CONCURRENCY_LIMIT,
+        timeout=settings.INFERENCE_SEMAPHORE_TIMEOUT_SECONDS,
+    )
+    app.state.inference_guard = guard
+    logger.info("Inference guard initialized with concurrency limit: %d", guard.limit)
+
+    yield
+
+    # Clean shutdown
+    logger.info("Shutting down %s...", settings.APP_NAME)
+    await client.aclose()
+    logger.info("Application shutdown complete.")
+
+
+def create_app() -> FastAPI:
+    """Factory function creating and configuring the FastAPI instance."""
+    settings = get_settings()
+    app = FastAPI(
+        title=settings.APP_NAME,
+        version=settings.APP_VERSION,
+        description="Local Autonomous Intelligence - Core Backend API",
+        lifespan=lifespan,
+    )
+
+    # Local CORS Configuration
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5173", "http://127.0.0.1:5173"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    # Global Exception Handlers
+    @app.exception_handler(NexoraException)
+    async def nexora_exception_handler(_: Request, exc: NexoraException):
+        error_resp = ErrorResponse(
+            error=ErrorDetail(code=exc.code, message=exc.message, details=exc.details)
+        )
+        return JSONResponse(
+            status_code=exc.status_code,
+            content=error_resp.model_dump(mode="json"),
+        )
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(_: Request, exc: RequestValidationError):
+        error_resp = ErrorResponse(
+            error=ErrorDetail(
+                code="VALIDATION_ERROR",
+                message="Request validation failed.",
+                details=exc.errors(),
+            )
+        )
+        return JSONResponse(status_code=422, content=error_resp.model_dump(mode="json"))
+
+    @app.exception_handler(StarletteHTTPException)
+    async def http_exception_handler(_: Request, exc: StarletteHTTPException):
+        error_resp = ErrorResponse(
+            error=ErrorDetail(
+                code=f"HTTP_{exc.status_code}",
+                message=str(exc.detail),
+            )
+        )
+        return JSONResponse(status_code=exc.status_code, content=error_resp.model_dump(mode="json"))
+
+    @app.exception_handler(Exception)
+    async def unhandled_exception_handler(_: Request, exc: Exception):
+        logger.exception("Unhandled server exception: %s", exc)
+        error_resp = ErrorResponse(
+            error=ErrorDetail(
+                code="INTERNAL_SERVER_ERROR",
+                message="An unexpected server error occurred.",
+            )
+        )
+        return JSONResponse(status_code=500, content=error_resp.model_dump(mode="json"))
+
+    # Register API Routers
+    app.include_router(health_router, prefix="/api")
+    app.include_router(ollama_router, prefix="/api")
+    app.include_router(chat_router, prefix="/api")
+
+    return app
+
+
+app = create_app()

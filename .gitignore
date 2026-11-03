@@ -22,4 +22,4 @@ data/logs/*.log
 # IDE
 .vscode/
 .idea/
-.agents/
+.agents/*
