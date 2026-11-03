@@ -3,46 +3,47 @@
 
 ---
 
-### Task List & Execution Sequence
+### Task List & Execution Status
 
-- [ ] **Step 1: Environment & Dependency Setup**
-  - Create `backend/requirements.txt` with pinned/compatible versions: `fastapi`, `uvicorn[standard]`, `pydantic>=2.0`, `pydantic-settings`, `httpx>=0.27`, `pytest`, `pytest-asyncio`, `respx`.
-  - Create `backend/.env.example` with default configuration values.
-  - Create `data/logs/` directory.
+- [x] **Step 1: Environment & Dependency Setup**
+  - Created `backend/requirements.txt` with pinned/compatible versions (`fastapi`, `uvicorn[standard]`, `pydantic`, `pydantic-settings`, `httpx`, `pytest`, `pytest-asyncio`).
+  - Created `backend/.env.example` and `backend/.env` with default configuration values.
+  - Initialized `data/logs/` with `.gitkeep` and configured `.gitignore`.
 
-- [ ] **Step 2: Core Infrastructure (Config, Logging, Guard)**
-  - Implement `backend/app/core/config.py`: `pydantic-settings` loader with defaults for Windows host, Ollama URL, model, and timeout thresholds.
-  - Implement `backend/app/core/logging.py`: Structured console logging and rotating file handler writing to `data/logs/nexora_backend.log`.
-  - Implement `backend/app/core/guard.py`: `InferenceGuard` managing `asyncio.Semaphore` with acquisition timeout and `InferenceBusyException`.
+- [x] **Step 2: Core Infrastructure (Config, Logging, Guard)**
+  - Implemented `backend/app/core/config.py`: `pydantic-settings` loader with defaults for Windows host, Ollama URL, model, and timeout thresholds.
+  - Implemented `backend/app/core/logging.py`: Structured console logging and rotating file handler writing to `data/logs/nexora_backend.log`.
+  - Implemented `backend/app/core/guard.py`: `InferenceGuard` managing `asyncio.Semaphore` with acquisition timeout and `InferenceBusyException`.
+  - Implemented `backend/app/core/exceptions.py`: Centralized domain exceptions.
 
-- [ ] **Step 3: Domain Models & Exception Contracts**
-  - Implement `backend/app/models/common.py`: Unified `ErrorResponse`, `ErrorDetail`, and custom domain exceptions.
-  - Implement `backend/app/models/health.py`: `HealthCheckResponse` (backend operational status).
-  - Implement `backend/app/models/ollama.py`: `OllamaStatusResponse` (separate reachability & model availability flags) and `ModelListResponse`.
-  - Implement `backend/app/models/chat.py`: `ChatMessage`, `ChatRequest` (stateless client-managed history), and `ChatResponse`.
+- [x] **Step 3: Domain Models & Exception Contracts**
+  - Implemented `backend/app/models/common.py`: Unified `ErrorResponse`, `ErrorDetail`, and custom domain exception bindings.
+  - Implemented `backend/app/models/health.py`: `HealthCheckResponse` (backend operational status).
+  - Implemented `backend/app/models/ollama.py`: `OllamaStatusResponse` (separate reachability & model availability flags) and `ModelListResponse`.
+  - Implemented `backend/app/models/chat.py`: `ChatMessage`, `ChatRequest` (stateless client-managed history), and `ChatResponse`.
 
-- [ ] **Step 4: Ollama Service Layer**
-  - Implement `backend/app/services/ollama_service.py`:
+- [x] **Step 4: Ollama Service Layer**
+  - Implemented `backend/app/services/ollama_service.py`:
     - Reachability check (`GET /api/tags`).
     - Model listing and availability verification for `qwen3.5:9b`.
     - Chat invocation (`POST /api/chat`) with timeout enforcement.
-    - Translation of `httpx` exceptions to domain exceptions.
+    - Exception translation for connection errors, missing models, malformed payloads, and timeouts.
 
-- [ ] **Step 5: API Routes, Lifespan & Application Wiring**
-  - Implement `backend/app/api/dependencies.py`: Dependency injection providers for `Settings`, `httpx.AsyncClient`, `InferenceGuard`, and `OllamaService`.
-  - Implement `backend/app/api/routes/health.py`: `GET /api/health`.
-  - Implement `backend/app/api/routes/ollama.py`: `GET /api/ollama/status`, `GET /api/ollama/models`.
-  - Implement `backend/app/api/routes/chat.py`: `POST /api/chat` guarded by `InferenceGuard`.
-  - Implement `backend/app/main.py`: FastAPI app factory, lifespan manager for shared client & guard teardown, global exception handlers mapping domain exceptions to `ErrorResponse`.
+- [x] **Step 5: API Routes, Lifespan & Application Wiring**
+  - Implemented `backend/app/api/dependencies.py`: Dependency injection providers for `Settings`, `httpx.AsyncClient`, `InferenceGuard`, and `OllamaService`.
+  - Implemented `backend/app/api/routes/health.py`: `GET /api/health`.
+  - Implemented `backend/app/api/routes/ollama.py`: `GET /api/ollama/status`, `GET /api/ollama/models`.
+  - Implemented `backend/app/api/routes/chat.py`: `POST /api/chat` guarded by `InferenceGuard`.
+  - Implemented `backend/app/main.py`: FastAPI app factory, lifespan manager for shared client & guard teardown, global exception handlers mapping domain exceptions to `ErrorResponse`.
 
-- [ ] **Step 6: Comprehensive Offline Test Suite**
-  - Implement `backend/tests/conftest.py`: Async test client and fixtures using `respx` to mock Ollama HTTP responses.
-  - Implement `backend/tests/test_health.py`: Test backend health independent of Ollama.
-  - Implement `backend/tests/test_ollama.py`: Test online, offline, and model-not-found scenarios.
-  - Implement `backend/tests/test_chat.py`: Test valid generation, Ollama offline (503), model missing (404), timeout (504), and concurrency saturation (503 `INFERENCE_BUSY`).
-  - Run and verify all tests pass via `pytest`.
+- [x] **Step 6: Comprehensive Offline Test Suite**
+  - Implemented `backend/tests/conftest.py`: Async test fixtures with mock HTTP transports.
+  - Implemented `backend/tests/test_health.py`: Tests backend health independent of Ollama.
+  - Implemented `backend/tests/test_ollama.py`: Tests online, offline, and model-not-found scenarios.
+  - Implemented `backend/tests/test_chat.py`: Tests valid generation, Ollama offline (503), model missing (404), timeout (504), and concurrency saturation (503 `INFERENCE_BUSY`).
+  - **Result**: 13/13 tests passed in 0.46s.
 
-- [ ] **Step 7: Documentation & Verification**
-  - Create `backend/README.md` with exact Windows PowerShell commands for venv creation, setup, running, and testing.
-  - Verify live Ollama reachability if Ollama is running on the local host.
-  - Provide Phase 1 completion summary.
+- [x] **Step 7: Documentation & Live Verification**
+  - Created `backend/README.md` with exact Windows PowerShell instructions for setup, running, and testing.
+  - Verified live Ollama connectivity on `localhost:11434` with `qwen3.5:9b` returning 200 OK.
+  - Confirmed zero Phase 2 scope leaks.

@@ -21,6 +21,15 @@ class Settings(BaseSettings):
     INFERENCE_CONCURRENCY_LIMIT: int = 1
     INFERENCE_SEMAPHORE_TIMEOUT_SECONDS: float = 5.0
 
+    # Phase 2 Agent Execution Limits
+    MAX_PLAN_STEPS: int = 10
+    MAX_EXECUTION_ITERATIONS: int = 15
+    MAX_RETRIES_PER_STEP: int = 2
+    MAX_PLANNING_ATTEMPTS: int = 2
+    MAX_EXECUTION_DURATION_SECONDS: float = 300.0
+    APPROVAL_EXPIRATION_SECONDS: float = 600.0
+    TASK_DATA_DIR: str = "data/tasks"
+
     # Logging Configuration
     LOG_LEVEL: str = "INFO"
     LOG_FILE_PATH: str = "data/logs/nexora_backend.log"
@@ -30,6 +39,17 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
     )
+
+    def get_task_data_dir(self) -> Path:
+        """Resolve data/tasks directory relative to workspace or absolute."""
+        p = Path(self.TASK_DATA_DIR)
+        if p.is_absolute():
+            return p
+        if Path.cwd().name == "backend":
+            candidate = Path.cwd().parent / p
+        else:
+            candidate = Path.cwd() / p
+        return candidate.resolve()
 
     def get_log_file_path(self) -> Path:
         """Resolve log file path relative to workspace or as absolute."""

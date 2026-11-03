@@ -1,0 +1,74 @@
+{
+  "task_id": "task_2d4ed454bd59",
+  "prompt": "Calculate 25 * 4, then summarize the outcome.",
+  "status": "COMPLETED",
+  "plan": {
+    "plan_id": "plan_001",
+    "goal": "Calculate 25 * 4 and summarize the result",
+    "steps": [
+      {
+        "step_id": 1,
+        "description": "Calculate the product of 25 multiplied by 4",
+        "tool_call": {
+          "tool_name": "mock_calculate",
+          "arguments": {
+            "expression": "25 * 4"
+          }
+        },
+        "dependencies": [],
+        "risk_level": "SAFE",
+        "status": "SUCCEEDED",
+        "retries_attempted": 0
+      },
+      {
+        "step_id": 2,
+        "description": "Summarize the calculation result",
+        "tool_call": {
+          "tool_name": "mock_summarize",
+          "arguments": {
+            "text": "The calculation of 25 * 4 equals 100"
+          }
+        },
+        "dependencies": [
+          1
+        ],
+        "risk_level": "SAFE",
+        "status": "SUCCEEDED",
+        "retries_attempted": 0
+      }
+    ],
+    "created_at": "2026-11-03T10:44:52.628213Z"
+  },
+  "execution_trace": [
+    {
+      "step_id": 1,
+      "tool_name": "mock_calculate",
+      "status": "SUCCEEDED",
+      "output": {
+        "expression": "25 * 4",
+        "result": 100
+      },
+      "error": null,
+      "duration_ms": 58.23,
+      "retry_classification": null
+    },
+    {
+      "step_id": 2,
+      "tool_name": "mock_summarize",
+      "status": "SUCCEEDED",
+      "output": {
+        "original_word_count": 8,
+        "summary": "The calculation of 25 * 4 equals 100"
+      },
+      "error": null,
+      "duration_ms": 61.18,
+      "retry_classification": null
+    }
+  ],
+  "pending_approval": null,
+  "iterations_used": 2,
+  "created_at": "2026-11-03T10:44:39.341639Z",
+  "updated_at": "2026-11-03T10:44:52.751921Z",
+  "completed_at": "2026-11-03T10:44:52.751921Z",
+  "error_message": null
+}

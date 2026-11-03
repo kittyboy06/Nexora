@@ -7,14 +7,26 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from backend.app.api.routes.agent import router as agent_router
 from backend.app.api.routes.chat import router as chat_router
 from backend.app.api.routes.health import router as health_router
 from backend.app.api.routes.ollama import router as ollama_router
+from backend.app.agent.executor import Executor
+from backend.app.agent.orchestrator import AgentOrchestrator
+from backend.app.agent.plan_validator import PlanValidator
+from backend.app.agent.planner import Planner
+from backend.app.agent.result_evaluator import ResultEvaluator
+from backend.app.agent.state_manager import StateManager
+from backend.app.agent.task_manager import TaskManager
 from backend.app.core.config import get_settings
 from backend.app.core.exceptions import NexoraException
 from backend.app.core.guard import InferenceGuard
 from backend.app.core.logging import setup_logging
 from backend.app.models.common import ErrorDetail, ErrorResponse
+from backend.app.permissions.manager import PermissionManager
+from backend.app.services.ollama_service import OllamaService
+from backend.app.tools.mock_tools import register_mock_tools
+from backend.app.tools.registry import ToolRegistry
 
 logger = logging.getLogger("nexora.main")
 
@@ -43,6 +55,54 @@ async def lifespan(app: FastAPI):
     )
     app.state.inference_guard = guard
     logger.info("Inference guard initialized with concurrency limit: %d", guard.limit)
+
+    # Initialize StateManager & Run Startup Recovery Sweep
+    state_manager = StateManager(settings=settings)
+    recovered_count = await state_manager.recover_on_startup()
+    app.state.state_manager = state_manager
+    if recovered_count > 0:
+        logger.warning("Startup recovery: %d unfinalized tasks marked INTERRUPTED.", recovered_count)
+
+    # Initialize Phase 2 Agent Engine Components
+    tool_registry = ToolRegistry()
+    register_mock_tools(tool_registry)
+    app.state.tool_registry = tool_registry
+
+    ollama_service = OllamaService(client=client, settings=settings)
+    plan_validator = PlanValidator(registry=tool_registry, settings=settings)
+    planner = Planner(
+        ollama_service=ollama_service,
+        validator=plan_validator,
+        registry=tool_registry,
+        settings=settings,
+        guard=guard,
+    )
+    permission_manager = PermissionManager(settings=settings)
+    executor = Executor(
+        registry=tool_registry,
+        permissions=permission_manager,
+        state_manager=state_manager,
+        settings=settings,
+    )
+    evaluator = ResultEvaluator(
+        ollama_service=ollama_service,
+        registry=tool_registry,
+        guard=guard,
+    )
+    orchestrator = AgentOrchestrator(
+        state_manager=state_manager,
+        planner=planner,
+        executor=executor,
+        evaluator=evaluator,
+        settings=settings,
+    )
+    task_manager = TaskManager(
+        state_manager=state_manager,
+        orchestrator=orchestrator,
+        permissions=permission_manager,
+    )
+    app.state.task_manager = task_manager
+    logger.info("Phase 2 Agent Engine components initialized.")
 
     yield
 
@@ -118,6 +178,7 @@ def create_app() -> FastAPI:
     app.include_router(health_router, prefix="/api")
     app.include_router(ollama_router, prefix="/api")
     app.include_router(chat_router, prefix="/api")
+    app.include_router(agent_router, prefix="/api")
 
     return app
 

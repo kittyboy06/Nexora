@@ -1,0 +1,46 @@
+{
+  "task_id": "task_75e60ade164e",
+  "prompt": "Compute 15 * 3",
+  "status": "COMPLETED",
+  "plan": {
+    "plan_id": "plan_001",
+    "goal": "Compute the product of 15 and 3",
+    "steps": [
+      {
+        "step_id": 1,
+        "description": "Calculate 15 * 3 using the mock_calculate tool",
+        "tool_call": {
+          "tool_name": "mock_calculate",
+          "arguments": {
+            "expression": "15 * 3"
+          }
+        },
+        "dependencies": [],
+        "risk_level": "SAFE",
+        "status": "SUCCEEDED",
+        "retries_attempted": 0
+      }
+    ],
+    "created_at": "2026-11-03T10:43:28.067232Z"
+  },
+  "execution_trace": [
+    {
+      "step_id": 1,
+      "tool_name": "mock_calculate",
+      "status": "SUCCEEDED",
+      "output": {
+        "expression": "15 * 3",
+        "result": 45
+      },
+      "error": null,
+      "duration_ms": 66.06,
+      "retry_classification": null
+    }
+  ],
+  "pending_approval": null,
+  "iterations_used": 1,
+  "created_at": "2026-11-03T10:43:08.963080Z",
+  "updated_at": "2026-11-03T10:43:28.137233Z",
+  "completed_at": "2026-11-03T10:43:28.137233Z",
+  "error_message": null
+}
