@@ -16,6 +16,10 @@ class BaseTool(ABC):
         """Validate input arguments against tool's Pydantic schema."""
         return self.args_schema(**raw_args)
 
+    def get_risk_level(self, raw_args: dict[str, Any]) -> RiskLevel:
+        """Dynamically evaluate effective risk level based on specific operation arguments."""
+        return self.risk_level
+
     def get_spec(self) -> dict[str, Any]:
         """Return standardized tool specification for LLM planning."""
         return {

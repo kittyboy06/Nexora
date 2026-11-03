@@ -1,0 +1,13 @@
+{
+  "task_id": "task_08116c517cf3",
+  "prompt": "Read the config file",
+  "status": "FAILED",
+  "plan": null,
+  "execution_trace": [],
+  "pending_approval": null,
+  "iterations_used": 0,
+  "created_at": "2026-11-03T11:28:59.389590Z",
+  "updated_at": "2026-11-03T11:28:59.404880Z",
+  "completed_at": "2026-11-03T11:28:59.404880Z",
+  "error_message": "'AppListInstalledTool' object has no attribute 'args_schema'"
+}

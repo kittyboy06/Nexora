@@ -1,0 +1,13 @@
+{
+  "task_id": "task_df75b6865e5e",
+  "prompt": "Create and delete temporary file",
+  "status": "FAILED",
+  "plan": null,
+  "execution_trace": [],
+  "pending_approval": null,
+  "iterations_used": 0,
+  "created_at": "2026-11-03T11:39:11.040916Z",
+  "updated_at": "2026-11-03T11:39:11.069660Z",
+  "completed_at": "2026-11-03T11:39:11.069660Z",
+  "error_message": "Expecting value: line 1 column 1 (char 0)"
+}

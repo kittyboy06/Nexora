@@ -1,0 +1,78 @@
+{
+  "task_id": "task_a3c6c278302a",
+  "prompt": "Create and delete temporary file",
+  "status": "COMPLETED",
+  "plan": {
+    "plan_id": "plan_phase3_sensitive",
+    "goal": "Create and delete temporary file",
+    "steps": [
+      {
+        "step_id": 1,
+        "description": "Create temp file",
+        "tool_call": {
+          "tool_name": "file_create",
+          "arguments": {
+            "path": "temp_to_delete.txt",
+            "content": "temporary content",
+            "overwrite": false
+          }
+        },
+        "dependencies": [],
+        "risk_level": "CONTROLLED",
+        "status": "SUCCEEDED",
+        "retries_attempted": 0
+      },
+      {
+        "step_id": 2,
+        "description": "Delete temp file",
+        "tool_call": {
+          "tool_name": "file_delete",
+          "arguments": {
+            "path": "temp_to_delete.txt"
+          }
+        },
+        "dependencies": [
+          1
+        ],
+        "risk_level": "SENSITIVE",
+        "status": "SUCCEEDED",
+        "retries_attempted": 0
+      }
+    ],
+    "created_at": "2026-11-03T11:43:35.531755Z"
+  },
+  "execution_trace": [
+    {
+      "step_id": 1,
+      "tool_name": "file_create",
+      "status": "SUCCEEDED",
+      "output": {
+        "path": "temp_to_delete.txt",
+        "size_bytes": 17,
+        "overwritten": false
+      },
+      "error": null,
+      "duration_ms": 1.5,
+      "retry_classification": null
+    },
+    {
+      "step_id": 2,
+      "tool_name": "file_delete",
+      "status": "SUCCEEDED",
+      "output": {
+        "path": "temp_to_delete.txt",
+        "deleted": true,
+        "recursive": false
+      },
+      "error": null,
+      "duration_ms": 0.97,
+      "retry_classification": null
+    }
+  ],
+  "pending_approval": null,
+  "iterations_used": 2,
+  "created_at": "2026-11-03T11:43:35.497308Z",
+  "updated_at": "2026-11-03T11:43:35.654070Z",
+  "completed_at": "2026-11-03T11:43:35.654070Z",
+  "error_message": null
+}

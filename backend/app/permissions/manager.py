@@ -25,15 +25,27 @@ class PermissionManager:
         canonical_json = json.dumps(arguments, sort_keys=True)
         return hashlib.sha256(canonical_json.encode("utf-8")).hexdigest()
 
-    def evaluate_permission(self, step: PlanStep, task: AgentTask) -> tuple[bool, ActionApproval | None]:
+    def evaluate_permission(
+        self,
+        step: PlanStep,
+        task: AgentTask,
+        tool: Any = None,
+    ) -> tuple[bool, ActionApproval | None]:
         """
         Evaluate whether the step can execute immediately or requires human approval.
+        If tool instance is provided, computes dynamic risk based on arguments.
         Returns: (is_authorized, pending_approval)
         """
+        if tool is not None and hasattr(tool, "get_risk_level"):
+            step.risk_level = tool.get_risk_level(step.tool_call.arguments)
+
         if step.risk_level == RiskLevel.SAFE:
             return True, None
 
-        # SENSITIVE and CONTROLLED require explicit approval token
+        if step.risk_level == RiskLevel.CONTROLLED and getattr(self.settings, "AUTO_APPROVE_CONTROLLED", True):
+            return True, None
+
+        # SENSITIVE (or CONTROLLED when auto-policy is disabled) requires explicit human approval token
         arg_hash = self.compute_argument_hash(step.tool_call.arguments)
         now = datetime.now(timezone.utc)
         approval = ActionApproval(

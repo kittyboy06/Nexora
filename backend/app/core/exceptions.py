@@ -85,3 +85,61 @@ class ApprovalInvalidatedException(NexoraException):
     def __init__(self, message: str, details: dict | list | None = None):
         super().__init__(message=message, code="APPROVAL_INVALIDATED", status_code=409, details=details)
 
+
+class PathTraversalException(NexoraException):
+    """Raised when a path escapes the designated workspace sandbox."""
+
+    def __init__(self, message: str = "Access denied: Path escapes workspace jail.", details: dict | list | None = None):
+        super().__init__(message=message, code="PATH_TRAVERSAL_DENIED", status_code=403, details=details)
+
+
+class FileTooLargeException(NexoraException):
+    """Raised when a file exceeds the allowed size limit."""
+
+    def __init__(self, message: str = "File size exceeds allowed limit.", details: dict | list | None = None):
+        super().__init__(message=message, code="FILE_TOO_LARGE", status_code=413, details=details)
+
+
+class FileAlreadyExistsException(NexoraException):
+    """Raised when a file creation/copy/move would overwrite an existing file without permission."""
+
+    def __init__(self, message: str = "File already exists and overwrite was not permitted.", details: dict | list | None = None):
+        super().__init__(message=message, code="FILE_ALREADY_EXISTS", status_code=409, details=details)
+
+
+class AppNotFoundException(NexoraException):
+    """Raised when an application executable cannot be located or verified."""
+
+    def __init__(self, message: str = "Application not found or executable path invalid.", details: dict | list | None = None):
+        super().__init__(message=message, code="APP_NOT_FOUND", status_code=404, details=details)
+
+
+class SystemProcessProtectedException(NexoraException):
+    """Raised when an action attempts to terminate or modify a protected Windows system process."""
+
+    def __init__(self, message: str = "Access denied: Cannot manipulate protected system process.", details: dict | list | None = None):
+        super().__init__(message=message, code="SYSTEM_PROCESS_PROTECTED", status_code=403, details=details)
+
+
+class ProcessNotFoundException(NexoraException):
+    """Raised when a process with the specified PID is not running."""
+
+    def __init__(self, message: str = "Process PID not found or already terminated.", details: dict | list | None = None):
+        super().__init__(message=message, code="PROCESS_NOT_FOUND", status_code=404, details=details)
+
+
+class CommandNotAllowedException(NexoraException):
+    """Raised when a terminal command is not in the configured execution allowlist."""
+
+    def __init__(self, message: str = "Command is not permitted by terminal allowlist policy.", details: dict | list | None = None):
+        super().__init__(message=message, code="COMMAND_NOT_ALLOWED", status_code=403, details=details)
+
+
+class CommandExecutionTimeoutException(NexoraException):
+    """Raised when a terminal command execution exceeds the configured timeout."""
+
+    def __init__(self, message: str = "Command execution exceeded timeout threshold.", details: dict | list | None = None):
+        super().__init__(message=message, code="COMMAND_TIMEOUT", status_code=504, details=details)
+
+
+

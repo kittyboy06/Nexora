@@ -56,6 +56,12 @@ Key configuration parameters (`backend/.env`):
 | `MAX_EXECUTION_ITERATIONS` | `15` | Maximum tool execution iterations per task |
 | `MAX_RETRIES_PER_STEP` | `2` | Maximum transient retries per step |
 | `APPROVAL_EXPIRATION_SECONDS` | `600.0` | Human approval window (10 minutes) |
+| `AUTO_APPROVE_CONTROLLED` | `True` | Automatically permit CONTROLLED actions in sandbox |
+| `WORKSPACE_DIR` | `data/workspace` | Designated sandboxed workspace directory |
+| `MAX_FILE_SIZE_BYTES` | `5000000` | Maximum file read/write threshold (5 MB) |
+| `ALLOWED_TERMINAL_COMMANDS` | `["python", ...]` | Allowlisted terminal command binaries |
+| `TERMINAL_TIMEOUT_SECONDS` | `30.0` | Subprocess execution timeout |
+| `MAX_TERMINAL_OUTPUT_BYTES` | `51200` | Output capture limit before truncation (50 KB) |
 | `TASK_DATA_DIR` | `data/tasks` | Atomic task snapshot directory |
 
 ---
@@ -118,6 +124,34 @@ python -m pytest backend/tests -v
 
 * **`POST /api/agent/tasks/{task_id}/cancel`**:
   Cancel an active or paused task.
+
+### 5.3 Real-World Tool Suite (Phase 3)
+
+#### Filesystem Tools (`data/workspace/` Sandbox Jail)
+* **`file_list`** (`SAFE`): List folder contents with size, type, and modification dates.
+* **`file_search`** (`SAFE`): Recursive glob search within workspace.
+* **`file_read`** (`SAFE`): Read text content with byte limits.
+* **`file_create`** (`CONTROLLED` / `SENSITIVE` if overwrite): Create files with overwrite protection.
+* **`file_edit`** (`CONTROLLED`): Target/replacement text substitution.
+* **`file_rename`** (`CONTROLLED`): Safe file/directory renaming within workspace.
+* **`file_copy`** (`CONTROLLED` / `SENSITIVE` if overwrite): File copy with overwrite protection.
+* **`file_move`** (`CONTROLLED` / `SENSITIVE` if overwrite): File move with overwrite protection.
+* **`file_delete`** (`SENSITIVE`): Delete files or directories (**Always requires human approval**).
+
+#### Windows Application Control Tools
+* **`app_list_installed`** (`SAFE`): Enumerate desktop applications via Registry and Start Menu.
+* **`app_find`** (`SAFE`): Search applications by name, alias, publisher, or PATH binary.
+* **`app_launch`** (`CONTROLLED`): Launch validated desktop `.exe` in detached mode with PID tracking.
+* **`app_get_running`** (`SAFE`): List active processes with CPU, memory, and status.
+* **`app_get_details`** (`SAFE`): Detailed runtime telemetry for a specific PID.
+* **`app_close`** (`SENSITIVE`): Close a process (**Requires human approval; system processes strictly protected**).
+
+#### Terminal Intelligence Tools
+* **`terminal_get_system_info`** (`SAFE`): Host CPU, RAM, OS version, and uptime telemetry.
+* **`terminal_get_directory`** (`SAFE`): Host CWD and designated workspace path.
+* **`terminal_run_allowlisted`** (`CONTROLLED`): Execute allowlisted command (`python`, `pip`, `git`, `node`, `npm`, `pytest`, `systeminfo`, `whoami`, `ipconfig`).
+* **`terminal_run_script`** (`CONTROLLED`): Run sandboxed Python script inside workspace.
+* **`terminal_install_package`** (`SENSITIVE`): Install package via `pip` or `npm` (**Requires human approval**).
 
 ---
 

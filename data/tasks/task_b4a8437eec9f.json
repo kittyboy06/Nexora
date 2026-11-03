@@ -1,0 +1,48 @@
+{
+  "task_id": "task_b4a8437eec9f",
+  "prompt": "Read the config file",
+  "status": "COMPLETED",
+  "plan": {
+    "plan_id": "plan_test_api",
+    "goal": "Read simulated configuration file",
+    "steps": [
+      {
+        "step_id": 1,
+        "description": "Read file contents",
+        "tool_call": {
+          "tool_name": "mock_file_read",
+          "arguments": {
+            "filepath": "config.json"
+          }
+        },
+        "dependencies": [],
+        "risk_level": "SENSITIVE",
+        "status": "SUCCEEDED",
+        "retries_attempted": 0
+      }
+    ],
+    "created_at": "2026-11-03T11:43:33.730594Z"
+  },
+  "execution_trace": [
+    {
+      "step_id": 1,
+      "tool_name": "mock_file_read",
+      "status": "SUCCEEDED",
+      "output": {
+        "filepath": "config.json",
+        "simulated": true,
+        "content": "[SIMULATED FILE CONTENT FOR 'config.json']\nSystem parameters verified. Configuration active.",
+        "byte_count": 86
+      },
+      "error": null,
+      "duration_ms": 52.58,
+      "retry_classification": null
+    }
+  ],
+  "pending_approval": null,
+  "iterations_used": 1,
+  "created_at": "2026-11-03T11:43:33.702804Z",
+  "updated_at": "2026-11-03T11:43:33.848110Z",
+  "completed_at": "2026-11-03T11:43:33.848110Z",
+  "error_message": null
+}

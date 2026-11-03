@@ -1,0 +1,73 @@
+{
+  "task_id": "task_3fff4e37fa9e",
+  "prompt": "Create and delete temporary file",
+  "status": "INTERRUPTED",
+  "plan": {
+    "plan_id": "plan_phase3_sensitive",
+    "goal": "Create and delete temporary file",
+    "steps": [
+      {
+        "step_id": 1,
+        "description": "Create temp file",
+        "tool_call": {
+          "tool_name": "file_create",
+          "arguments": {
+            "path": "temp_to_delete.txt",
+            "content": "temporary content",
+            "overwrite": false
+          }
+        },
+        "dependencies": [],
+        "risk_level": "CONTROLLED",
+        "status": "SUCCEEDED",
+        "retries_attempted": 0
+      },
+      {
+        "step_id": 2,
+        "description": "Delete temp file",
+        "tool_call": {
+          "tool_name": "file_delete",
+          "arguments": {
+            "path": "temp_to_delete.txt"
+          }
+        },
+        "dependencies": [
+          1
+        ],
+        "risk_level": "SENSITIVE",
+        "status": "PENDING",
+        "retries_attempted": 0
+      }
+    ],
+    "created_at": "2026-11-03T11:41:20.650254Z"
+  },
+  "execution_trace": [
+    {
+      "step_id": 1,
+      "tool_name": "file_create",
+      "status": "SUCCEEDED",
+      "output": {
+        "path": "temp_to_delete.txt",
+        "size_bytes": 17,
+        "overwritten": false
+      },
+      "error": null,
+      "duration_ms": 1.13,
+      "retry_classification": null
+    }
+  ],
+  "pending_approval": {
+    "approval_id": "appr_eb948a3d",
+    "task_id": "task_3fff4e37fa9e",
+    "step_id": 2,
+    "tool_name": "file_delete",
+    "argument_hash": "78684f14962ea5ad4c51d35aca54b79e7e8c4e7e8e5d92a8873649324006bc4c",
+    "expires_at": "2026-11-03T11:51:20.653483Z",
+    "created_at": "2026-11-03T11:41:20.653483Z"
+  },
+  "iterations_used": 1,
+  "created_at": "2026-11-03T11:41:20.621555Z",
+  "updated_at": "2026-11-03T11:42:10.963165Z",
+  "completed_at": "2026-11-03T11:42:10.963165Z",
+  "error_message": "Task interrupted by application restart. Uncertain operations not resumed."
+}

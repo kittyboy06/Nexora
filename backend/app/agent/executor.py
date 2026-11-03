@@ -53,15 +53,7 @@ class Executor:
         Execute a single plan step.
         Returns: (StepResult | None, is_paused_for_approval: bool)
         """
-        # 1. Immediate Pre-Execution Permission Gate
-        if not pre_authorized:
-            authorized, approval = self.permissions.evaluate_permission(step, task)
-            if not authorized and approval:
-                await self.state_manager.set_pending_approval(task.task_id, approval)
-                await self.state_manager.transition_state(task.task_id, TaskStatus.WAITING_APPROVAL)
-                logger.info("Task %s paused waiting for human approval on step %d", task.task_id, step.step_id)
-                return None, True
-
+        # 1. Resolve Tool
         tool = self.registry.get(step.tool_call.tool_name)
         if not tool:
             res = StepResult(
@@ -75,6 +67,15 @@ class Executor:
             step.status = StepStatus.FAILED
             await self.state_manager.append_step_result(task.task_id, res)
             return res, False
+
+        # 2. Immediate Pre-Execution Permission Gate (with dynamic argument-aware risk evaluation)
+        if not pre_authorized:
+            authorized, approval = self.permissions.evaluate_permission(step, task, tool=tool)
+            if not authorized and approval:
+                await self.state_manager.set_pending_approval(task.task_id, approval)
+                await self.state_manager.transition_state(task.task_id, TaskStatus.WAITING_APPROVAL)
+                logger.info("Task %s paused waiting for human approval on step %d", task.task_id, step.step_id)
+                return None, True
 
         step.status = StepStatus.RUNNING
         logger.info("Executing step %d: %s with args %s", step.step_id, tool.name, step.tool_call.arguments)

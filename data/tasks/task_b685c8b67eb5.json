@@ -1,0 +1,75 @@
+{
+  "task_id": "task_b685c8b67eb5",
+  "prompt": "Compute pi and verify code",
+  "status": "INTERRUPTED",
+  "plan": {
+    "plan_id": "plan_phase3_multi",
+    "goal": "Compute pi and verify code",
+    "steps": [
+      {
+        "step_id": 1,
+        "description": "Create python script",
+        "tool_call": {
+          "tool_name": "file_create",
+          "arguments": {
+            "path": "calc_pi.py",
+            "content": "import math\nprint(f'RESULT={round(math.pi, 4)}')\n",
+            "overwrite": false
+          }
+        },
+        "dependencies": [],
+        "risk_level": "CONTROLLED",
+        "status": "PENDING",
+        "retries_attempted": 0
+      },
+      {
+        "step_id": 2,
+        "description": "Execute python script",
+        "tool_call": {
+          "tool_name": "terminal_run_script",
+          "arguments": {
+            "script_path": "calc_pi.py"
+          }
+        },
+        "dependencies": [
+          1
+        ],
+        "risk_level": "CONTROLLED",
+        "status": "PENDING",
+        "retries_attempted": 0
+      },
+      {
+        "step_id": 3,
+        "description": "Read back python script",
+        "tool_call": {
+          "tool_name": "file_read",
+          "arguments": {
+            "path": "calc_pi.py"
+          }
+        },
+        "dependencies": [
+          2
+        ],
+        "risk_level": "SAFE",
+        "status": "PENDING",
+        "retries_attempted": 0
+      }
+    ],
+    "created_at": "2026-11-03T11:40:27.308879Z"
+  },
+  "execution_trace": [],
+  "pending_approval": {
+    "approval_id": "appr_c5c24c1f",
+    "task_id": "task_b685c8b67eb5",
+    "step_id": 1,
+    "tool_name": "file_create",
+    "argument_hash": "6d3cb6fbaba70479de3b99f58a095ae13efc6461503e162385a209b46c93d67b",
+    "expires_at": "2026-11-03T11:50:27.310609Z",
+    "created_at": "2026-11-03T11:40:27.310609Z"
+  },
+  "iterations_used": 0,
+  "created_at": "2026-11-03T11:40:27.277007Z",
+  "updated_at": "2026-11-03T11:40:33.002614Z",
+  "completed_at": "2026-11-03T11:40:33.002614Z",
+  "error_message": "Task interrupted by application restart. Uncertain operations not resumed."
+}

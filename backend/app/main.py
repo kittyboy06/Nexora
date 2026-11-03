@@ -24,9 +24,15 @@ from backend.app.core.guard import InferenceGuard
 from backend.app.core.logging import setup_logging
 from backend.app.models.common import ErrorDetail, ErrorResponse
 from backend.app.permissions.manager import PermissionManager
+from backend.app.services.app_service import AppService
+from backend.app.services.filesystem_service import FilesystemService
 from backend.app.services.ollama_service import OllamaService
+from backend.app.services.terminal_service import TerminalService
+from backend.app.tools.filesystem import register_filesystem_tools
 from backend.app.tools.mock_tools import register_mock_tools
 from backend.app.tools.registry import ToolRegistry
+from backend.app.tools.terminal import register_terminal_tools
+from backend.app.tools.windows import register_windows_tools
 
 logger = logging.getLogger("nexora.main")
 
@@ -63,9 +69,25 @@ async def lifespan(app: FastAPI):
     if recovered_count > 0:
         logger.warning("Startup recovery: %d unfinalized tasks marked INTERRUPTED.", recovered_count)
 
-    # Initialize Phase 2 Agent Engine Components
+    # Initialize Phase 2 & 3 Agent Engine Components
     tool_registry = ToolRegistry()
     register_mock_tools(tool_registry)
+
+    fs_service = FilesystemService(
+        workspace_root=settings.get_workspace_dir(),
+        max_file_size_bytes=settings.MAX_FILE_SIZE_BYTES,
+    )
+    register_filesystem_tools(tool_registry, fs_service)
+    app_service = AppService(settings=settings)
+    register_windows_tools(tool_registry, app_service)
+    terminal_service = TerminalService(
+        settings=settings,
+        workspace_root=settings.get_workspace_dir(),
+    )
+    register_terminal_tools(tool_registry, terminal_service)
+    app.state.filesystem_service = fs_service
+    app.state.app_service = app_service
+    app.state.terminal_service = terminal_service
     app.state.tool_registry = tool_registry
 
     ollama_service = OllamaService(client=client, settings=settings)
