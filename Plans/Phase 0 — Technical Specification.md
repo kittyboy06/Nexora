@@ -2,6 +2,8 @@
 ## Local Autonomous Intelligence
 ### Technical Specification — Version 1.0
 
+> **Architecture amendment — 6 November 2026:** The original web-dashboard/React target in this historical Phase 0 document is superseded for future work. NEXORA's primary user app is now a C#/.NET WinUI 3 native Windows shell, with an optional always-on-top companion window and native capture broker. The existing Python/FastAPI backend remains the local orchestration and execution service. See `README — Architecture Documentation Index.md`, `Phase 5 — Dashboard and Control Plane.md`, and `Modules/11 — Native Windows Shell.md` before creating UI code.
+
 ## 1. Project Overview
 
 NEXORA is a local-first autonomous AI computer agent designed for Windows 11.
