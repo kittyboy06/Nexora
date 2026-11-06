@@ -2,6 +2,9 @@ from fastapi import APIRouter, Depends
 from backend.app.api.dependencies import get_ollama_service
 from backend.app.models.ollama import ModelListResponse, OllamaStatusResponse
 from backend.app.services.ollama_service import OllamaService
+from backend.app.core.config import Settings, get_settings
+from backend.app.models.model_profile import ModelProfileListResponse
+from backend.app.services.model_registry import ModelProfileRegistry
 
 router = APIRouter(prefix="/ollama", tags=["Ollama"])
 
@@ -27,3 +30,12 @@ async def list_ollama_models(
     """
     models = await service.list_models()
     return ModelListResponse(models=models, count=len(models))
+
+
+@router.get("/profiles", response_model=ModelProfileListResponse, summary="List specialist profiles and local model availability")
+async def list_model_profiles(
+    service: OllamaService = Depends(get_ollama_service),
+    settings: Settings = Depends(get_settings),
+) -> ModelProfileListResponse:
+    """Show configured specialist profiles and whether each model is installed."""
+    return await ModelProfileRegistry(settings).list_profiles(service)

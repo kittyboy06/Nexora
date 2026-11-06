@@ -62,7 +62,7 @@ class StateManager:
         except Exception as exc:
             logger.error("Failed to persist task snapshot for %s: %s", task.task_id, exc)
 
-    async def create_task(self, prompt: str) -> AgentTask:
+    async def create_task(self, prompt: str, model_profile_id: str | None = None) -> AgentTask:
         """Initialize and persist a new AgentTask in SUBMITTED state."""
         async with self._lock:
             task_id = f"task_{uuid4().hex[:12]}"
@@ -70,6 +70,7 @@ class StateManager:
             task = AgentTask(
                 task_id=task_id,
                 prompt=prompt,
+                model_profile_id=model_profile_id,
                 status=TaskStatus.SUBMITTED,
                 created_at=now,
                 updated_at=now,

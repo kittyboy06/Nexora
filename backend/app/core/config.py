@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,6 +17,9 @@ class Settings(BaseSettings):
     OLLAMA_MODEL: str = "qwen3.5:9b"
     OLLAMA_CONNECT_TIMEOUT_SECONDS: float = 3.0
     OLLAMA_INFERENCE_TIMEOUT_SECONDS: float = 120.0
+    MODEL_ROUTER_MODEL: str = "qwen3.5:9b"
+    MODEL_ROUTER_CONFIDENCE_THRESHOLD: float = Field(default=0.65, ge=0.0, le=1.0)
+    MODEL_PROFILES_FILE: str = "data/model_profiles.json"
 
     # GPU & Concurrency Protection
     INFERENCE_CONCURRENCY_LIMIT: int = 1
@@ -83,6 +87,17 @@ class Settings(BaseSettings):
     def get_task_data_dir(self) -> Path:
         """Resolve data/tasks directory relative to workspace or absolute."""
         p = Path(self.TASK_DATA_DIR)
+        if p.is_absolute():
+            return p
+        if Path.cwd().name == "backend":
+            candidate = Path.cwd().parent / p
+        else:
+            candidate = Path.cwd() / p
+        return candidate.resolve()
+
+    def get_model_profiles_file(self) -> Path:
+        """Resolve the editable specialist profile catalogue path."""
+        p = Path(self.MODEL_PROFILES_FILE)
         if p.is_absolute():
             return p
         if Path.cwd().name == "backend":

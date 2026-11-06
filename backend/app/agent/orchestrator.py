@@ -42,7 +42,7 @@ class AgentOrchestrator:
                 await asyncio.sleep(0.01)
 
                 await self.state_manager.transition_state(task_id, TaskStatus.PLANNING)
-                plan = await self.planner.generate_plan(task.prompt)
+                plan = await self.planner.generate_plan(task.prompt, profile_override=task.model_profile_id)
                 task = await self.state_manager.update_plan(task_id, plan)
                 task = await self.state_manager.transition_state(task_id, TaskStatus.EXECUTING)
             except Exception as exc:

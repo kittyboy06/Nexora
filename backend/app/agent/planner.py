@@ -9,7 +9,8 @@ from backend.app.core.exceptions import PlanValidationException
 from backend.app.core.guard import InferenceGuard
 from backend.app.models.agent import TaskPlan
 from backend.app.models.chat import ChatMessage, ChatRequest
-from backend.app.services.ollama_service import OllamaService
+from backend.app.services.model_registry import HybridModelRouter, ModelProfileRegistry
+from backend.app.services.model_provider import ModelProvider
 from backend.app.tools.registry import ToolRegistry
 
 logger = logging.getLogger("nexora.planner")
@@ -52,25 +53,37 @@ class Planner:
 
     def __init__(
         self,
-        ollama_service: OllamaService,
+        ollama_service: ModelProvider,
         validator: PlanValidator,
         registry: ToolRegistry,
         settings: Settings,
         guard: InferenceGuard,
+        model_profiles: ModelProfileRegistry | None = None,
     ):
         self.ollama = ollama_service
         self.validator = validator
         self.registry = registry
         self.settings = settings
         self.guard = guard
+        self.model_profiles = model_profiles or ModelProfileRegistry(settings)
+        self.model_router = HybridModelRouter(self.model_profiles, settings, ollama_service, guard)
 
-    def _build_system_prompt(self) -> str:
+    def _build_system_prompt(self, profile_instruction: str = "") -> str:
         tools_spec = json.dumps(self.registry.get_specs(), indent=2)
-        return PLANNER_SYSTEM_PROMPT.format(tools_spec=tools_spec)
+        return PLANNER_SYSTEM_PROMPT.format(tools_spec=tools_spec) + (
+            f"\n\nSpecialist instructions:\n{profile_instruction}" if profile_instruction else ""
+        )
 
-    async def generate_plan(self, prompt: str) -> TaskPlan:
+    async def generate_plan(self, prompt: str, profile_override: str | None = None) -> TaskPlan:
         """Generate, validate, and return a TaskPlan with up to 1 self-correction retry."""
-        system_prompt = self._build_system_prompt()
+        # Keep router calls on the same live service as planner inference (also supports service injection).
+        self.model_router.ollama = self.ollama
+        selection = await self.model_router.route(prompt, profile_override=profile_override)
+        profile = self.model_profiles.profile(selection.profile_id)
+        logger.info("Routed planning task to profile=%s model=%s kind=%s escalated=%s reason=%s",
+                    selection.profile_id, selection.model, selection.task_kind.value,
+                    selection.escalated, selection.reason)
+        system_prompt = self._build_system_prompt(profile.system_instruction)
         messages = [
             ChatMessage(role="system", content=system_prompt),
             ChatMessage(role="user", content=f"Generate a task plan for this objective: {prompt}"),
@@ -94,7 +107,7 @@ class Planner:
                 chat_resp = await self.ollama.generate_chat(
                     ChatRequest(
                         messages=messages,
-                        model=self.settings.OLLAMA_MODEL,
+                        model=selection.model,
                         temperature=0.2,  # Low temperature for deterministic planning
                     )
                 )

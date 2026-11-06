@@ -55,7 +55,9 @@ class TaskManager:
                 self._active_task_id = None
                 logger.info("Released task execution lock for %s", task_id)
 
-    async def create_and_start_task(self, prompt: str, background_tasks: BackgroundTasks) -> AgentTask:
+    async def create_and_start_task(
+        self, prompt: str, background_tasks: BackgroundTasks, model_profile_id: str | None = None
+    ) -> AgentTask:
         """Create a new task and dispatch background execution if capacity is available."""
         if self._task_lock.locked():
             logger.warning("Rejecting task creation: TaskManager is currently running task %s", self._active_task_id)
@@ -63,7 +65,7 @@ class TaskManager:
                 message=f"Agent capacity busy (task {self._active_task_id} is running). Try again once it completes."
             )
 
-        task = await self.state_manager.create_task(prompt)
+        task = await self.state_manager.create_task(prompt, model_profile_id=model_profile_id)
         background_tasks.add_task(self._execute_with_lock, task.task_id)
         return task
 

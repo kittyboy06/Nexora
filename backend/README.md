@@ -50,6 +50,9 @@ Key configuration parameters (`backend/.env`):
 | `PORT` | `8000` | Port for the FastAPI server |
 | `OLLAMA_BASE_URL` | `http://localhost:11434` | URL of local Ollama daemon |
 | `OLLAMA_MODEL` | `qwen3.5:9b` | Default reasoning model |
+| `MODEL_ROUTER_MODEL` | `qwen3.5:9b` | Model used for first-pass task classification; set to an installed lightweight model for hybrid routing |
+| `MODEL_ROUTER_CONFIDENCE_THRESHOLD` | `0.65` | Confidence below which routing escalates to `OLLAMA_MODEL` |
+| `MODEL_PROFILES_FILE` | `data/model_profiles.json` | Specialist profile catalogue (multiple profiles may share a model) |
 | `INFERENCE_CONCURRENCY_LIMIT` | `1` | Max concurrent model generations (GPU guard) |
 | `INFERENCE_SEMAPHORE_TIMEOUT_SECONDS` | `5.0` | Max wait time before returning HTTP 503 `INFERENCE_BUSY` |
 | `MAX_PLAN_STEPS` | `10` | Maximum steps permitted in a generated plan |
@@ -97,6 +100,7 @@ python -m pytest backend/tests -v
 * **`GET /api/health`**: Fast health check (independent of Ollama status).
 * **`GET /api/ollama/status`**: Detailed reachability and model availability.
 * **`GET /api/ollama/models`**: List installed local models.
+* **`GET /api/ollama/profiles`**: List configured specialist profiles and whether their models are installed.
 * **`POST /api/chat`**: Stateless conversational completion.
 
 ### 5.2 Autonomous Agent Engine (Phase 2)
@@ -105,7 +109,10 @@ python -m pytest backend/tests -v
   ```json
   { "prompt": "Calculate 25 * 4, then summarize the outcome." }
   ```
+  Optional `model_profile_id` selects a configured specialist profile manually; if omitted, the hybrid router selects one.
   Returns `201 Created` with task details and background execution ID.
+
+Edit `data/model_profiles.json` to add specialist profiles or point them at other installed models. Restart the backend for task routing to reload profile changes.
 
 * **`GET /api/agent/tasks`**:
   List all historical and active agent tasks.

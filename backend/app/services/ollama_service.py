@@ -21,7 +21,8 @@ class OllamaService:
         self.client = client
         self.settings = settings
 
-    def _matches_model(self, target: str, available_models: list[str]) -> bool:
+    @staticmethod
+    def model_matches(target: str, available_models: list[str]) -> bool:
         """Check if target model exists, accounting for tags."""
         if target in available_models:
             return True
@@ -33,6 +34,10 @@ class OllamaService:
             if m.startswith(f"{target}:"):
                 return True
         return False
+
+    def _matches_model(self, target: str, available_models: list[str]) -> bool:
+        """Backward-compatible private alias for existing callers."""
+        return self.model_matches(target, available_models)
 
     async def check_reachability(self) -> bool:
         """Probe Ollama reachability with a short timeout."""

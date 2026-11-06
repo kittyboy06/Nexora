@@ -23,7 +23,9 @@ async def create_task(
     Submit a high-level user goal. Initiates planning and autonomous execution
     in the background. Enforces maximum 1 active task limit.
     """
-    task = await manager.create_and_start_task(payload.prompt, background_tasks)
+    task = await manager.create_and_start_task(
+        payload.prompt, background_tasks, model_profile_id=payload.model_profile_id
+    )
     return TaskResponse(task=task)
 
 

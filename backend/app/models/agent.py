@@ -84,6 +84,7 @@ class StepResult(BaseModel):
 class AgentTask(BaseModel):
     task_id: str = Field(..., description="Unique task identifier")
     prompt: str = Field(..., description="Original user prompt or instruction")
+    model_profile_id: str | None = Field(default=None, description="Optional specialist profile override")
     status: TaskStatus = Field(default=TaskStatus.SUBMITTED, description="Current task lifecycle status")
     plan: TaskPlan | None = Field(default=None, description="Validated task plan")
     execution_trace: list[StepResult] = Field(default_factory=list, description="Ordered step execution results")
@@ -98,6 +99,7 @@ class AgentTask(BaseModel):
 # API Schemas
 class TaskCreateRequest(BaseModel):
     prompt: str = Field(..., min_length=1, max_length=4096, description="User goal or task instruction")
+    model_profile_id: str | None = Field(default=None, min_length=1, max_length=100, description="Optional manual specialist profile override")
 
 
 class TaskResponse(BaseModel):
