@@ -85,4 +85,15 @@ public interface INexoraApiClient
     Task<bool> TriggerEmergencyStopAsync(string reason = "Operator emergency stop", CancellationToken cancellationToken = default);
     Task<bool> ResetEmergencyStopAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ScreenshotEvidenceDto>> ListDesktopEvidenceAsync(string? taskId = null, CancellationToken cancellationToken = default);
+
+    // Phase 13: Scheduler and Background Work
+    Task<IReadOnlyList<ScheduleDto>> ListSchedulesAsync(string? status = null, CancellationToken cancellationToken = default);
+    Task<ScheduleDto> CreateScheduleAsync(ScheduleCreateRequest request, CancellationToken cancellationToken = default);
+    Task<ScheduleDto> GetScheduleAsync(string scheduleId, CancellationToken cancellationToken = default);
+    Task<ScheduleDto> UpdateScheduleAsync(string scheduleId, ScheduleUpdateRequest request, CancellationToken cancellationToken = default);
+    Task<ScheduleDto> PauseScheduleAsync(string scheduleId, CancellationToken cancellationToken = default);
+    Task<ScheduleDto> ResumeScheduleAsync(string scheduleId, CancellationToken cancellationToken = default);
+    Task<bool> DeleteScheduleAsync(string scheduleId, CancellationToken cancellationToken = default);
+    Task<ScheduleRunDto> TriggerScheduleAsync(string scheduleId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<ScheduleRunDto>> ListScheduleRunsAsync(string? scheduleId = null, string? status = null, int limit = 50, CancellationToken cancellationToken = default);
 }

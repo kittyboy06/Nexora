@@ -41,6 +41,8 @@ from backend.app.memory.tools import register_memory_tools
 from backend.app.desktop.router import router as desktop_router
 from backend.app.desktop.service import DesktopService
 from backend.app.desktop.tools import register_desktop_tools
+from backend.app.scheduler.router import router as scheduler_router
+from backend.app.scheduler.service import SchedulerService
 from backend.app.agent.executor import Executor
 from backend.app.agent.fleet.coordinator import FleetCoordinator
 from backend.app.agent.orchestrator import AgentOrchestrator
@@ -258,6 +260,9 @@ async def lifespan(app: FastAPI):
         permissions=permission_manager,
     )
     app.state.task_manager = task_manager
+    scheduler_service = SchedulerService.create_default(task_manager=task_manager)
+    await scheduler_service.start()
+    app.state.scheduler_service = scheduler_service
     logger.info("Phase 2, 3, 6, 7, and 8 Agent Engine components initialized.")
 
     yield
@@ -265,6 +270,7 @@ async def lifespan(app: FastAPI):
     # Clean shutdown
     logger.info("Shutting down %s...", settings.APP_NAME)
     await mcp_session_pool.disconnect_all()
+    await scheduler_service.stop()
     await client.aclose()
     logger.info("Application shutdown complete.")
 
@@ -342,6 +348,7 @@ def create_app() -> FastAPI:
     app.include_router(sandbox_router)
     app.include_router(memory_router)
     app.include_router(desktop_router)
+    app.include_router(scheduler_router)
 
     return app
 

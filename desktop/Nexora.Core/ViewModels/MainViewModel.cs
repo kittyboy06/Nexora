@@ -38,6 +38,9 @@ public partial class MainViewModel : ObservableObject
     private bool _isDesktopVisionViewVisible;
 
     [ObservableProperty]
+    private bool _isSchedulerViewVisible;
+
+    [ObservableProperty]
     private string _activeModel = "None";
 
     [ObservableProperty]
@@ -51,6 +54,7 @@ public partial class MainViewModel : ObservableObject
     public GeneratedToolsViewModel GeneratedTools { get; }
     public MemoryViewModel Memory { get; }
     public DesktopVisionViewModel DesktopVision { get; }
+    public SchedulerViewModel Scheduler { get; }
 
     public ObservableCollection<AgentTask> RecentTasks { get; } = new();
 
@@ -64,7 +68,8 @@ public partial class MainViewModel : ObservableObject
         McpViewModel? mcp = null,
         GeneratedToolsViewModel? generatedTools = null,
         MemoryViewModel? memory = null,
-        DesktopVisionViewModel? desktopVision = null)
+        DesktopVisionViewModel? desktopVision = null,
+        SchedulerViewModel? scheduler = null)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         _supervisor = supervisor ?? throw new ArgumentNullException(nameof(supervisor));
@@ -76,6 +81,7 @@ public partial class MainViewModel : ObservableObject
         GeneratedTools = generatedTools ?? new GeneratedToolsViewModel(_apiClient);
         Memory = memory ?? new MemoryViewModel(_apiClient);
         DesktopVision = desktopVision ?? new DesktopVisionViewModel(_apiClient);
+        Scheduler = scheduler ?? new SchedulerViewModel(_apiClient);
 
         Composer.TaskCreated += OnTaskCreated;
         ApprovalDialog.DecisionCompleted += OnApprovalDecided;
@@ -90,6 +96,7 @@ public partial class MainViewModel : ObservableObject
         IsGeneratedToolsViewVisible = false;
         IsMemoryViewVisible = false;
         IsDesktopVisionViewVisible = false;
+        IsSchedulerViewVisible = false;
     }
 
     [RelayCommand]
@@ -101,6 +108,7 @@ public partial class MainViewModel : ObservableObject
         IsGeneratedToolsViewVisible = false;
         IsMemoryViewVisible = false;
         IsDesktopVisionViewVisible = false;
+        IsSchedulerViewVisible = false;
     }
 
     [RelayCommand]
@@ -112,6 +120,7 @@ public partial class MainViewModel : ObservableObject
         IsGeneratedToolsViewVisible = false;
         IsMemoryViewVisible = false;
         IsDesktopVisionViewVisible = false;
+        IsSchedulerViewVisible = false;
     }
 
     [RelayCommand]
@@ -123,6 +132,7 @@ public partial class MainViewModel : ObservableObject
         IsGeneratedToolsViewVisible = true;
         IsMemoryViewVisible = false;
         IsDesktopVisionViewVisible = false;
+        IsSchedulerViewVisible = false;
     }
 
     [RelayCommand]
@@ -134,6 +144,7 @@ public partial class MainViewModel : ObservableObject
         IsGeneratedToolsViewVisible = false;
         IsMemoryViewVisible = true;
         IsDesktopVisionViewVisible = false;
+        IsSchedulerViewVisible = false;
     }
 
     [RelayCommand]
@@ -145,6 +156,19 @@ public partial class MainViewModel : ObservableObject
         IsGeneratedToolsViewVisible = false;
         IsMemoryViewVisible = false;
         IsDesktopVisionViewVisible = true;
+        IsSchedulerViewVisible = false;
+    }
+
+    [RelayCommand]
+    public void ShowSchedulerView()
+    {
+        IsTasksViewVisible = false;
+        IsSkillsViewVisible = false;
+        IsMcpViewVisible = false;
+        IsGeneratedToolsViewVisible = false;
+        IsMemoryViewVisible = false;
+        IsDesktopVisionViewVisible = false;
+        IsSchedulerViewVisible = true;
     }
 
     public async Task InitializeAsync(string repoRoot)
@@ -164,6 +188,7 @@ public partial class MainViewModel : ObservableObject
                 await Mcp.LoadVaultSecretsAsync();
                 await GeneratedTools.LoadAllAsync();
                 await Memory.LoadAllAsync();
+                await Scheduler.LoadSchedulesAsync();
                 StatusMessage = "Ready";
             }
             else

@@ -601,4 +601,89 @@ public class NexoraApiClient : INexoraApiClient
         var result = await response.Content.ReadFromJsonAsync<List<ScreenshotEvidenceDto>>(JsonOptions, cancellationToken);
         return result ?? new List<ScreenshotEvidenceDto>();
     }
+
+    // Phase 13: Scheduler and Background Work
+    public async Task<IReadOnlyList<ScheduleDto>> ListSchedulesAsync(string? status = null, CancellationToken cancellationToken = default)
+    {
+        var url = "/api/scheduler/schedules";
+        if (!string.IsNullOrEmpty(status))
+        {
+            url += $"?status={Uri.EscapeDataString(status)}";
+        }
+        var response = await _httpClient.GetAsync(url, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<List<ScheduleDto>>(JsonOptions, cancellationToken);
+        return result ?? new List<ScheduleDto>();
+    }
+
+    public async Task<ScheduleDto> CreateScheduleAsync(ScheduleCreateRequest request, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync("/api/scheduler/schedules", request, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<ScheduleDto>(JsonOptions, cancellationToken);
+        return result ?? throw new InvalidOperationException("Failed to deserialize created schedule.");
+    }
+
+    public async Task<ScheduleDto> GetScheduleAsync(string scheduleId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync($"/api/scheduler/schedules/{Uri.EscapeDataString(scheduleId)}", cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<ScheduleDto>(JsonOptions, cancellationToken);
+        return result ?? throw new InvalidOperationException("Failed to deserialize schedule.");
+    }
+
+    public async Task<ScheduleDto> UpdateScheduleAsync(string scheduleId, ScheduleUpdateRequest request, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PatchAsJsonAsync($"/api/scheduler/schedules/{Uri.EscapeDataString(scheduleId)}", request, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<ScheduleDto>(JsonOptions, cancellationToken);
+        return result ?? throw new InvalidOperationException("Failed to deserialize updated schedule.");
+    }
+
+    public async Task<ScheduleDto> PauseScheduleAsync(string scheduleId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsync($"/api/scheduler/schedules/{Uri.EscapeDataString(scheduleId)}/pause", null, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<ScheduleDto>(JsonOptions, cancellationToken);
+        return result ?? throw new InvalidOperationException("Failed to deserialize paused schedule.");
+    }
+
+    public async Task<ScheduleDto> ResumeScheduleAsync(string scheduleId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsync($"/api/scheduler/schedules/{Uri.EscapeDataString(scheduleId)}/resume", null, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<ScheduleDto>(JsonOptions, cancellationToken);
+        return result ?? throw new InvalidOperationException("Failed to deserialize resumed schedule.");
+    }
+
+    public async Task<bool> DeleteScheduleAsync(string scheduleId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.DeleteAsync($"/api/scheduler/schedules/{Uri.EscapeDataString(scheduleId)}", cancellationToken);
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<ScheduleRunDto> TriggerScheduleAsync(string scheduleId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsync($"/api/scheduler/schedules/{Uri.EscapeDataString(scheduleId)}/trigger", null, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<ScheduleRunDto>(JsonOptions, cancellationToken);
+        return result ?? throw new InvalidOperationException("Failed to deserialize triggered schedule run.");
+    }
+
+    public async Task<IReadOnlyList<ScheduleRunDto>> ListScheduleRunsAsync(string? scheduleId = null, string? status = null, int limit = 50, CancellationToken cancellationToken = default)
+    {
+        var url = $"/api/scheduler/runs?limit={limit}";
+        if (!string.IsNullOrEmpty(scheduleId))
+        {
+            url += $"&schedule_id={Uri.EscapeDataString(scheduleId)}";
+        }
+        if (!string.IsNullOrEmpty(status))
+        {
+            url += $"&status={Uri.EscapeDataString(status)}";
+        }
+        var response = await _httpClient.GetAsync(url, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<List<ScheduleRunDto>>(JsonOptions, cancellationToken);
+        return result ?? new List<ScheduleRunDto>();
+    }
 }

@@ -76,6 +76,15 @@ public class FleetViewModelTests
         public System.Threading.Tasks.Task<bool> TriggerEmergencyStopAsync(string reason = "Operator emergency stop", System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
         public System.Threading.Tasks.Task<bool> ResetEmergencyStopAsync(System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
         public System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<ScreenshotEvidenceDto>> ListDesktopEvidenceAsync(string? taskId = null, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<ScheduleDto>> ListSchedulesAsync(string? status = null, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<ScheduleDto> CreateScheduleAsync(ScheduleCreateRequest request, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<ScheduleDto> GetScheduleAsync(string scheduleId, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<ScheduleDto> UpdateScheduleAsync(string scheduleId, ScheduleUpdateRequest request, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<ScheduleDto> PauseScheduleAsync(string scheduleId, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<ScheduleDto> ResumeScheduleAsync(string scheduleId, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<bool> DeleteScheduleAsync(string scheduleId, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<ScheduleRunDto> TriggerScheduleAsync(string scheduleId, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<ScheduleRunDto>> ListScheduleRunsAsync(string? scheduleId = null, string? status = null, int limit = 50, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
     }
 
     private class DummyPoller : ITaskPoller
