@@ -15,4 +15,14 @@ public interface INexoraApiClient
     Task<IReadOnlyList<AgentTask>> ListTasksAsync(CancellationToken cancellationToken = default);
     Task<AgentTask> CancelTaskAsync(string taskId, CancellationToken cancellationToken = default);
     Task<AgentTask> DecideApprovalAsync(string taskId, string approvalId, bool approved, CancellationToken cancellationToken = default);
+
+    // Phase 7: Skills and GitHub Discovery
+    Task<IReadOnlyList<SkillSummaryDto>> ListSkillsAsync(bool enabledOnly = false, string? role = null, CancellationToken cancellationToken = default);
+    Task<SkillBundleDto> GetSkillAsync(string skillId, string? version = null, CancellationToken cancellationToken = default);
+    Task<SkillBundleDto> PatchSkillAsync(string skillId, bool? isEnabled = null, string? activeVersion = null, CancellationToken cancellationToken = default);
+    Task<bool> DeleteSkillAsync(string skillId, string? version = null, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<SkillDiscoveryCandidateDto>> SearchDiscoveryAsync(string query, int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
+    Task<SkillDiscoveryCandidateDto> PreviewDiscoveryAsync(string owner, string repo, string branch = "main", string? path = null, CancellationToken cancellationToken = default);
+    Task<SkillBundleDto> InstallSkillAsync(InstallSkillRequestDto request, CancellationToken cancellationToken = default);
+    Task<GitHubRateLimitStatusDto> GetGitHubRateLimitAsync(CancellationToken cancellationToken = default);
 }

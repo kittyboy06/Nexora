@@ -29,11 +29,13 @@ class FleetCoordinator:
         tool_registry: ToolRegistry | None = None,
         guard: InferenceGuard | None = None,
         node_runner: Callable[[AgentRuntime, FleetNode], Awaitable[Any]] | None = None,
+        skill_composer: Any | None = None,
     ) -> None:
         self.catalog = catalog or SpecialistCatalog()
         self.tool_registry = tool_registry or ToolRegistry()
         self.guard = guard
         self.node_runner = node_runner
+        self.skill_composer = skill_composer
 
     async def execute_fleet(self, plan: FleetPlan) -> FleetResult:
         """Execute a fleet plan sequentially following topological order.
@@ -105,6 +107,7 @@ class FleetCoordinator:
                 catalog=self.catalog,
                 input_artifacts=input_artifacts,
                 tool_registry=self.tool_registry,
+                skill_composer=self.skill_composer,
             )
 
             # Execute node within hardware lock

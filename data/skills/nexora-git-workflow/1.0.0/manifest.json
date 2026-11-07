@@ -1,0 +1,22 @@
+{
+  "id": "nexora-git-workflow",
+  "name": "NEXORA Git Conventional Workflow",
+  "version": "1.0.0",
+  "description": "Standard operating procedures for clean Git branches, conventional commit messages, and atomic change hygiene.",
+  "tags": [
+    "git",
+    "vcs",
+    "workflow",
+    "conventions"
+  ],
+  "author": "nexora-core",
+  "license": "MIT",
+  "target_roles": [
+    "coder",
+    "auditor_verifier"
+  ],
+  "required_tools": [
+    "run_terminal_command"
+  ],
+  "category": "workflow"
+}

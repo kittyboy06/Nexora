@@ -11,6 +11,10 @@ from backend.app.api.routes.agent import router as agent_router
 from backend.app.api.routes.chat import router as chat_router
 from backend.app.api.routes.health import router as health_router
 from backend.app.api.routes.ollama import router as ollama_router
+from backend.app.skills.router import router as skills_router
+from backend.app.skills.manager import SkillManager
+from backend.app.skills.discovery import GitHubDiscoveryService
+from backend.app.skills.composer import SkillPromptComposer
 from backend.app.agent.executor import Executor
 from backend.app.agent.fleet.coordinator import FleetCoordinator
 from backend.app.agent.orchestrator import AgentOrchestrator
@@ -116,9 +120,19 @@ async def lifespan(app: FastAPI):
         registry=tool_registry,
         guard=guard,
     )
+
+    # Initialize Phase 7 Skills & GitHub Discovery
+    skill_manager = SkillManager(settings.get_skills_data_dir())
+    github_discovery = GitHubDiscoveryService(token=settings.GITHUB_TOKEN)
+    skill_composer = SkillPromptComposer(manager=skill_manager)
+    app.state.skill_manager = skill_manager
+    app.state.github_discovery = github_discovery
+    app.state.skill_composer = skill_composer
+
     fleet_coordinator = FleetCoordinator(
         tool_registry=tool_registry,
         guard=guard,
+        skill_composer=skill_composer,
     )
     app.state.fleet_coordinator = fleet_coordinator
     orchestrator = AgentOrchestrator(
@@ -135,7 +149,7 @@ async def lifespan(app: FastAPI):
         permissions=permission_manager,
     )
     app.state.task_manager = task_manager
-    logger.info("Phase 2 Agent Engine components initialized.")
+    logger.info("Phase 2, 3, 6, and 7 Agent Engine components initialized.")
 
     yield
 
@@ -212,6 +226,7 @@ def create_app() -> FastAPI:
     app.include_router(ollama_router, prefix="/api")
     app.include_router(chat_router, prefix="/api")
     app.include_router(agent_router, prefix="/api")
+    app.include_router(skills_router, prefix="/api")
 
     return app
 

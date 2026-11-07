@@ -71,6 +71,7 @@ class FleetNode(BaseModel):
     dependencies: list[str] = Field(default_factory=list)
     input_artifact_refs: list[str] = Field(default_factory=list)
     capability_allowlist: list[str] = Field(default_factory=list)
+    skill_ids: list[str] = Field(default_factory=list)
     token_budget: int = 2048
     state: FleetNodeState = FleetNodeState.QUEUED
     result_artifact_id: str | None = None

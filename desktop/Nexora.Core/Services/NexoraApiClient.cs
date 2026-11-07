@@ -117,4 +117,88 @@ public class NexoraApiClient : INexoraApiClient
         var body = await response.Content.ReadFromJsonAsync<TaskResponse>(JsonOptions, cancellationToken);
         return body!.Task;
     }
+
+    // Phase 7: Skills and GitHub Discovery
+    public async Task<IReadOnlyList<SkillSummaryDto>> ListSkillsAsync(bool enabledOnly = false, string? role = null, CancellationToken cancellationToken = default)
+    {
+        var url = $"/api/skills?enabled_only={enabledOnly.ToString().ToLowerInvariant()}";
+        if (!string.IsNullOrEmpty(role))
+        {
+            url += $"&role={Uri.EscapeDataString(role)}";
+        }
+        var response = await _httpClient.GetAsync(url, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var body = await response.Content.ReadFromJsonAsync<List<SkillSummaryDto>>(JsonOptions, cancellationToken);
+        return body ?? new List<SkillSummaryDto>();
+    }
+
+    public async Task<SkillBundleDto> GetSkillAsync(string skillId, string? version = null, CancellationToken cancellationToken = default)
+    {
+        var url = $"/api/skills/{Uri.EscapeDataString(skillId)}";
+        if (!string.IsNullOrEmpty(version))
+        {
+            url += $"?version={Uri.EscapeDataString(version)}";
+        }
+        var response = await _httpClient.GetAsync(url, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<SkillBundleDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<SkillBundleDto> PatchSkillAsync(string skillId, bool? isEnabled = null, string? activeVersion = null, CancellationToken cancellationToken = default)
+    {
+        var payload = new Dictionary<string, object?>();
+        if (isEnabled.HasValue) payload["is_enabled"] = isEnabled.Value;
+        if (!string.IsNullOrEmpty(activeVersion)) payload["active_version"] = activeVersion;
+
+        var response = await _httpClient.PatchAsJsonAsync($"/api/skills/{Uri.EscapeDataString(skillId)}", payload, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<SkillBundleDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<bool> DeleteSkillAsync(string skillId, string? version = null, CancellationToken cancellationToken = default)
+    {
+        var url = $"/api/skills/{Uri.EscapeDataString(skillId)}";
+        if (!string.IsNullOrEmpty(version))
+        {
+            url += $"?version={Uri.EscapeDataString(version)}";
+        }
+        var response = await _httpClient.DeleteAsync(url, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return true;
+    }
+
+    public async Task<IReadOnlyList<SkillDiscoveryCandidateDto>> SearchDiscoveryAsync(string query, int page = 1, int perPage = 10, CancellationToken cancellationToken = default)
+    {
+        var url = $"/api/skills/discover/search?q={Uri.EscapeDataString(query)}&page={page}&per_page={perPage}";
+        var response = await _httpClient.GetAsync(url, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var body = await response.Content.ReadFromJsonAsync<List<SkillDiscoveryCandidateDto>>(JsonOptions, cancellationToken);
+        return body ?? new List<SkillDiscoveryCandidateDto>();
+    }
+
+    public async Task<SkillDiscoveryCandidateDto> PreviewDiscoveryAsync(string owner, string repo, string branch = "main", string? path = null, CancellationToken cancellationToken = default)
+    {
+        var url = $"/api/skills/discover/preview?owner={Uri.EscapeDataString(owner)}&repo={Uri.EscapeDataString(repo)}&branch={Uri.EscapeDataString(branch)}";
+        if (!string.IsNullOrEmpty(path))
+        {
+            url += $"&path={Uri.EscapeDataString(path)}";
+        }
+        var response = await _httpClient.GetAsync(url, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<SkillDiscoveryCandidateDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<SkillBundleDto> InstallSkillAsync(InstallSkillRequestDto request, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync("/api/skills/install", request, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<SkillBundleDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<GitHubRateLimitStatusDto> GetGitHubRateLimitAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync("/api/skills/discover/rate-limit", cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<GitHubRateLimitStatusDto>(JsonOptions, cancellationToken))!;
+    }
 }

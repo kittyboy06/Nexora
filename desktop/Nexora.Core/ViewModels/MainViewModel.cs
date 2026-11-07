@@ -20,6 +20,9 @@ public partial class MainViewModel : ObservableObject
     private bool _isOllamaOnline;
 
     [ObservableProperty]
+    private bool _isSkillsViewVisible;
+
+    [ObservableProperty]
     private string _activeModel = "None";
 
     [ObservableProperty]
@@ -28,6 +31,7 @@ public partial class MainViewModel : ObservableObject
     public TaskComposerViewModel Composer { get; }
     public TaskDetailViewModel TaskDetail { get; }
     public ApprovalDialogViewModel ApprovalDialog { get; }
+    public SkillsViewModel Skills { get; }
 
     public ObservableCollection<AgentTask> RecentTasks { get; } = new();
 
@@ -36,17 +40,25 @@ public partial class MainViewModel : ObservableObject
         IBackendSupervisor supervisor,
         TaskComposerViewModel composer,
         TaskDetailViewModel taskDetail,
-        ApprovalDialogViewModel approvalDialog)
+        ApprovalDialogViewModel approvalDialog,
+        SkillsViewModel? skills = null)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         _supervisor = supervisor ?? throw new ArgumentNullException(nameof(supervisor));
         Composer = composer ?? throw new ArgumentNullException(nameof(composer));
         TaskDetail = taskDetail ?? throw new ArgumentNullException(nameof(taskDetail));
         ApprovalDialog = approvalDialog ?? throw new ArgumentNullException(nameof(approvalDialog));
+        Skills = skills ?? new SkillsViewModel(_apiClient);
 
         Composer.TaskCreated += OnTaskCreated;
         ApprovalDialog.DecisionCompleted += OnApprovalDecided;
     }
+
+    [RelayCommand]
+    public void ShowTasksView() => IsSkillsViewVisible = false;
+
+    [RelayCommand]
+    public void ShowSkillsView() => IsSkillsViewVisible = true;
 
     public async Task InitializeAsync(string repoRoot)
     {
@@ -60,6 +72,7 @@ public partial class MainViewModel : ObservableObject
                 await RefreshStatusAsync();
                 await Composer.LoadProfilesAsync();
                 await LoadRecentTasksAsync();
+                await Skills.LoadInstalledSkillsAsync();
                 StatusMessage = "Ready";
             }
             else
@@ -87,6 +100,7 @@ public partial class MainViewModel : ObservableObject
         }
         catch
         {
+            StatusMessage = "Backend unreachable.";
             IsBackendOnline = false;
             IsOllamaOnline = false;
         }

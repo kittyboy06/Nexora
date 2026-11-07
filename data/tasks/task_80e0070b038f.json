@@ -1,0 +1,53 @@
+{
+  "task_id": "task_80e0070b038f",
+  "prompt": "Analyze dataset",
+  "model_profile_id": "reasoning-planner",
+  "status": "FAILED",
+  "routing": {
+    "profile_id": "reasoning-planner",
+    "model": "qwen3.5:9b",
+    "task_kind": "reasoning",
+    "reason": "manual profile override",
+    "escalated": false
+  },
+  "plan": {
+    "plan_id": "plan_override",
+    "goal": "Read file",
+    "steps": [
+      {
+        "step_id": 1,
+        "description": "Read file",
+        "tool_call": {
+          "tool_name": "file_read",
+          "arguments": {
+            "path": "phase4_output.txt"
+          }
+        },
+        "dependencies": [],
+        "risk_level": "SAFE",
+        "status": "FAILED",
+        "retries_attempted": 0
+      }
+    ],
+    "created_at": "2026-11-07T07:51:58.877047Z"
+  },
+  "fleet_plan": null,
+  "artifacts": [],
+  "execution_trace": [
+    {
+      "step_id": 1,
+      "tool_name": "file_read",
+      "status": "FAILED",
+      "output": null,
+      "error": "File or directory 'phase4_output.txt' does not exist.",
+      "duration_ms": 1.41,
+      "retry_classification": "UNCERTAIN"
+    }
+  ],
+  "pending_approval": null,
+  "iterations_used": 1,
+  "created_at": "2026-11-07T07:51:58.853373Z",
+  "updated_at": "2026-11-07T07:51:58.881983Z",
+  "completed_at": "2026-11-07T07:51:58.881983Z",
+  "error_message": "Step 1 failed with UNCERTAIN outcome: File or directory 'phase4_output.txt' does not exist.. Halted safely without retry."
+}

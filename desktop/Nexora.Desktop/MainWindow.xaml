@@ -11,7 +11,7 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid Background="Transparent">
+    <Grid x:Name="MainRootGrid" Background="Transparent">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -43,6 +43,24 @@
                     </StackPanel>
                 </StackPanel>
 
+                <!-- Center: Navigation View Switcher (Tasks vs Skills) -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8" VerticalAlignment="Center">
+                    <Button Command="{Binding ShowTasksViewCommand}"
+                            Padding="12,6">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE7C3;" FontSize="13" />
+                            <TextBlock Text="Agent Tasks" FontSize="12" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
+                    <Button Command="{Binding ShowSkillsViewCommand}"
+                            Padding="12,6">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xEA86;" FontSize="13" />
+                            <TextBlock Text="Skills &amp; Discovery" FontSize="12" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
                 <!-- Status Pills & Actions -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                     <!-- Backend Status Pill -->
@@ -71,8 +89,9 @@
             </Grid>
         </Border>
 
-        <!-- Main Content Area: 2 Columns -->
-        <Grid Grid.Row="1" Padding="20" ColumnSpacing="20">
+        <!-- MAIN TASK WORKSPACE AREA: 2 Columns -->
+        <Grid Grid.Row="1" Padding="20" ColumnSpacing="20"
+              Visibility="{Binding IsSkillsViewVisible, Converter={StaticResource InverseBoolToVisibilityConverter}}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="380" />
                 <ColumnDefinition Width="*" />
@@ -407,6 +426,317 @@
             </Border>
         </Grid>
 
+        <!-- SKILLS & DISCOVERY VIEW (Phase 7) -->
+        <Grid Grid.Row="1" Padding="20"
+              Visibility="{Binding IsSkillsViewVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+            <TabView HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <!-- TAB 1: INSTALLED SKILLS -->
+                <TabViewItem Header="Installed Skills Catalogue">
+                    <TabViewItem.IconSource>
+                        <FontIconSource Glyph="&#xEA86;" />
+                    </TabViewItem.IconSource>
+                    <Grid Padding="0,16,0,0" ColumnSpacing="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="420" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left: List of Installed Skills -->
+                        <Border Grid.Column="0"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <Grid RowSpacing="12">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Installed Skills" FontWeight="SemiBold" FontSize="15" VerticalAlignment="Center" />
+                                    <Button Grid.Column="1" Command="{Binding Skills.LoadInstalledSkillsCommand}" Padding="8,4">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <FontIcon Glyph="&#xE72C;" FontSize="11" />
+                                            <TextBlock Text="Refresh" FontSize="11" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+
+                                <ListView Grid.Row="1"
+                                          ItemsSource="{Binding Skills.InstalledSkills}"
+                                          SelectedItem="{Binding Skills.SelectedSkill, Mode=TwoWay}"
+                                          SelectionMode="Single">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,4" Padding="12"
+                                                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="6">
+                                                <Grid RowSpacing="6">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <!-- Skill Name, Version & Toggle -->
+                                                    <Grid Grid.Row="0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                                                            <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="13" />
+                                                            <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                                                    CornerRadius="4" Padding="4,2">
+                                                                <TextBlock Text="{Binding Version}" FontSize="10" />
+                                                            </Border>
+                                                        </StackPanel>
+                                                        <ToggleSwitch Grid.Column="1" IsOn="{Binding IsEnabled, Mode=TwoWay}"
+                                                                      OnContent="" OffContent="" Margin="8,0,0,0" />
+                                                    </Grid>
+
+                                                    <!-- Description -->
+                                                    <TextBlock Grid.Row="1" Text="{Binding Description}"
+                                                               FontSize="11"
+                                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                               TextWrapping="Wrap" />
+
+                                                    <!-- Metadata & Actions -->
+                                                    <Grid Grid.Row="2" ColumnSpacing="6">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                            <TextBlock Text="Author:" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                                            <TextBlock Text="{Binding Author}" FontSize="10" />
+                                                        </StackPanel>
+                                                        <Button Grid.Column="1" Content="Inspect" Padding="6,2" FontSize="11"
+                                                                Command="{Binding DataContext.Skills.InspectSkillCommand, ElementName=MainRootGrid}"
+                                                                CommandParameter="{Binding}" />
+                                                        <Button Grid.Column="2" Content="Delete" Padding="6,2" FontSize="11"
+                                                                Command="{Binding DataContext.Skills.DeleteSkillCommand, ElementName=MainRootGrid}"
+                                                                CommandParameter="{Binding}" />
+                                                    </Grid>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Grid>
+                        </Border>
+
+                        <!-- Right: Guidance Inspector -->
+                        <Border Grid.Column="1"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <Grid RowSpacing="12">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Text="Guidance Inspector" FontWeight="SemiBold" FontSize="15" />
+
+                                <!-- Inspector Meta Header -->
+                                <Border Grid.Row="1" Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                        CornerRadius="6" Padding="12"
+                                        Visibility="{Binding Skills.InspectedBundle, Converter={StaticResource NullToVisibilityConverter}}">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="{Binding Skills.InspectedBundle.Manifest.Name}" FontWeight="Bold" FontSize="14" />
+                                        <TextBlock Text="{Binding Skills.InspectedBundle.Manifest.Description}" FontSize="12" TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding Skills.InspectedBundle.Provenance.SkillSha256, StringFormat='SHA-256 Provenance: {0}'}"
+                                                   FontFamily="Consolas" FontSize="10" Foreground="MediumSeaGreen" />
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Markdown Instructions Viewer -->
+                                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                                    <TextBox Text="{Binding Skills.MarkdownPreview, Mode=OneWay}"
+                                             IsReadOnly="True"
+                                             AcceptsReturn="True"
+                                             TextWrapping="Wrap"
+                                             FontFamily="Consolas"
+                                             FontSize="12"
+                                             BorderThickness="0"
+                                             Background="Transparent" />
+                                </ScrollViewer>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </TabViewItem>
+
+                <!-- TAB 2: GITHUB DISCOVERY -->
+                <TabViewItem Header="GitHub Discovery">
+                    <TabViewItem.IconSource>
+                        <FontIconSource Glyph="&#xE721;" />
+                    </TabViewItem.IconSource>
+                    <Grid Padding="0,16,0,0" ColumnSpacing="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="420" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left: Search & Discovery List -->
+                        <Border Grid.Column="0"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <Grid RowSpacing="12">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Search Box -->
+                                <Grid Grid.Row="0" ColumnSpacing="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="0"
+                                             PlaceholderText="Search repositories (e.g. docker, flutter, react)..."
+                                             Text="{Binding Skills.SearchQuery, Mode=TwoWay}" />
+                                    <Button Grid.Column="1" Command="{Binding Skills.SearchGitHubCommand}"
+                                            Style="{ThemeResource AccentButtonStyle}">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <FontIcon Glyph="&#xE721;" FontSize="11" />
+                                            <TextBlock Text="Search" FontSize="11" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+
+                                <!-- Rate Limit Status -->
+                                <Border Grid.Row="1" Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                        CornerRadius="6" Padding="8,4">
+                                    <TextBlock Text="{Binding Skills.StatusMessage}" FontSize="11"
+                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </Border>
+
+                                <!-- Results List -->
+                                <ListView Grid.Row="2"
+                                          ItemsSource="{Binding Skills.DiscoveryCandidates}"
+                                          SelectedItem="{Binding Skills.SelectedCandidate, Mode=TwoWay}"
+                                          SelectionMode="Single">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,4" Padding="12"
+                                                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="6">
+                                                <Grid RowSpacing="6">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <Grid Grid.Row="0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="4">
+                                                            <TextBlock Text="{Binding Owner}" FontWeight="SemiBold" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                            <TextBlock Text="/" FontSize="12" />
+                                                            <TextBlock Text="{Binding Repo}" FontWeight="Bold" FontSize="12" />
+                                                        </StackPanel>
+                                                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                                            <FontIcon Glyph="&#xE734;" FontSize="11" Foreground="Goldenrod" />
+                                                            <TextBlock Text="{Binding Stars}" FontSize="11" />
+                                                        </StackPanel>
+                                                    </Grid>
+
+                                                    <TextBlock Grid.Row="1" Text="{Binding Description}" FontSize="11"
+                                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+
+                                                    <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                                                        <Button Content="Preview" Padding="8,3" FontSize="11"
+                                                                Command="{Binding DataContext.Skills.PreviewCandidateCommand, ElementName=MainRootGrid}"
+                                                                CommandParameter="{Binding}" />
+                                                        <Button Content="Install" Padding="8,3" FontSize="11"
+                                                                Style="{ThemeResource AccentButtonStyle}"
+                                                                Command="{Binding DataContext.Skills.InstallCandidateCommand, ElementName=MainRootGrid}"
+                                                                CommandParameter="{Binding}" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Grid>
+                        </Border>
+
+                        <!-- Right: Candidate Preview -->
+                        <Border Grid.Column="1"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <Grid RowSpacing="12">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Candidate Security &amp; Manifest Preview" FontWeight="SemiBold" FontSize="15" />
+                                    <Button Grid.Column="1" Content="Install to Catalogue"
+                                            Style="{ThemeResource AccentButtonStyle}"
+                                            Command="{Binding Skills.InstallCandidateCommand}"
+                                            CommandParameter="{Binding Skills.SelectedCandidate}"
+                                            Visibility="{Binding Skills.SelectedCandidate, Converter={StaticResource NullToVisibilityConverter}}" />
+                                </Grid>
+
+                                <Border Grid.Row="1" Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                        CornerRadius="6" Padding="12"
+                                        Visibility="{Binding Skills.SelectedCandidate, Converter={StaticResource NullToVisibilityConverter}}">
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Text="{Binding Skills.SelectedCandidate.HtmlUrl}" FontWeight="SemiBold" FontSize="12" />
+                                        <TextBlock Text="{Binding Skills.SelectedCandidate.Description}" FontSize="11" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Border>
+
+                                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                                    <TextBox Text="{Binding Skills.MarkdownPreview, Mode=OneWay}"
+                                             IsReadOnly="True"
+                                             AcceptsReturn="True"
+                                             TextWrapping="Wrap"
+                                             FontFamily="Consolas"
+                                             FontSize="12"
+                                             BorderThickness="0"
+                                             Background="Transparent" />
+                                </ScrollViewer>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </TabViewItem>
+            </TabView>
+        </Grid>
+
         <!-- APPROVAL MODAL OVERLAY -->
         <Grid Grid.Row="0" Grid.RowSpan="2"
               Background="#88000000"
@@ -447,24 +777,6 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Grid.Column="0" Text="Tool Name:" FontSize="12" FontWeight="SemiBold" />
                                 <TextBlock Grid.Column="1" Text="{Binding ApprovalDialog.Approval.ToolName}" FontFamily="Consolas" FontSize="12" />
-                            </Grid>
-
-                            <Grid ColumnSpacing="8">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="100" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="Step ID:" FontSize="12" FontWeight="SemiBold" />
-                                <TextBlock Grid.Column="1" Text="{Binding ApprovalDialog.Approval.StepId}" FontSize="12" />
-                            </Grid>
-
-                            <Grid ColumnSpacing="8">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="100" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="Arg Hash:" FontSize="12" FontWeight="SemiBold" />
-                                <TextBlock Grid.Column="1" Text="{Binding ApprovalDialog.Approval.ArgumentHash}" FontFamily="Consolas" FontSize="11" />
                             </Grid>
                         </StackPanel>
                     </Border>

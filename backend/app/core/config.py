@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     AUTO_APPROVE_CONTROLLED: bool = True
     TASK_DATA_DIR: str = "data/tasks"
 
+    # Phase 7 Skills & GitHub Discovery
+    SKILLS_DATA_DIR: str = "data/skills"
+    GITHUB_TOKEN: str = ""
+
     # Phase 3 Real-World Tool Limits
     WORKSPACE_DIR: str = "data/workspace"
     MAX_FILE_SIZE_BYTES: int = 5_000_000  # 5 MB
@@ -87,6 +91,17 @@ class Settings(BaseSettings):
     def get_task_data_dir(self) -> Path:
         """Resolve data/tasks directory relative to workspace or absolute."""
         p = Path(self.TASK_DATA_DIR)
+        if p.is_absolute():
+            return p
+        if Path.cwd().name == "backend":
+            candidate = Path.cwd().parent / p
+        else:
+            candidate = Path.cwd() / p
+        return candidate.resolve()
+
+    def get_skills_data_dir(self) -> Path:
+        """Resolve data/skills directory relative to workspace or absolute."""
+        p = Path(self.SKILLS_DATA_DIR)
         if p.is_absolute():
             return p
         if Path.cwd().name == "backend":

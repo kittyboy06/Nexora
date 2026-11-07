@@ -31,10 +31,11 @@ public partial class App : Application
         var composer = new TaskComposerViewModel(apiClient);
         var taskDetail = new TaskDetailViewModel(apiClient, poller);
         var approvalDialog = new ApprovalDialogViewModel(apiClient);
+        var skills = new SkillsViewModel(apiClient);
 
         taskDetail.ApprovalRequested += approval => approvalDialog.SetApproval(approval);
 
-        var mainViewModel = new MainViewModel(apiClient, _supervisor, composer, taskDetail, approvalDialog);
+        var mainViewModel = new MainViewModel(apiClient, _supervisor, composer, taskDetail, approvalDialog, skills);
         MainViewModelInstance = mainViewModel;
 
         var window = new MainWindow(mainViewModel);

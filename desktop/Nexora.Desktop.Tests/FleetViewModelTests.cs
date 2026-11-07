@@ -18,6 +18,14 @@ public class FleetViewModelTests
         public System.Threading.Tasks.Task<IReadOnlyList<AgentTask>> ListTasksAsync(System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
         public System.Threading.Tasks.Task<AgentTask> CancelTaskAsync(string taskId, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
         public System.Threading.Tasks.Task<AgentTask> DecideApprovalAsync(string taskId, string approvalId, bool approved, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<IReadOnlyList<SkillSummaryDto>> ListSkillsAsync(bool enabledOnly = false, string? role = null, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<SkillBundleDto> GetSkillAsync(string skillId, string? version = null, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<SkillBundleDto> PatchSkillAsync(string skillId, bool? isEnabled = null, string? activeVersion = null, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<bool> DeleteSkillAsync(string skillId, string? version = null, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<IReadOnlyList<SkillDiscoveryCandidateDto>> SearchDiscoveryAsync(string query, int page = 1, int perPage = 10, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<SkillDiscoveryCandidateDto> PreviewDiscoveryAsync(string owner, string repo, string branch = "main", string? path = null, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<SkillBundleDto> InstallSkillAsync(InstallSkillRequestDto request, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<GitHubRateLimitStatusDto> GetGitHubRateLimitAsync(System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
     }
 
     private class DummyPoller : ITaskPoller

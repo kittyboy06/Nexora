@@ -53,12 +53,14 @@ class AgentRuntime:
         profile: SpecialistProfile,
         input_artifacts: list[Artifact],
         tool_proxy: ScopedToolProxy,
+        skill_composer: Any | None = None,
     ) -> None:
         self.runtime_id = f"rt_{uuid.uuid4().hex[:12]}"
         self.node = node
         self.profile = profile
         self.input_artifacts = input_artifacts
         self.tool_proxy = tool_proxy
+        self.skill_composer = skill_composer
         self.token_budget = node.token_budget
 
     def build_system_prompt(self) -> str:
@@ -89,6 +91,17 @@ class AgentRuntime:
             "Return concise, factual, structured results upon completing your objective.",
         ])
 
+        # Inject policy-gated skill guidance if attached
+        if self.skill_composer and getattr(self.node, "skill_ids", None):
+            guidance, _, _ = self.skill_composer.compose_guidance(
+                skill_ids=self.node.skill_ids,
+                role=self.profile.role_id,
+                available_tools=self.node.capability_allowlist,
+            )
+            if guidance:
+                lines.append("")
+                lines.append(guidance)
+
         return "\n".join(lines)
 
     def verify_tool_access(self, tool_name: str) -> None:
@@ -109,6 +122,7 @@ class AgentRuntimeFactory:
         catalog: SpecialistCatalog,
         input_artifacts: list[Artifact],
         tool_registry: ToolRegistry,
+        skill_composer: Any | None = None,
     ) -> AgentRuntime:
         """Construct an isolated AgentRuntime with scoped tool proxy and bounded context."""
         profile = catalog.get(node.role)
@@ -126,4 +140,5 @@ class AgentRuntimeFactory:
             profile=profile,
             input_artifacts=input_artifacts,
             tool_proxy=proxy,
+            skill_composer=skill_composer,
         )
