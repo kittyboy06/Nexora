@@ -29,7 +29,7 @@ public class BackendSupervisor : IBackendSupervisor
             return true;
         }
 
-        // 2. Launch uvicorn child process
+        // 2. Launch child process (bundled executable or local dev python)
         lock (_lock)
         {
             if (IsManagedProcessRunning)
@@ -37,16 +37,35 @@ public class BackendSupervisor : IBackendSupervisor
                 return true;
             }
 
-            var startInfo = new ProcessStartInfo
+            var serverExe = ResolveBackendExecutable(repoRoot);
+            ProcessStartInfo startInfo;
+
+            if (!string.IsNullOrEmpty(serverExe))
             {
-                FileName = "python",
-                Arguments = "-m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000",
-                WorkingDirectory = repoRoot,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-            };
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = serverExe,
+                    Arguments = "--host 127.0.0.1 --port 8000",
+                    WorkingDirectory = Path.GetDirectoryName(serverExe) ?? repoRoot,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                };
+            }
+            else
+            {
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = "python",
+                    Arguments = "-m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000",
+                    WorkingDirectory = repoRoot,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                };
+            }
 
             try
             {
@@ -54,7 +73,7 @@ public class BackendSupervisor : IBackendSupervisor
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"Failed to launch Python backend process: {ex.Message}", ex);
+                throw new InvalidOperationException($"Failed to launch backend process: {ex.Message}", ex);
             }
         }
 
@@ -115,5 +134,65 @@ public class BackendSupervisor : IBackendSupervisor
         StopBackend();
         _httpClient.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    public static string? ResolveBackendExecutable(string repoRoot)
+    {
+        // 1. Check embedded resource extraction in LocalAppData
+        var localAppDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Nexora", "bin");
+        var localAppBinary = Path.Combine(localAppDir, "nexora-server.exe");
+
+        TryExtractEmbeddedServer(localAppBinary);
+
+        if (File.Exists(localAppBinary))
+        {
+            return localAppBinary;
+        }
+
+        // 2. Check current base directory
+        var baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        var directBinary = Path.Combine(baseDir, "nexora-server.exe");
+        if (File.Exists(directBinary)) return directBinary;
+
+        var subDirBinary = Path.Combine(baseDir, "server", "nexora-server.exe");
+        if (File.Exists(subDirBinary)) return subDirBinary;
+
+        // 3. Check workspace repo dist/server
+        if (!string.IsNullOrEmpty(repoRoot))
+        {
+            var repoBinary = Path.Combine(repoRoot, "dist", "server", "nexora-server.exe");
+            if (File.Exists(repoBinary)) return repoBinary;
+        }
+
+        return null;
+    }
+
+    private static void TryExtractEmbeddedServer(string targetPath)
+    {
+        try
+        {
+            var assembly = typeof(BackendSupervisor).Assembly;
+            using var stream = assembly.GetManifestResourceStream("Nexora.Core.Resources.nexora-server.exe")
+                                ?? assembly.GetManifestResourceStream("nexora-server.exe");
+            if (stream == null) return;
+
+            var targetDir = Path.GetDirectoryName(targetPath);
+            if (!string.IsNullOrEmpty(targetDir) && !Directory.Exists(targetDir))
+            {
+                Directory.CreateDirectory(targetDir);
+            }
+
+            if (!File.Exists(targetPath) || new FileInfo(targetPath).Length != stream.Length)
+            {
+                using var fs = new FileStream(targetPath, FileMode.Create, FileAccess.Write, FileShare.None);
+                stream.CopyTo(fs);
+            }
+        }
+        catch
+        {
+            // Non-fatal if embedded resource is missing or extraction fails in dev mode
+        }
     }
 }
