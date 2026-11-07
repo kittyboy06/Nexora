@@ -1,5 +1,6 @@
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 import httpx
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -55,6 +56,7 @@ from backend.app.core.config import get_settings
 from backend.app.core.exceptions import NexoraException
 from backend.app.core.guard import InferenceGuard
 from backend.app.core.logging import setup_logging
+from backend.app.core.pruner import QuarantinePruner
 from backend.app.models.common import ErrorDetail, ErrorResponse
 from backend.app.permissions.manager import PermissionManager
 from backend.app.services.app_service import AppService
@@ -263,12 +265,21 @@ async def lifespan(app: FastAPI):
     scheduler_service = SchedulerService.create_default(task_manager=task_manager)
     await scheduler_service.start()
     app.state.scheduler_service = scheduler_service
-    logger.info("Phase 2, 3, 6, 7, and 8 Agent Engine components initialized.")
+
+    # Automated Quarantine Pruner
+    quarantine_dir = Path(settings.QUARANTINE_DATA_DIR)
+    quarantine_pruner = QuarantinePruner(quarantine_dir=quarantine_dir)
+    quarantine_pruner.prune()
+    quarantine_pruner.start_background_sweep()
+    app.state.quarantine_pruner = quarantine_pruner
+
+    logger.info("Phase 2, 3, 6, 7, 8, and 14 components initialized.")
 
     yield
 
     # Clean shutdown
     logger.info("Shutting down %s...", settings.APP_NAME)
+    await quarantine_pruner.stop_background_sweep()
     await mcp_session_pool.disconnect_all()
     await scheduler_service.stop()
     await client.aclose()

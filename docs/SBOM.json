@@ -1,0 +1,192 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:b5e7d9b2-3c1a-4c28-98e6-7b83d1c10001",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-11-07T12:00:00Z",
+    "tools": [
+      {
+        "vendor": "NEXORA Engineering",
+        "name": "Nexora-SBOM-Generator",
+        "version": "1.0.0"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "name": "NEXORA",
+      "version": "1.0.0",
+      "description": "Production Autonomous Intelligence Platform on Windows",
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "framework",
+      "name": "fastapi",
+      "version": "0.139.2",
+      "purl": "pkg:pypi/fastapi@0.139.2",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "name": "pydantic",
+      "version": "2.13.4",
+      "purl": "pkg:pypi/pydantic@2.13.4",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "name": "pydantic-settings",
+      "version": "2.14.2",
+      "purl": "pkg:pypi/pydantic-settings@2.14.2",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "name": "httpx",
+      "version": "0.28.1",
+      "purl": "pkg:pypi/httpx@0.28.1",
+      "licenses": [{"license": {"id": "BSD-3-Clause"}}],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "name": "uvicorn",
+      "version": "0.51.0",
+      "purl": "pkg:pypi/uvicorn@0.51.0",
+      "licenses": [{"license": {"id": "BSD-3-Clause"}}],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "name": "aiosqlite",
+      "version": "0.22.1",
+      "purl": "pkg:pypi/aiosqlite@0.22.1",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "name": "psutil",
+      "version": "7.2.2",
+      "purl": "pkg:pypi/psutil@7.2.2",
+      "licenses": [{"license": {"id": "BSD-3-Clause"}}],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "name": "pywin32",
+      "version": "312",
+      "purl": "pkg:pypi/pywin32@312",
+      "licenses": [{"license": {"id": "PSF-2.0"}}],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "name": "mcp",
+      "version": "1.28.1",
+      "purl": "pkg:pypi/mcp@1.28.1",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "name": "croniter",
+      "version": "6.2.4",
+      "purl": "pkg:pypi/croniter@6.2.4",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "name": "cryptography",
+      "version": "49.0.0",
+      "purl": "pkg:pypi/cryptography@49.0.0",
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "name": "pillow",
+      "version": "12.3.0",
+      "purl": "pkg:pypi/pillow@12.3.0",
+      "licenses": [{"license": {"id": "HPND"}}],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "name": "pytest",
+      "version": "9.1.1",
+      "purl": "pkg:pypi/pytest@9.1.1",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "scope": "optional"
+    },
+    {
+      "type": "library",
+      "name": "pytest-asyncio",
+      "version": "1.4.0",
+      "purl": "pkg:pypi/pytest-asyncio@1.4.0",
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "scope": "optional"
+    },
+    {
+      "type": "framework",
+      "name": "Microsoft.WindowsAppSDK",
+      "version": "2.6.5",
+      "purl": "pkg:nuget/Microsoft.WindowsAppSDK@2.6.5",
+      "licenses": [{"license": {"name": "Microsoft Software License"}}],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "name": "Microsoft.Windows.SDK.BuildTools",
+      "version": "10.0.26100.4654",
+      "purl": "pkg:nuget/Microsoft.Windows.SDK.BuildTools@10.0.26100.4654",
+      "licenses": [{"license": {"name": "Microsoft Software License"}}],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "name": "CommunityToolkit.Mvvm",
+      "version": "8.2.2",
+      "purl": "pkg:nuget/CommunityToolkit.Mvvm@8.2.2",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "scope": "required"
+    },
+    {
+      "type": "library",
+      "name": "Microsoft.NET.Test.Sdk",
+      "version": "17.9.0",
+      "purl": "pkg:nuget/Microsoft.NET.Test.Sdk@17.9.0",
+      "licenses": [{"license": {"name": "Microsoft Software License"}}],
+      "scope": "optional"
+    },
+    {
+      "type": "library",
+      "name": "xunit",
+      "version": "2.7.0",
+      "purl": "pkg:nuget/xunit@2.7.0",
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "scope": "optional"
+    },
+    {
+      "type": "library",
+      "name": "Moq",
+      "version": "4.20.70",
+      "purl": "pkg:nuget/Moq@4.20.70",
+      "licenses": [{"license": {"id": "BSD-3-Clause"}}],
+      "scope": "optional"
+    }
+  ]
+}

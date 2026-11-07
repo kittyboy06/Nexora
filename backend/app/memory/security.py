@@ -32,6 +32,14 @@ class MemorySecurityGate:
     """Enforces zero-secret storage and deterministic integrity hashing."""
 
     @staticmethod
+    def scrub_secrets(text: str) -> str:
+        """Replace all recognized credential, token, and secret patterns with [REDACTED_SECRET]."""
+        scrubbed = text
+        for pattern in SECRET_PATTERNS:
+            scrubbed = pattern.sub("[REDACTED_SECRET]", scrubbed)
+        return scrubbed
+
+    @staticmethod
     def contains_secret(text: str) -> Tuple[bool, Optional[str]]:
         """Check if text contains any recognized secret, token, or password pattern."""
         for pattern in SECRET_PATTERNS:

@@ -31,7 +31,7 @@ def setup_logging(settings: Settings) -> logging.Logger:
             log_file.parent.mkdir(parents=True, exist_ok=True)
             file_handler = RotatingFileHandler(
                 filename=str(log_file),
-                maxBytes=5 * 1024 * 1024,  # 5 MB
+                maxBytes=10 * 1024 * 1024,  # 10 MB per Phase 14 specification
                 backupCount=5,
                 encoding="utf-8",
             )
