@@ -333,4 +333,80 @@ public class NexoraApiClient : INexoraApiClient
         var response = await _httpClient.DeleteAsync($"/api/research/quarantine/{Uri.EscapeDataString(taskId)}/{Uri.EscapeDataString(filename)}", cancellationToken);
         return response.IsSuccessStatusCode;
     }
+
+    // Phase 10: Generated Tools and Sandbox Platform
+    public async Task<ToolValidationReportDto> ValidateToolProposalAsync(GeneratedToolProposalDto proposal, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync("/api/sandbox/validate", proposal, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<ToolValidationReportDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<SandboxRunResultDto> RunSandboxTrialAsync(TrialRunRequestDto request, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync("/api/sandbox/trial", request, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<SandboxRunResultDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<IReadOnlyList<SandboxRunResultDto>> ListSandboxEvidenceAsync(int limit = 50, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync($"/api/sandbox/evidence?limit={limit}", cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<List<SandboxRunResultDto>>(JsonOptions, cancellationToken))
+            ?? new List<SandboxRunResultDto>();
+    }
+
+    public async Task<SandboxRunResultDto> GetSandboxEvidenceAsync(string runId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync($"/api/sandbox/evidence/{Uri.EscapeDataString(runId)}", cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<SandboxRunResultDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<IReadOnlyList<GeneratedToolRecordDto>> ListGeneratedToolsAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync("/api/sandbox/tools", cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<List<GeneratedToolRecordDto>>(JsonOptions, cancellationToken))
+            ?? new List<GeneratedToolRecordDto>();
+    }
+
+    public async Task<GeneratedToolRecordDto> GetGeneratedToolAsync(string toolName, string? version = null, CancellationToken cancellationToken = default)
+    {
+        var url = string.IsNullOrEmpty(version)
+            ? $"/api/sandbox/tools/{Uri.EscapeDataString(toolName)}"
+            : $"/api/sandbox/tools/{Uri.EscapeDataString(toolName)}?version={Uri.EscapeDataString(version)}";
+        var response = await _httpClient.GetAsync(url, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<GeneratedToolRecordDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<IReadOnlyList<string>> ListGeneratedToolVersionsAsync(string toolName, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync($"/api/sandbox/tools/{Uri.EscapeDataString(toolName)}/versions", cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<List<string>>(JsonOptions, cancellationToken))
+            ?? new List<string>();
+    }
+
+    public async Task<GeneratedToolRecordDto> PromoteToolAsync(ToolPromotionRequestDto request, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync("/api/sandbox/tools/promote", request, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<GeneratedToolRecordDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<GeneratedToolRecordDto> UpdateGeneratedToolAsync(string toolName, ToolUpdateRequestDto request, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync($"/api/sandbox/tools/{Uri.EscapeDataString(toolName)}/update", request, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<GeneratedToolRecordDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<bool> DeleteGeneratedToolAsync(string toolName, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.DeleteAsync($"/api/sandbox/tools/{Uri.EscapeDataString(toolName)}", cancellationToken);
+        return response.IsSuccessStatusCode;
+    }
 }

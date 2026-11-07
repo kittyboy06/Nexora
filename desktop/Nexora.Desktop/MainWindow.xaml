@@ -66,6 +66,13 @@
                             <TextBlock Text="MCP Platform" FontSize="12" FontWeight="SemiBold" />
                         </StackPanel>
                     </Button>
+                    <Button Command="{Binding ShowGeneratedToolsViewCommand}"
+                            Padding="12,6">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE7BE;" FontSize="13" />
+                            <TextBlock Text="Generated Tools" FontSize="12" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
 
                 <!-- Status Pills & Actions -->
@@ -1153,6 +1160,252 @@
                                     </ListView.ItemTemplate>
                                 </ListView>
                             </Grid>
+                        </Border>
+                    </Grid>
+                </TabViewItem>
+            </TabView>
+        </Grid>
+
+        <!-- GENERATED TOOLS & SANDBOX VIEW AREA -->
+        <Grid Grid.Row="1" Padding="20"
+              Visibility="{Binding IsGeneratedToolsViewVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+            <TabView HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <!-- TAB 1: GENERATED TOOLS CATALOG -->
+                <TabViewItem Header="Approved Tools Catalog">
+                    <TabViewItem.IconSource>
+                        <FontIconSource Glyph="&#xE7BE;" />
+                    </TabViewItem.IconSource>
+                    <Grid Padding="0,16,0,0" ColumnSpacing="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="420" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- LEFT: Catalog List -->
+                        <Border Grid.Column="0"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <Grid RowSpacing="12">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Spacing="4">
+                                    <TextBlock Text="Promoted Capabilities" FontWeight="SemiBold" FontSize="15" />
+                                    <TextBlock Text="Kernel-isolated tools mounted into ToolRegistry"
+                                               FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </StackPanel>
+
+                                <ListView Grid.Row="1"
+                                          ItemsSource="{Binding GeneratedTools.Tools}"
+                                          SelectedItem="{Binding GeneratedTools.SelectedTool, Mode=TwoWay}">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,4" Padding="12"
+                                                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="6">
+                                                <Grid ColumnSpacing="8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Grid.Column="0" Spacing="4">
+                                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                                            <TextBlock Text="{Binding Manifest.Name}" FontWeight="Bold" FontSize="13" />
+                                                            <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                                                    CornerRadius="4" Padding="6,2">
+                                                                <TextBlock Text="{Binding Manifest.Version}" FontSize="10" Foreground="DodgerBlue" />
+                                                            </Border>
+                                                        </StackPanel>
+                                                        <TextBlock Text="{Binding Manifest.Description}" FontSize="11"
+                                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" MaxLines="2" />
+                                                    </StackPanel>
+                                                    <Border Grid.Column="1"
+                                                            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                                            CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding IsEnabled}" FontSize="10" FontWeight="SemiBold" />
+                                                    </Border>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Grid>
+                        </Border>
+
+                        <!-- RIGHT: Tool Details & Code Inspection -->
+                        <Border Grid.Column="1"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Spacing="16">
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Spacing="4">
+                                            <TextBlock Text="{Binding GeneratedTools.SelectedTool.Manifest.Name, TargetNullValue='No Tool Selected'}"
+                                                       FontWeight="Bold" FontSize="18" />
+                                            <TextBlock Text="{Binding GeneratedTools.SelectedTool.Manifest.Description}"
+                                                       FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        </StackPanel>
+
+                                        <Button Grid.Column="1" Content="Toggle Enabled"
+                                                Command="{Binding GeneratedTools.ToggleToolEnabledCommand}"
+                                                Padding="12,6" VerticalAlignment="Center" />
+                                        <Button Grid.Column="2" Content="Delete"
+                                                Command="{Binding GeneratedTools.DeleteToolCommand}"
+                                                Padding="12,6" VerticalAlignment="Center" />
+                                    </Grid>
+
+                                    <!-- Code Box -->
+                                    <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            Padding="12">
+                                        <StackPanel Spacing="8">
+                                            <TextBlock Text="Isolated Python Implementation" FontWeight="SemiBold" FontSize="12" />
+                                            <TextBox Text="{Binding GeneratedTools.SelectedTool.Code}"
+                                                     IsReadOnly="True"
+                                                     AcceptsReturn="True"
+                                                     FontFamily="Consolas"
+                                                     FontSize="11"
+                                                     MinHeight="200" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </TabViewItem>
+
+                <!-- TAB 2: SANDBOX SYNTHESIS & TRIAL -->
+                <TabViewItem Header="Sandbox Synthesis &amp; Trial">
+                    <TabViewItem.IconSource>
+                        <FontIconSource Glyph="&#xE756;" />
+                    </TabViewItem.IconSource>
+                    <Grid Padding="0,16,0,0" ColumnSpacing="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="480" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- LEFT: Proposal Form -->
+                        <Border Grid.Column="0"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="Propose Tool Capability" FontWeight="SemiBold" FontSize="15" />
+                                    <TextBox Header="Tool Slug Name" PlaceholderText="e.g. calculate_summary"
+                                             Text="{Binding GeneratedTools.ProposalName, Mode=TwoWay}" />
+                                    <TextBox Header="Description" PlaceholderText="What does this tool do?"
+                                             Text="{Binding GeneratedTools.ProposalDescription, Mode=TwoWay}" />
+                                    <TextBox Header="Python Code" PlaceholderText="def calculate_summary(...):"
+                                             Text="{Binding GeneratedTools.ProposalCode, Mode=TwoWay}"
+                                             AcceptsReturn="True" FontFamily="Consolas" MinHeight="160" />
+                                    <TextBox Header="Test Input JSON" PlaceholderText="{}"
+                                             Text="{Binding GeneratedTools.ProposalTestInputs, Mode=TwoWay}"
+                                             FontFamily="Consolas" />
+                                    <TextBox Header="Expected Output" PlaceholderText=""
+                                             Text="{Binding GeneratedTools.ProposalExpectedOutput, Mode=TwoWay}"
+                                             FontFamily="Consolas" />
+
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Button Grid.Column="0" Content="Validate AST"
+                                                HorizontalAlignment="Stretch"
+                                                Command="{Binding GeneratedTools.ValidateProposalCommand}" />
+                                        <Button Grid.Column="1" Content="Run Trial Sandbox"
+                                                Style="{ThemeResource AccentButtonStyle}"
+                                                HorizontalAlignment="Stretch"
+                                                Command="{Binding GeneratedTools.RunTrialCommand}" />
+                                    </Grid>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+
+                        <!-- RIGHT: Telemetry & Promotion Card -->
+                        <Border Grid.Column="1"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Spacing="16">
+                                    <TextBlock Text="Sandbox Trial Verification Telemetry" FontWeight="SemiBold" FontSize="15" />
+
+                                    <!-- Status Pill -->
+                                    <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                            BorderThickness="1" CornerRadius="6" Padding="12">
+                                        <StackPanel Spacing="8">
+                                            <Grid ColumnSpacing="12">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="Execution Status:" FontWeight="SemiBold" />
+                                                <TextBlock Grid.Column="1" Text="{Binding GeneratedTools.LatestTrialResult.Status, TargetNullValue='No Run Yet'}"
+                                                           FontWeight="Bold" Foreground="LimeGreen" />
+                                                <Button Grid.Column="2" Content="Promote to Catalog"
+                                                        Style="{ThemeResource AccentButtonStyle}"
+                                                        Command="{Binding GeneratedTools.PromoteProposalCommand}" />
+                                            </Grid>
+
+                                            <StackPanel Orientation="Horizontal" Spacing="16">
+                                                <TextBlock Text="Duration: " FontSize="12" />
+                                                <TextBlock Text="{Binding GeneratedTools.LatestTrialResult.ExecutionTimeMs}" FontSize="12" FontWeight="Bold" />
+                                                <TextBlock Text="ms | Peak RAM: " FontSize="12" />
+                                                <TextBlock Text="{Binding GeneratedTools.LatestTrialResult.PeakMemoryBytes}" FontSize="12" FontWeight="Bold" />
+                                                <TextBlock Text="bytes" FontSize="12" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Audit Runs -->
+                                    <TextBlock Text="Past Sandbox Run Audit Trail" FontWeight="SemiBold" FontSize="13" />
+                                    <ListView ItemsSource="{Binding GeneratedTools.EvidenceRuns}" MaxHeight="250">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Margin="0,2" Padding="8" Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4">
+                                                    <Grid ColumnSpacing="8">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0" Text="{Binding ToolName}" FontWeight="Bold" FontSize="12" />
+                                                        <TextBlock Grid.Column="1" Text="{Binding Status}" FontSize="11" Foreground="DarkGray" />
+                                                        <TextBlock Grid.Column="2" Text="{Binding ExecutionTimeMs}" FontSize="11" />
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </StackPanel>
+                            </ScrollViewer>
                         </Border>
                     </Grid>
                 </TabViewItem>

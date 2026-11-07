@@ -47,4 +47,16 @@ public interface INexoraApiClient
     Task<ResearchEvidenceDto> GetEvidenceDetailAsync(string taskId, string evidenceId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<QuarantineItemDto>> ListQuarantinedDownloadsAsync(string taskId, CancellationToken cancellationToken = default);
     Task<bool> DeleteQuarantinedDownloadAsync(string taskId, string filename, CancellationToken cancellationToken = default);
+
+    // Phase 10: Generated Tools and Sandbox Platform
+    Task<ToolValidationReportDto> ValidateToolProposalAsync(GeneratedToolProposalDto proposal, CancellationToken cancellationToken = default);
+    Task<SandboxRunResultDto> RunSandboxTrialAsync(TrialRunRequestDto request, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<SandboxRunResultDto>> ListSandboxEvidenceAsync(int limit = 50, CancellationToken cancellationToken = default);
+    Task<SandboxRunResultDto> GetSandboxEvidenceAsync(string runId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<GeneratedToolRecordDto>> ListGeneratedToolsAsync(CancellationToken cancellationToken = default);
+    Task<GeneratedToolRecordDto> GetGeneratedToolAsync(string toolName, string? version = null, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<string>> ListGeneratedToolVersionsAsync(string toolName, CancellationToken cancellationToken = default);
+    Task<GeneratedToolRecordDto> PromoteToolAsync(ToolPromotionRequestDto request, CancellationToken cancellationToken = default);
+    Task<GeneratedToolRecordDto> UpdateGeneratedToolAsync(string toolName, ToolUpdateRequestDto request, CancellationToken cancellationToken = default);
+    Task<bool> DeleteGeneratedToolAsync(string toolName, CancellationToken cancellationToken = default);
 }

@@ -24,6 +24,13 @@ from backend.app.research.quarantine import QuarantineManager
 from backend.app.research.router import router as research_router
 from backend.app.research.service import BrowserResearchService
 from backend.app.research.tools import register_research_tools
+from backend.app.sandbox.bridge import GeneratedToolBridgeManager
+from backend.app.sandbox.evidence import SandboxEvidenceStore
+from backend.app.sandbox.registry import GeneratedToolRegistry
+from backend.app.sandbox.router import router as sandbox_router
+from backend.app.sandbox.runners.job_object import Win32JobObjectRunner
+from backend.app.sandbox.service import SandboxOrchestrationService
+from backend.app.sandbox.validator import AstSecurityValidator
 from backend.app.agent.executor import Executor
 from backend.app.agent.fleet.coordinator import FleetCoordinator
 from backend.app.agent.orchestrator import AgentOrchestrator
@@ -163,6 +170,30 @@ async def lifespan(app: FastAPI):
     app.state.quarantine_manager = quarantine_manager
     app.state.research_service = research_service
 
+    # Initialize Phase 10 Generated Tools and Sandbox Platform
+    sandbox_validator = AstSecurityValidator()
+    sandbox_runner = Win32JobObjectRunner(base_sandbox_dir=settings.get_sandbox_data_dir())
+    sandbox_evidence_store = SandboxEvidenceStore(runs_dir=settings.get_sandbox_data_dir() / "runs")
+    sandbox_service = SandboxOrchestrationService(
+        validator=sandbox_validator,
+        runner=sandbox_runner,
+        evidence_store=sandbox_evidence_store,
+    )
+    generated_tool_registry = GeneratedToolRegistry(catalog_dir=settings.get_generated_tools_dir())
+    generated_tool_bridge = GeneratedToolBridgeManager(
+        generated_registry=generated_tool_registry,
+        tool_registry=tool_registry,
+        runner=sandbox_runner,
+    )
+    generated_tool_bridge.sync_all()
+
+    app.state.sandbox_validator = sandbox_validator
+    app.state.sandbox_runner = sandbox_runner
+    app.state.sandbox_evidence_store = sandbox_evidence_store
+    app.state.sandbox_service = sandbox_service
+    app.state.generated_tool_registry = generated_tool_registry
+    app.state.generated_tool_bridge = generated_tool_bridge
+
     fleet_coordinator = FleetCoordinator(
         tool_registry=tool_registry,
         guard=guard,
@@ -264,6 +295,7 @@ def create_app() -> FastAPI:
     app.include_router(skills_router, prefix="/api")
     app.include_router(mcp_router, prefix="/api")
     app.include_router(research_router)
+    app.include_router(sandbox_router)
 
     return app
 

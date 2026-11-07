@@ -29,6 +29,9 @@ public partial class MainViewModel : ObservableObject
     private bool _isMcpViewVisible;
 
     [ObservableProperty]
+    private bool _isGeneratedToolsViewVisible;
+
+    [ObservableProperty]
     private string _activeModel = "None";
 
     [ObservableProperty]
@@ -39,6 +42,7 @@ public partial class MainViewModel : ObservableObject
     public ApprovalDialogViewModel ApprovalDialog { get; }
     public SkillsViewModel Skills { get; }
     public McpViewModel Mcp { get; }
+    public GeneratedToolsViewModel GeneratedTools { get; }
 
     public ObservableCollection<AgentTask> RecentTasks { get; } = new();
 
@@ -49,7 +53,8 @@ public partial class MainViewModel : ObservableObject
         TaskDetailViewModel taskDetail,
         ApprovalDialogViewModel approvalDialog,
         SkillsViewModel? skills = null,
-        McpViewModel? mcp = null)
+        McpViewModel? mcp = null,
+        GeneratedToolsViewModel? generatedTools = null)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         _supervisor = supervisor ?? throw new ArgumentNullException(nameof(supervisor));
@@ -58,6 +63,7 @@ public partial class MainViewModel : ObservableObject
         ApprovalDialog = approvalDialog ?? throw new ArgumentNullException(nameof(approvalDialog));
         Skills = skills ?? new SkillsViewModel(_apiClient);
         Mcp = mcp ?? new McpViewModel(_apiClient);
+        GeneratedTools = generatedTools ?? new GeneratedToolsViewModel(_apiClient);
 
         Composer.TaskCreated += OnTaskCreated;
         ApprovalDialog.DecisionCompleted += OnApprovalDecided;
@@ -69,6 +75,7 @@ public partial class MainViewModel : ObservableObject
         IsTasksViewVisible = true;
         IsSkillsViewVisible = false;
         IsMcpViewVisible = false;
+        IsGeneratedToolsViewVisible = false;
     }
 
     [RelayCommand]
@@ -77,6 +84,7 @@ public partial class MainViewModel : ObservableObject
         IsTasksViewVisible = false;
         IsSkillsViewVisible = true;
         IsMcpViewVisible = false;
+        IsGeneratedToolsViewVisible = false;
     }
 
     [RelayCommand]
@@ -85,6 +93,16 @@ public partial class MainViewModel : ObservableObject
         IsTasksViewVisible = false;
         IsSkillsViewVisible = false;
         IsMcpViewVisible = true;
+        IsGeneratedToolsViewVisible = false;
+    }
+
+    [RelayCommand]
+    public void ShowGeneratedToolsView()
+    {
+        IsTasksViewVisible = false;
+        IsSkillsViewVisible = false;
+        IsMcpViewVisible = false;
+        IsGeneratedToolsViewVisible = true;
     }
 
     public async Task InitializeAsync(string repoRoot)

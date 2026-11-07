@@ -44,6 +44,16 @@ public class FleetViewModelTests
         public System.Threading.Tasks.Task<ResearchEvidenceDto> GetEvidenceDetailAsync(string taskId, string evidenceId, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
         public System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<QuarantineItemDto>> ListQuarantinedDownloadsAsync(string taskId, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
         public System.Threading.Tasks.Task<bool> DeleteQuarantinedDownloadAsync(string taskId, string filename, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<ToolValidationReportDto> ValidateToolProposalAsync(GeneratedToolProposalDto proposal, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<SandboxRunResultDto> RunSandboxTrialAsync(TrialRunRequestDto request, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<SandboxRunResultDto>> ListSandboxEvidenceAsync(int limit = 50, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<SandboxRunResultDto> GetSandboxEvidenceAsync(string runId, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<GeneratedToolRecordDto>> ListGeneratedToolsAsync(System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<GeneratedToolRecordDto> GetGeneratedToolAsync(string toolName, string? version = null, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string>> ListGeneratedToolVersionsAsync(string toolName, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<GeneratedToolRecordDto> PromoteToolAsync(ToolPromotionRequestDto request, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<GeneratedToolRecordDto> UpdateGeneratedToolAsync(string toolName, ToolUpdateRequestDto request, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<bool> DeleteGeneratedToolAsync(string toolName, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
     }
 
     private class DummyPoller : ITaskPoller
