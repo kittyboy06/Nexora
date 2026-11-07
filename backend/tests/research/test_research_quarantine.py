@@ -107,6 +107,43 @@ async def test_quarantine_download_ssrf_blocking(tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_quarantine_revalidates_each_redirect(tmp_path):
+    """A public URL must not be able to redirect a download into a private network."""
+    qm = QuarantineManager(base_dir=tmp_path / "quarantine")
+
+    redirect = MagicMock()
+    redirect.status_code = 302
+    redirect.is_redirect = True
+    redirect.headers = {"location": "http://127.0.0.1/private-file"}
+
+    class MockAsyncClient:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            pass
+
+        def stream(self, method, url):
+            class StreamCtx:
+                async def __aenter__(ctx):
+                    return redirect
+
+                async def __aexit__(ctx, *args):
+                    pass
+            return StreamCtx()
+
+    def validate(url, policy):
+        if "127.0.0.1" in url:
+            raise SsrfSecurityError("private redirect blocked")
+        return url
+
+    with patch("backend.app.research.quarantine.validate_url_against_ssrf", side_effect=validate):
+        with patch("httpx.AsyncClient", return_value=MockAsyncClient()):
+            with pytest.raises(SsrfSecurityError, match="private redirect blocked"):
+                await qm.download_file("task_999", "https://example.com/file.bin")
+
+
+@pytest.mark.asyncio
 async def test_quarantine_download_oversized_cleanup(tmp_path):
     """Verify partial file is deleted if download exceeds max size."""
     qm = QuarantineManager(base_dir=tmp_path / "quarantine")

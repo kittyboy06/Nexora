@@ -73,28 +73,46 @@ class QuarantineManager:
 
         async with httpx.AsyncClient(
             timeout=pol.timeout_seconds,
-            follow_redirects=True,
+            follow_redirects=False,
             headers=DEFAULT_HEADERS,
         ) as client:
-            async with client.stream("GET", validated_url) as resp:
-                if resp.status_code != 200:
-                    raise RuntimeError(f"Download failed with HTTP status {resp.status_code}.")
+            current_url = validated_url
+            redirect_count = 0
+            while True:
+                validate_url_against_ssrf(current_url, pol)
+                async with client.stream("GET", current_url) as resp:
+                    if resp.is_redirect:
+                        redirect_count += 1
+                        if redirect_count > pol.max_redirects:
+                            raise SsrfSecurityError(
+                                f"Too many redirects ({redirect_count} > {pol.max_redirects}) for URL '{url}'."
+                            )
+                        location = resp.headers.get("location")
+                        if not location:
+                            raise SsrfSecurityError("Redirect encountered without Location header.")
+                        current_url = str(httpx.URL(current_url).join(location))
+                        continue
 
-                content_type = resp.headers.get("content-type", content_type)
+                    if resp.status_code != 200:
+                        raise RuntimeError(f"Download failed with HTTP status {resp.status_code}.")
 
-                try:
-                    with open(dest_path, "wb") as f:
-                        async for chunk in resp.aiter_bytes():
-                            total_bytes += len(chunk)
-                            if total_bytes > pol.max_response_bytes:
-                                raise SsrfSecurityError(
-                                    f"Downloaded file exceeded maximum size ({total_bytes} > {pol.max_response_bytes} bytes)."
-                                )
-                            hasher.update(chunk)
-                            f.write(chunk)
-                except Exception:
-                    dest_path.unlink(missing_ok=True)
-                    raise
+                    content_type = resp.headers.get("content-type", content_type)
+
+                    try:
+                        with open(dest_path, "wb") as f:
+                            async for chunk in resp.aiter_bytes():
+                                total_bytes += len(chunk)
+                                if total_bytes > pol.max_response_bytes:
+                                    raise SsrfSecurityError(
+                                        f"Downloaded file exceeded maximum size ({total_bytes} > {pol.max_response_bytes} bytes)."
+                                    )
+                                hasher.update(chunk)
+                                f.write(chunk)
+                    except Exception:
+                        dest_path.unlink(missing_ok=True)
+                        raise
+                    validated_url = current_url
+                    break
 
         sha256_hash = hasher.hexdigest()
         now_iso = datetime.now(timezone.utc).isoformat()

@@ -10,6 +10,7 @@ public class TrayIconService : IDisposable
     private const int WM_TRAYICON = WM_USER + 1;
     private const int WM_LBUTTONUP = 0x0202;
     private const int WM_RBUTTONUP = 0x0205;
+    private const uint WM_NCDESTROY = 0x0082;
 
     private const uint NIM_ADD = 0x00000000;
     private const uint NIM_MODIFY = 0x00000001;
@@ -74,6 +75,17 @@ public class TrayIconService : IDisposable
     [DllImport("user32.dll")]
     private static extern bool DestroyMenu(IntPtr hMenu);
 
+    private delegate IntPtr SubclassProc(IntPtr hWnd, uint message, IntPtr wParam, IntPtr lParam, UIntPtr uIdSubclass, UIntPtr dwRefData);
+
+    [DllImport("comctl32.dll", SetLastError = true)]
+    private static extern bool SetWindowSubclass(IntPtr hWnd, SubclassProc procedure, UIntPtr subclassId, UIntPtr referenceData);
+
+    [DllImport("comctl32.dll", SetLastError = true)]
+    private static extern bool RemoveWindowSubclass(IntPtr hWnd, SubclassProc procedure, UIntPtr subclassId);
+
+    [DllImport("comctl32.dll")]
+    private static extern IntPtr DefSubclassProc(IntPtr hWnd, uint message, IntPtr wParam, IntPtr lParam);
+
     [StructLayout(LayoutKind.Sequential)]
     private struct POINT
     {
@@ -86,17 +98,21 @@ public class TrayIconService : IDisposable
     private readonly Action _onExit;
     private IntPtr _hwnd;
     private bool _isCreated;
+    private bool _isSubclassed;
+    private readonly SubclassProc _subclassProc;
 
     public TrayIconService(Window mainWindow, Action onShowCompanion, Action onExit)
     {
         _mainWindow = mainWindow ?? throw new ArgumentNullException(nameof(mainWindow));
         _onShowCompanion = onShowCompanion ?? throw new ArgumentNullException(nameof(onShowCompanion));
         _onExit = onExit ?? throw new ArgumentNullException(nameof(onExit));
+        _subclassProc = WindowProcedure;
     }
 
     public void Initialize()
     {
         _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(_mainWindow);
+        _isSubclassed = SetWindowSubclass(_hwnd, _subclassProc, UIntPtr.One, UIntPtr.Zero);
 
         var data = new NOTIFYICONDATA
         {
@@ -110,6 +126,29 @@ public class TrayIconService : IDisposable
         };
 
         _isCreated = Shell_NotifyIcon(NIM_ADD, ref data);
+    }
+
+    private IntPtr WindowProcedure(IntPtr hWnd, uint message, IntPtr wParam, IntPtr lParam, UIntPtr subclassId, UIntPtr referenceData)
+    {
+        if (message == WM_TRAYICON)
+        {
+            var mouseMessage = lParam.ToInt32();
+            if (mouseMessage == WM_LBUTTONUP)
+            {
+                _mainWindow.Activate();
+            }
+            else if (mouseMessage == WM_RBUTTONUP)
+            {
+                HandleTrayMenu();
+            }
+        }
+
+        if (message == WM_NCDESTROY)
+        {
+            _isSubclassed = false;
+        }
+
+        return DefSubclassProc(hWnd, message, wParam, lParam);
     }
 
     public void HandleTrayMenu()
@@ -149,6 +188,11 @@ public class TrayIconService : IDisposable
 
     public void Dispose()
     {
+        if (_isSubclassed && _hwnd != IntPtr.Zero)
+        {
+            RemoveWindowSubclass(_hwnd, _subclassProc, UIntPtr.One);
+            _isSubclassed = false;
+        }
         if (_isCreated && _hwnd != IntPtr.Zero)
         {
             var data = new NOTIFYICONDATA

@@ -56,8 +56,8 @@ class McpToolDefinition(BaseModel):
     description: str = Field(default="", description="Tool documentation advertised by server")
     input_schema: dict[str, Any] = Field(default_factory=dict, description="JSON Schema for input parameters")
     risk_level: RiskLevel = Field(
-        default=RiskLevel.CONTROLLED,
-        description="Assigned risk level for PermissionManager governance",
+        default=RiskLevel.SENSITIVE,
+        description="Operator-assigned risk level; unclassified external capabilities require approval",
     )
 
 

@@ -22,6 +22,14 @@ data/tasks/*.json
 data/memory/*.db
 data/memory/*.db-*
 data/memory/backups/
+data/mcp/
+data/scheduler/
+data/skills/
+data/workspace/*
+!data/workspace/.gitkeep
+data/model_profiles.json
+backups/
+diagnostics/
 
 # IDE
 .vscode/

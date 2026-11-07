@@ -80,6 +80,26 @@ public class NexoraApiClientTests
     }
 
     [Fact]
+    public async Task ListTasksAsync_ParsesBackendArrayResponse()
+    {
+        var handler = new MockHttpMessageHandler(req =>
+        {
+            Assert.Equal(HttpMethod.Get, req.Method);
+            Assert.Equal("/api/agent/tasks", req.RequestUri?.AbsolutePath);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("[{\"task_id\":\"task_123\",\"prompt\":\"Build app\",\"status\":\"SUBMITTED\"}]")
+            };
+        });
+
+        var client = new NexoraApiClient(new HttpClient(handler));
+        var tasks = await client.ListTasksAsync();
+
+        var task = Assert.Single(tasks);
+        Assert.Equal("task_123", task.TaskId);
+    }
+
+    [Fact]
     public async Task DecideApprovalAsync_SendsExactApprovalPayload()
     {
         var handler = new MockHttpMessageHandler(req =>

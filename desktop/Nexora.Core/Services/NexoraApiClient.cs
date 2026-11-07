@@ -95,10 +95,10 @@ public class NexoraApiClient : INexoraApiClient
 
     public async Task<IReadOnlyList<AgentTask>> ListTasksAsync(CancellationToken cancellationToken = default)
     {
-        var response = await _httpClient.GetAsync("/api/agent/tasks", cancellationToken);
+        using var response = await _httpClient.GetAsync("/api/agent/tasks", cancellationToken);
         await EnsureSuccessAsync(response, cancellationToken);
-        var body = await response.Content.ReadFromJsonAsync<TaskListResponse>(JsonOptions, cancellationToken);
-        return body?.Tasks ?? new List<AgentTask>();
+        return await response.Content.ReadFromJsonAsync<List<AgentTask>>(JsonOptions, cancellationToken)
+            ?? new List<AgentTask>();
     }
 
     public async Task<AgentTask> CancelTaskAsync(string taskId, CancellationToken cancellationToken = default)

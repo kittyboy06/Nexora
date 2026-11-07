@@ -70,6 +70,13 @@ def test_create_dynamic_args_model():
         model_cls(limit=5)
 
 
+def test_unclassified_mcp_tools_require_explicit_approval():
+    """An advertised capability is untrusted until an operator classifies it."""
+    tool = McpToolDefinition(name="unclassified_remote_action")
+
+    assert tool.risk_level == RiskLevel.SENSITIVE
+
+
 @pytest.mark.asyncio
 async def test_register_and_execute_mcp_tool(tmp_path):
     """Verify registering an MCP tool in ToolRegistry and executing it."""

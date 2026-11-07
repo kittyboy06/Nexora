@@ -67,6 +67,13 @@ foreach ($dir in $requiredDirs) {
 Write-Host "      [OK] Directory structure provisioned." -ForegroundColor Green
 Write-Host ""
 
+$defaultProfiles = Join-Path $ProjectRoot "backend\config\model_profiles.default.json"
+$localProfiles = Join-Path $ProjectRoot "data\model_profiles.json"
+if (-not (Test-Path $localProfiles) -and (Test-Path $defaultProfiles)) {
+    Copy-Item -Path $defaultProfiles -Destination $localProfiles
+    Write-Host "      [COPIED] Created local model profile catalogue." -ForegroundColor Green
+}
+
 # -------------------------------------------------------------------------
 # Step 2: Initialize Configuration (.env)
 # -------------------------------------------------------------------------

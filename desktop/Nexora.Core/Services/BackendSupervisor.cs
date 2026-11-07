@@ -34,7 +34,7 @@ public class BackendSupervisor : IBackendSupervisor
         {
             if (IsManagedProcessRunning)
             {
-                return true;
+                StopBackend();
             }
 
             var serverExe = ResolveBackendExecutable(repoRoot);
@@ -70,6 +70,12 @@ public class BackendSupervisor : IBackendSupervisor
             try
             {
                 _backendProcess = Process.Start(startInfo);
+                if (_backendProcess == null)
+                {
+                    throw new InvalidOperationException("Backend process did not start.");
+                }
+                _ = DrainStreamAsync(_backendProcess.StandardOutput);
+                _ = DrainStreamAsync(_backendProcess.StandardError);
             }
             catch (Exception ex)
             {
@@ -90,6 +96,25 @@ public class BackendSupervisor : IBackendSupervisor
         }
 
         return false;
+    }
+
+    private static async Task DrainStreamAsync(StreamReader stream)
+    {
+        try
+        {
+            while (await stream.ReadLineAsync() != null)
+            {
+                // Keep redirected pipes from blocking the backend process.
+            }
+        }
+        catch (ObjectDisposedException)
+        {
+            // Expected when the supervisor stops the process.
+        }
+        catch (IOException)
+        {
+            // Expected when the child exits while its stream is being drained.
+        }
     }
 
     private async Task<bool> ProbeHealthAsync(CancellationToken cancellationToken)
