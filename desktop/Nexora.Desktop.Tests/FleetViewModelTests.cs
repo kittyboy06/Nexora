@@ -66,6 +66,16 @@ public class FleetViewModelTests
         public System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<MemoryBackupInfoDto>> ListMemoryBackupsAsync(System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
         public System.Threading.Tasks.Task<bool> RestoreMemoryBackupAsync(string backupPath, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
         public System.Threading.Tasks.Task<string> ExportMemoriesAsync(string format = "json", System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<WindowSummaryDto>> ListDesktopWindowsAsync(string? query = null, bool includeShielded = false, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<TargetWindowBindingDto> BindDesktopWindowAsync(int hwnd, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<TargetWindowBindingDto?> GetActiveDesktopBindingAsync(System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<bool> ReleaseDesktopBindingAsync(System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<UIElementNodeDto> InspectDesktopTreeAsync(int? hwnd = null, int maxDepth = 4, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<ScreenshotEvidenceDto> CaptureDesktopWindowAsync(int? hwnd = null, string taskId = "default_task", System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<DesktopActionResultDto> ExecuteDesktopActionAsync(DesktopActionRequestDto request, string taskId = "default_task", System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<bool> TriggerEmergencyStopAsync(string reason = "Operator emergency stop", System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<bool> ResetEmergencyStopAsync(System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<ScreenshotEvidenceDto>> ListDesktopEvidenceAsync(string? taskId = null, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
     }
 
     private class DummyPoller : ITaskPoller

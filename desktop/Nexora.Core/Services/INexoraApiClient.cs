@@ -73,4 +73,16 @@ public interface INexoraApiClient
     Task<IReadOnlyList<MemoryBackupInfoDto>> ListMemoryBackupsAsync(CancellationToken cancellationToken = default);
     Task<bool> RestoreMemoryBackupAsync(string backupPath, CancellationToken cancellationToken = default);
     Task<string> ExportMemoriesAsync(string format = "json", CancellationToken cancellationToken = default);
+
+    // Phase 12: Desktop Vision and Interaction Platform
+    Task<IReadOnlyList<WindowSummaryDto>> ListDesktopWindowsAsync(string? query = null, bool includeShielded = false, CancellationToken cancellationToken = default);
+    Task<TargetWindowBindingDto> BindDesktopWindowAsync(int hwnd, CancellationToken cancellationToken = default);
+    Task<TargetWindowBindingDto?> GetActiveDesktopBindingAsync(CancellationToken cancellationToken = default);
+    Task<bool> ReleaseDesktopBindingAsync(CancellationToken cancellationToken = default);
+    Task<UIElementNodeDto> InspectDesktopTreeAsync(int? hwnd = null, int maxDepth = 4, CancellationToken cancellationToken = default);
+    Task<ScreenshotEvidenceDto> CaptureDesktopWindowAsync(int? hwnd = null, string taskId = "default_task", CancellationToken cancellationToken = default);
+    Task<DesktopActionResultDto> ExecuteDesktopActionAsync(DesktopActionRequestDto request, string taskId = "default_task", CancellationToken cancellationToken = default);
+    Task<bool> TriggerEmergencyStopAsync(string reason = "Operator emergency stop", CancellationToken cancellationToken = default);
+    Task<bool> ResetEmergencyStopAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<ScreenshotEvidenceDto>> ListDesktopEvidenceAsync(string? taskId = null, CancellationToken cancellationToken = default);
 }

@@ -80,10 +80,27 @@
                             <TextBlock Text="Memory &amp; Persistence" FontSize="12" FontWeight="SemiBold" />
                         </StackPanel>
                     </Button>
+                    <Button Command="{Binding ShowDesktopVisionViewCommand}"
+                            Padding="12,6">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE7F4;" FontSize="13" />
+                            <TextBlock Text="Desktop Vision &amp; UI" FontSize="12" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
 
                 <!-- Status Pills & Actions -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                    <!-- Global Emergency Stop Button -->
+                    <Button Command="{Binding DesktopVision.TriggerEmergencyStopCommand}"
+                            Background="#D13438" Foreground="White"
+                            ToolTipService.ToolTip="Emergency Stop: Instantly halt all active desktop automation"
+                            Padding="10,6">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE711;" FontSize="13" Foreground="White" />
+                            <TextBlock Text="EMERGENCY STOP" FontSize="12" FontWeight="Bold" />
+                        </StackPanel>
+                    </Button>
                     <!-- Backend Status Pill -->
                     <Border CornerRadius="12"
                             Padding="10,4"
@@ -1674,6 +1691,383 @@
                                                         Command="{Binding DataContext.Memory.RestoreBackupCommand, ElementName=MainRootGrid}"
                                                         CommandParameter="{Binding BackupPath}"
                                                         Padding="10,4" VerticalAlignment="Center" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </Border>
+                    </Grid>
+                </TabViewItem>
+            </TabView>
+        </Grid>
+
+        <!-- DESKTOP VISION & UI INTERACTION VIEW AREA -->
+        <Grid Grid.Row="1" Padding="20"
+              Visibility="{Binding IsDesktopVisionViewVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="380" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- LEFT: TARGET WINDOW DISCOVERY & BINDING -->
+            <Border Grid.Column="0" Margin="0,0,16,0"
+                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Header -->
+                    <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,12">
+                        <TextBlock Text="Target Windows" FontSize="16" FontWeight="Bold" />
+                        <TextBlock Text="Discover and bind target application for automation" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+
+                    <!-- Search and Discover Button -->
+                    <Grid Grid.Row="1" ColumnSpacing="8" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" PlaceholderText="Filter windows (e.g. notepad)..."
+                                 Text="{Binding DesktopVision.SearchQuery, Mode=TwoWay}" />
+                        <Button Grid.Column="1" Content="Discover"
+                                Command="{Binding DesktopVision.LoadWindowsCommand}" />
+                    </Grid>
+
+                    <!-- Windows List -->
+                    <ListView Grid.Row="2"
+                              ItemsSource="{Binding DesktopVision.Windows}"
+                              SelectedItem="{Binding DesktopVision.SelectedWindow, Mode=TwoWay}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="0,4" Padding="12"
+                                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="6">
+                                    <Grid ColumnSpacing="8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Spacing="2">
+                                            <TextBlock Text="{Binding WindowTitle}" FontWeight="SemiBold" FontSize="13" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding ProcessName}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <TextBlock Text="HWND:" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                                <TextBlock Text="{Binding Hwnd}" FontSize="10" FontFamily="Consolas" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Content="Bind"
+                                                Command="{Binding DataContext.DesktopVision.BindWindowCommand, ElementName=MainRootGrid}"
+                                                CommandParameter="{Binding}"
+                                                VerticalAlignment="Center" Padding="8,4" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+
+                    <!-- Active Target Binding Card -->
+                    <Border Grid.Row="3" Margin="0,12,0,0" Padding="12"
+                            Background="{ThemeResource AcrylicInAppFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Active Window Binding" FontWeight="Bold" FontSize="12" Foreground="{ThemeResource AccentFillColorDefaultBrush}" />
+                            <TextBlock Text="{Binding DesktopVision.ActiveBinding.WindowTitle, FallbackValue='No target window currently bound.'}"
+                                       FontWeight="SemiBold" FontSize="13" TextWrapping="Wrap" />
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <TextBlock Text="Process:" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock Text="{Binding DesktopVision.ActiveBinding.ProcessName}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                            <Button Content="Release Binding"
+                                    Command="{Binding DesktopVision.ReleaseBindingCommand}"
+                                    HorizontalAlignment="Right" Margin="0,4,0,0" Padding="10,4" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- RIGHT: TABS FOR OBSERVATION, TREE & EVIDENCE -->
+            <TabView Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <!-- TAB 1: LIVE OBSERVATION & ACTION DISPATCH -->
+                <TabViewItem Header="Observation &amp; Action">
+                    <TabViewItem.IconSource>
+                        <FontIconSource Glyph="&#xE7F4;" />
+                    </TabViewItem.IconSource>
+                    <Grid RowSpacing="16" Margin="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Controls Bar -->
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="Live Window Observation" FontSize="16" FontWeight="Bold" />
+                                <TextBlock Text="Inspect frame evidence and dispatch verified UI actions" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                            <Button Grid.Column="1" Content="Capture Screenshot"
+                                    Command="{Binding DesktopVision.CaptureWindowCommand}"
+                                    Margin="0,0,8,0" Padding="12,6" />
+                            <Button Grid.Column="2" Content="Reset Emergency Stop"
+                                    Command="{Binding DesktopVision.ResetEmergencyStopCommand}"
+                                    Padding="12,6" />
+                        </Grid>
+
+                        <!-- Screenshot Evidence Info Card -->
+                        <Border Grid.Row="1" Padding="12"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                            <Grid ColumnSpacing="16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" Spacing="4">
+                                    <TextBlock Text="{Binding DesktopVision.LatestScreenshot.ImageId, FallbackValue='No screenshot captured yet.'}"
+                                               FontFamily="Consolas" FontWeight="Bold" FontSize="13" />
+                                    <TextBlock Text="{Binding DesktopVision.LatestScreenshot.FilePath, FallbackValue=''}"
+                                               FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding DesktopVision.LatestScreenshot.Sha256Hash, FallbackValue=''}"
+                                               FontFamily="Consolas" FontSize="10" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="Size:" FontSize="11" />
+                                        <TextBlock Text="{Binding DesktopVision.LatestScreenshot.Width}" FontSize="11" />
+                                        <TextBlock Text="x" FontSize="11" />
+                                        <TextBlock Text="{Binding DesktopVision.LatestScreenshot.Height}" FontSize="11" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <Border Grid.Column="2" VerticalAlignment="Center" Padding="8,4" CornerRadius="4"
+                                        Background="{ThemeResource LayerFillColorDefaultBrush}">
+                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                        <TextBlock Text="Redacted:" FontSize="11" FontWeight="Bold" />
+                                        <TextBlock Text="{Binding DesktopVision.LatestScreenshot.IsRedacted}" FontSize="11" FontWeight="Bold" />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                        <!-- Action Execution Card -->
+                        <Border Grid.Row="2" Padding="16"
+                                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8">
+                            <ScrollViewer>
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="Dispatch Desktop Action" FontWeight="Bold" FontSize="14" />
+
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="140" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Action Type:" VerticalAlignment="Center" FontSize="12" />
+                                        <ComboBox Grid.Column="1" SelectedValue="{Binding DesktopVision.SelectedActionType, Mode=TwoWay}"
+                                                  HorizontalAlignment="Stretch">
+                                            <ComboBoxItem Content="click" IsSelected="True" />
+                                            <ComboBoxItem Content="type_text" />
+                                            <ComboBoxItem Content="scroll" />
+                                            <ComboBoxItem Content="wait" />
+                                            <ComboBoxItem Content="focus" />
+                                        </ComboBox>
+                                    </Grid>
+
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="140" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Target Element ID:" VerticalAlignment="Center" FontSize="12" />
+                                        <TextBox Grid.Column="1" PlaceholderText="e.g. elem_notepad_editor"
+                                                 Text="{Binding DesktopVision.TargetElementId, Mode=TwoWay}" />
+                                    </Grid>
+
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="140" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Text Input:" VerticalAlignment="Center" FontSize="12" />
+                                        <TextBox Grid.Column="1" PlaceholderText="String sequence to type..."
+                                                 Text="{Binding DesktopVision.TextInput, Mode=TwoWay}" />
+                                    </Grid>
+
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="140" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Expected Postcondition:" VerticalAlignment="Center" FontSize="12" />
+                                        <TextBox Grid.Column="1" PlaceholderText="e.g. text_contains:Saved"
+                                                 Text="{Binding DesktopVision.ExpectedPostcondition, Mode=TwoWay}" />
+                                    </Grid>
+
+                                    <Button Content="Execute Action with Verification"
+                                            Style="{ThemeResource AccentButtonStyle}"
+                                            Command="{Binding DesktopVision.ExecuteActionCommand}"
+                                            HorizontalAlignment="Right" Padding="16,8" />
+
+                                    <!-- Last Action Status Card -->
+                                    <Border Margin="0,12,0,0" Padding="12"
+                                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="6">
+                                        <StackPanel Spacing="4">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <TextBlock Text="Result:" FontWeight="Bold" FontSize="12" />
+                                                <TextBlock Text="{Binding DesktopVision.LastActionResult.Status, FallbackValue='No actions executed yet.'}"
+                                                           FontWeight="Bold" FontSize="12" />
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding DesktopVision.LastActionResult.Message, FallbackValue=''}"
+                                                       FontSize="11" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </TabViewItem>
+
+                <!-- TAB 2: ACCESSIBILITY TREE EXPLORER -->
+                <TabViewItem Header="UI Automation Tree">
+                    <TabViewItem.IconSource>
+                        <FontIconSource Glyph="&#xE81E;" />
+                    </TabViewItem.IconSource>
+                    <Grid RowSpacing="12" Margin="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="Accessible UI Elements" FontSize="16" FontWeight="Bold" />
+                                <TextBlock Text="Flattened accessibility tree discovered via UI Automation" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                            <Button Grid.Column="1" Content="Inspect Tree"
+                                    Command="{Binding DesktopVision.InspectTreeCommand}"
+                                    Padding="12,6" />
+                        </Grid>
+
+                        <Border Grid.Row="1"
+                                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12">
+                            <ListView ItemsSource="{Binding DesktopVision.FlattenedElements}">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Margin="0,3" Padding="8"
+                                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="4">
+                                            <Grid ColumnSpacing="8">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="180" />
+                                                    <ColumnDefinition Width="100" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="{Binding Name}" FontWeight="SemiBold" FontSize="12" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Grid.Column="1" Text="{Binding ControlType}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                <TextBlock Grid.Column="2" Text="{Binding AutomationId}" FontFamily="Consolas" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextTrimming="CharacterEllipsis" />
+                                                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="2">
+                                                    <TextBlock Text="Pwd:" FontSize="10" />
+                                                    <TextBlock Text="{Binding IsPassword}" FontSize="10" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
+                        </Border>
+                    </Grid>
+                </TabViewItem>
+
+                <!-- TAB 3: EVIDENCE QUARANTINE -->
+                <TabViewItem Header="Evidence Quarantine">
+                    <TabViewItem.IconSource>
+                        <FontIconSource Glyph="&#xE7BA;" />
+                    </TabViewItem.IconSource>
+                    <Grid RowSpacing="12" Margin="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="Screenshot Evidence Store" FontSize="16" FontWeight="Bold" />
+                                <TextBlock Text="Task screenshots stored in quarantine with 24-hour expiration" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                            <Button Grid.Column="1" Content="Refresh Evidence"
+                                    Command="{Binding DesktopVision.LoadEvidenceCommand}"
+                                    Padding="12,6" />
+                        </Grid>
+
+                        <Border Grid.Row="1"
+                                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="12">
+                            <ListView ItemsSource="{Binding DesktopVision.EvidenceList}">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Margin="0,3" Padding="8"
+                                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="4">
+                                            <Grid ColumnSpacing="12">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="140" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="{Binding ImageId}" FontFamily="Consolas" FontWeight="Bold" FontSize="12" />
+                                                <TextBlock Grid.Column="1" Text="{Binding FilePath}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Grid.Column="2" Text="{Binding CreatedAt}" FontSize="11" />
+                                                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4">
+                                                    <TextBlock Text="Redacted:" FontSize="11" FontWeight="SemiBold" />
+                                                    <TextBlock Text="{Binding IsRedacted}" FontSize="11" FontWeight="SemiBold" />
+                                                </StackPanel>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>

@@ -38,6 +38,9 @@ from backend.app.memory.router import router as memory_router
 from backend.app.memory.service import MemoryService
 from backend.app.memory.store import DurableMemoryStore
 from backend.app.memory.tools import register_memory_tools
+from backend.app.desktop.router import router as desktop_router
+from backend.app.desktop.service import DesktopService
+from backend.app.desktop.tools import register_desktop_tools
 from backend.app.agent.executor import Executor
 from backend.app.agent.fleet.coordinator import FleetCoordinator
 from backend.app.agent.orchestrator import AgentOrchestrator
@@ -137,6 +140,20 @@ async def lifespan(app: FastAPI):
     app.state.memory_retrieval_engine = memory_retrieval_engine
     app.state.memory_backup_service = memory_backup_service
     app.state.memory_service = memory_service
+
+    # Initialize Phase 12 Desktop Vision and Interaction Platform
+    desktop_service = DesktopService(
+        quarantine_dir=settings.get_desktop_quarantine_dir(),
+    )
+    register_desktop_tools(
+        tool_registry=tool_registry,
+        session_manager=desktop_service.session_manager,
+        tree_inspector=desktop_service.tree_inspector,
+        capture_broker=desktop_service.capture_broker,
+        executor=desktop_service.executor,
+        emergency_manager=desktop_service.emergency_manager,
+    )
+    app.state.desktop_service = desktop_service
 
     ollama_service = OllamaService(client=client, settings=settings)
     plan_validator = PlanValidator(registry=tool_registry, settings=settings)
@@ -324,6 +341,7 @@ def create_app() -> FastAPI:
     app.include_router(research_router)
     app.include_router(sandbox_router)
     app.include_router(memory_router)
+    app.include_router(desktop_router)
 
     return app
 

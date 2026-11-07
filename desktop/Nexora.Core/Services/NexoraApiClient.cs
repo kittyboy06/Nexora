@@ -502,4 +502,103 @@ public class NexoraApiClient : INexoraApiClient
         await EnsureSuccessAsync(response, cancellationToken);
         return await response.Content.ReadAsStringAsync(cancellationToken);
     }
+
+    // Phase 12: Desktop Vision and Interaction Platform
+    public async Task<IReadOnlyList<WindowSummaryDto>> ListDesktopWindowsAsync(string? query = null, bool includeShielded = false, CancellationToken cancellationToken = default)
+    {
+        var url = $"/api/desktop/windows?include_shielded={includeShielded.ToString().ToLowerInvariant()}";
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            url += $"&query={Uri.EscapeDataString(query)}";
+        }
+        var response = await _httpClient.GetAsync(url, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<List<WindowSummaryDto>>(JsonOptions, cancellationToken);
+        return result ?? new List<WindowSummaryDto>();
+    }
+
+    public async Task<TargetWindowBindingDto> BindDesktopWindowAsync(int hwnd, CancellationToken cancellationToken = default)
+    {
+        var payload = new { hwnd };
+        var response = await _httpClient.PostAsJsonAsync("/api/desktop/bind", payload, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<TargetWindowBindingDto>(JsonOptions, cancellationToken);
+        return result ?? throw new InvalidOperationException("Failed to deserialize target window binding.");
+    }
+
+    public async Task<TargetWindowBindingDto?> GetActiveDesktopBindingAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync("/api/desktop/binding", cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return await response.Content.ReadFromJsonAsync<TargetWindowBindingDto>(JsonOptions, cancellationToken);
+    }
+
+    public async Task<bool> ReleaseDesktopBindingAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsync("/api/desktop/release", null, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return true;
+    }
+
+    public async Task<UIElementNodeDto> InspectDesktopTreeAsync(int? hwnd = null, int maxDepth = 4, CancellationToken cancellationToken = default)
+    {
+        var url = $"/api/desktop/tree?max_depth={maxDepth}";
+        if (hwnd.HasValue)
+        {
+            url += $"&hwnd={hwnd.Value}";
+        }
+        var response = await _httpClient.GetAsync(url, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<UIElementNodeDto>(JsonOptions, cancellationToken);
+        return result ?? throw new InvalidOperationException("Failed to deserialize UI tree.");
+    }
+
+    public async Task<ScreenshotEvidenceDto> CaptureDesktopWindowAsync(int? hwnd = null, string taskId = "default_task", CancellationToken cancellationToken = default)
+    {
+        var url = $"/api/desktop/capture?task_id={Uri.EscapeDataString(taskId)}";
+        if (hwnd.HasValue)
+        {
+            url += $"&hwnd={hwnd.Value}";
+        }
+        var response = await _httpClient.PostAsync(url, null, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<ScreenshotEvidenceDto>(JsonOptions, cancellationToken);
+        return result ?? throw new InvalidOperationException("Failed to deserialize screenshot evidence.");
+    }
+
+    public async Task<DesktopActionResultDto> ExecuteDesktopActionAsync(DesktopActionRequestDto request, string taskId = "default_task", CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync($"/api/desktop/actions?task_id={Uri.EscapeDataString(taskId)}", request, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<DesktopActionResultDto>(JsonOptions, cancellationToken);
+        return result ?? throw new InvalidOperationException("Failed to deserialize desktop action result.");
+    }
+
+    public async Task<bool> TriggerEmergencyStopAsync(string reason = "Operator emergency stop", CancellationToken cancellationToken = default)
+    {
+        var payload = new { reason };
+        var response = await _httpClient.PostAsJsonAsync("/api/desktop/emergency-stop", payload, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> ResetEmergencyStopAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsync("/api/desktop/emergency-stop/reset", null, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return true;
+    }
+
+    public async Task<IReadOnlyList<ScreenshotEvidenceDto>> ListDesktopEvidenceAsync(string? taskId = null, CancellationToken cancellationToken = default)
+    {
+        var url = "/api/desktop/evidence";
+        if (!string.IsNullOrWhiteSpace(taskId))
+        {
+            url += $"?task_id={Uri.EscapeDataString(taskId)}";
+        }
+        var response = await _httpClient.GetAsync(url, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<List<ScreenshotEvidenceDto>>(JsonOptions, cancellationToken);
+        return result ?? new List<ScreenshotEvidenceDto>();
+    }
 }

@@ -55,6 +55,9 @@ class Settings(BaseSettings):
     # Phase 11 Memory and Persistence
     MEMORY_DATA_DIR: str = "data/memory"
 
+    # Phase 12 Desktop Vision and Interaction
+    DESKTOP_QUARANTINE_DIR: str = "data/quarantine/desktop"
+
     # Phase 3 Real-World Tool Limits
     WORKSPACE_DIR: str = "data/workspace"
     MAX_FILE_SIZE_BYTES: int = 5_000_000  # 5 MB
@@ -184,6 +187,17 @@ class Settings(BaseSettings):
     def get_memory_data_dir(self) -> Path:
         """Resolve data/memory directory relative to workspace or absolute."""
         p = Path(self.MEMORY_DATA_DIR)
+        if p.is_absolute():
+            return p
+        if Path.cwd().name == "backend":
+            candidate = Path.cwd().parent / p
+        else:
+            candidate = Path.cwd() / p
+        return candidate.resolve()
+
+    def get_desktop_quarantine_dir(self) -> Path:
+        """Resolve desktop screenshot quarantine directory path."""
+        p = Path(self.DESKTOP_QUARANTINE_DIR)
         if p.is_absolute():
             return p
         if Path.cwd().name == "backend":

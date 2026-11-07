@@ -35,6 +35,9 @@ public partial class MainViewModel : ObservableObject
     private bool _isMemoryViewVisible;
 
     [ObservableProperty]
+    private bool _isDesktopVisionViewVisible;
+
+    [ObservableProperty]
     private string _activeModel = "None";
 
     [ObservableProperty]
@@ -47,6 +50,7 @@ public partial class MainViewModel : ObservableObject
     public McpViewModel Mcp { get; }
     public GeneratedToolsViewModel GeneratedTools { get; }
     public MemoryViewModel Memory { get; }
+    public DesktopVisionViewModel DesktopVision { get; }
 
     public ObservableCollection<AgentTask> RecentTasks { get; } = new();
 
@@ -59,7 +63,8 @@ public partial class MainViewModel : ObservableObject
         SkillsViewModel? skills = null,
         McpViewModel? mcp = null,
         GeneratedToolsViewModel? generatedTools = null,
-        MemoryViewModel? memory = null)
+        MemoryViewModel? memory = null,
+        DesktopVisionViewModel? desktopVision = null)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         _supervisor = supervisor ?? throw new ArgumentNullException(nameof(supervisor));
@@ -70,6 +75,7 @@ public partial class MainViewModel : ObservableObject
         Mcp = mcp ?? new McpViewModel(_apiClient);
         GeneratedTools = generatedTools ?? new GeneratedToolsViewModel(_apiClient);
         Memory = memory ?? new MemoryViewModel(_apiClient);
+        DesktopVision = desktopVision ?? new DesktopVisionViewModel(_apiClient);
 
         Composer.TaskCreated += OnTaskCreated;
         ApprovalDialog.DecisionCompleted += OnApprovalDecided;
@@ -83,6 +89,7 @@ public partial class MainViewModel : ObservableObject
         IsMcpViewVisible = false;
         IsGeneratedToolsViewVisible = false;
         IsMemoryViewVisible = false;
+        IsDesktopVisionViewVisible = false;
     }
 
     [RelayCommand]
@@ -93,6 +100,7 @@ public partial class MainViewModel : ObservableObject
         IsMcpViewVisible = false;
         IsGeneratedToolsViewVisible = false;
         IsMemoryViewVisible = false;
+        IsDesktopVisionViewVisible = false;
     }
 
     [RelayCommand]
@@ -103,6 +111,7 @@ public partial class MainViewModel : ObservableObject
         IsMcpViewVisible = true;
         IsGeneratedToolsViewVisible = false;
         IsMemoryViewVisible = false;
+        IsDesktopVisionViewVisible = false;
     }
 
     [RelayCommand]
@@ -113,6 +122,7 @@ public partial class MainViewModel : ObservableObject
         IsMcpViewVisible = false;
         IsGeneratedToolsViewVisible = true;
         IsMemoryViewVisible = false;
+        IsDesktopVisionViewVisible = false;
     }
 
     [RelayCommand]
@@ -123,6 +133,18 @@ public partial class MainViewModel : ObservableObject
         IsMcpViewVisible = false;
         IsGeneratedToolsViewVisible = false;
         IsMemoryViewVisible = true;
+        IsDesktopVisionViewVisible = false;
+    }
+
+    [RelayCommand]
+    public void ShowDesktopVisionView()
+    {
+        IsTasksViewVisible = false;
+        IsSkillsViewVisible = false;
+        IsMcpViewVisible = false;
+        IsGeneratedToolsViewVisible = false;
+        IsMemoryViewVisible = false;
+        IsDesktopVisionViewVisible = true;
     }
 
     public async Task InitializeAsync(string repoRoot)
