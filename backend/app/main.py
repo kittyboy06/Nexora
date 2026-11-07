@@ -19,6 +19,11 @@ from backend.app.mcp.router import router as mcp_router
 from backend.app.mcp.vault import McpVaultService
 from backend.app.mcp.registry import McpServerRegistry
 from backend.app.mcp.session import McpSessionPool
+from backend.app.research.evidence import ResearchEvidenceStore
+from backend.app.research.quarantine import QuarantineManager
+from backend.app.research.router import router as research_router
+from backend.app.research.service import BrowserResearchService
+from backend.app.research.tools import register_research_tools
 from backend.app.agent.executor import Executor
 from backend.app.agent.fleet.coordinator import FleetCoordinator
 from backend.app.agent.orchestrator import AgentOrchestrator
@@ -145,6 +150,19 @@ async def lifespan(app: FastAPI):
     app.state.mcp_registry = mcp_registry
     app.state.mcp_session_pool = mcp_session_pool
 
+    # Initialize Phase 9 Browser and Internet Research Service
+    research_evidence_store = ResearchEvidenceStore(settings.get_research_data_dir())
+    quarantine_manager = QuarantineManager(settings.get_quarantine_data_dir())
+    research_service = BrowserResearchService(
+        evidence_store=research_evidence_store,
+        quarantine_mgr=quarantine_manager,
+        vault=mcp_vault,
+    )
+    register_research_tools(tool_registry, research_service)
+    app.state.research_evidence_store = research_evidence_store
+    app.state.quarantine_manager = quarantine_manager
+    app.state.research_service = research_service
+
     fleet_coordinator = FleetCoordinator(
         tool_registry=tool_registry,
         guard=guard,
@@ -245,6 +263,7 @@ def create_app() -> FastAPI:
     app.include_router(agent_router, prefix="/api")
     app.include_router(skills_router, prefix="/api")
     app.include_router(mcp_router, prefix="/api")
+    app.include_router(research_router)
 
     return app
 

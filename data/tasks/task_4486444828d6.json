@@ -1,0 +1,58 @@
+{
+  "task_id": "task_4486444828d6",
+  "prompt": "Read the config file",
+  "model_profile_id": null,
+  "status": "COMPLETED",
+  "routing": {
+    "profile_id": "general-planner",
+    "model": "qwen3.5:9b",
+    "task_kind": "general",
+    "reason": "capability fallback after uncertain classification",
+    "escalated": false
+  },
+  "plan": {
+    "plan_id": "plan_test_api",
+    "goal": "Read simulated configuration file",
+    "steps": [
+      {
+        "step_id": 1,
+        "description": "Read file contents",
+        "tool_call": {
+          "tool_name": "mock_file_read",
+          "arguments": {
+            "filepath": "config.json"
+          }
+        },
+        "dependencies": [],
+        "risk_level": "SENSITIVE",
+        "status": "SUCCEEDED",
+        "retries_attempted": 0
+      }
+    ],
+    "created_at": "2026-11-07T09:22:34.007253Z"
+  },
+  "fleet_plan": null,
+  "artifacts": [],
+  "execution_trace": [
+    {
+      "step_id": 1,
+      "tool_name": "mock_file_read",
+      "status": "SUCCEEDED",
+      "output": {
+        "filepath": "config.json",
+        "simulated": true,
+        "content": "[SIMULATED FILE CONTENT FOR 'config.json']\nSystem parameters verified. Configuration active.",
+        "byte_count": 86
+      },
+      "error": null,
+      "duration_ms": 60.02,
+      "retry_classification": null
+    }
+  ],
+  "pending_approval": null,
+  "iterations_used": 1,
+  "created_at": "2026-11-07T09:22:33.970933Z",
+  "updated_at": "2026-11-07T09:22:34.153693Z",
+  "completed_at": "2026-11-07T09:22:34.153693Z",
+  "error_message": null
+}

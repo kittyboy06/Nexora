@@ -227,6 +227,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <!-- Task Header -->
@@ -428,6 +429,77 @@
                                 </ListView.ItemTemplate>
                             </ListView>
                         </Grid>
+
+                        <!-- Research Evidence & Quarantine Downloads (Phase 9 integration) -->
+                        <Expander Grid.Row="5"
+                                  HorizontalAlignment="Stretch"
+                                  Margin="0,12,0,0"
+                                  Header="Research Evidence &amp; Quarantine Downloads"
+                                  Visibility="{Binding TaskDetail.HasResearchEvidence, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <Grid RowSpacing="10" Padding="4">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Research Evidence Items -->
+                                <StackPanel Grid.Row="0" Spacing="6">
+                                    <TextBlock Text="Web Research Citations &amp; Evidence" FontWeight="SemiBold" FontSize="12" />
+                                    <ItemsControl ItemsSource="{Binding TaskDetail.ResearchEvidence}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Margin="0,2" Padding="8" Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                                        CornerRadius="4" BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                                                    <Grid ColumnSpacing="8">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Grid.Column="0" Spacing="2">
+                                                            <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="11" />
+                                                            <TextBlock Text="{Binding Url}" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontFamily="Consolas" />
+                                                            <TextBlock Text="{Binding ContentSnippet}" FontSize="10" TextWrapping="Wrap" />
+                                                        </StackPanel>
+                                                        <Border Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                                                CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding Engine}" FontSize="9" FontWeight="SemiBold" />
+                                                        </Border>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+
+                                <!-- Quarantined Downloads -->
+                                <StackPanel Grid.Row="1" Spacing="6" Visibility="{Binding TaskDetail.HasQuarantinedDownloads, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <TextBlock Text="Quarantined Downloads" FontWeight="SemiBold" FontSize="12" />
+                                    <ItemsControl ItemsSource="{Binding TaskDetail.QuarantinedDownloads}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Margin="0,2" Padding="8" Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                                        CornerRadius="4" BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                                                    <Grid ColumnSpacing="8">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Grid.Column="0" Spacing="2">
+                                                            <TextBlock Text="{Binding Filename}" FontWeight="Bold" FontSize="11" FontFamily="Consolas" />
+                                                            <TextBlock Text="{Binding OriginalUrl}" FontSize="10" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                        </StackPanel>
+                                                        <Border Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                                                CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                                            <TextBlock Text="[Quarantined]" FontSize="9" FontWeight="SemiBold" Foreground="Goldenrod" />
+                                                        </Border>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Grid>
+                        </Expander>
                     </Grid>
                 </Grid>
             </Border>

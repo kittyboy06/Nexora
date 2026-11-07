@@ -39,4 +39,12 @@ public interface INexoraApiClient
     Task<IReadOnlyList<McpVaultItemSummaryDto>> ListMcpVaultSecretsAsync(CancellationToken cancellationToken = default);
     Task<McpVaultItemSummaryDto> WriteMcpVaultSecretAsync(McpVaultWriteRequestDto request, CancellationToken cancellationToken = default);
     Task<bool> DeleteMcpVaultSecretAsync(string key, CancellationToken cancellationToken = default);
+
+    // Phase 9: Browser and Internet Research
+    Task<IReadOnlyList<SearchResultDto>> SearchWebAsync(string query, int maxResults = 5, CancellationToken cancellationToken = default);
+    Task<FetchResultDto> FetchWebpageAsync(string url, bool renderJs = false, bool takeScreenshot = false, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<ResearchEvidenceDto>> ListTaskEvidenceAsync(string taskId, CancellationToken cancellationToken = default);
+    Task<ResearchEvidenceDto> GetEvidenceDetailAsync(string taskId, string evidenceId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<QuarantineItemDto>> ListQuarantinedDownloadsAsync(string taskId, CancellationToken cancellationToken = default);
+    Task<bool> DeleteQuarantinedDownloadAsync(string taskId, string filename, CancellationToken cancellationToken = default);
 }

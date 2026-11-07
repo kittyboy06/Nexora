@@ -1,0 +1,82 @@
+{
+  "task_id": "task_111e2563888a",
+  "prompt": "Compare technical architectures",
+  "model_profile_id": null,
+  "status": "COMPLETED",
+  "routing": {
+    "profile_id": "research-planner",
+    "model": "qwen3.5:9b",
+    "task_kind": "research",
+    "reason": "hybrid task classification",
+    "escalated": true
+  },
+  "plan": {
+    "plan_id": "plan_escalate",
+    "goal": "List files",
+    "steps": [
+      {
+        "step_id": 1,
+        "description": "List files",
+        "tool_call": {
+          "tool_name": "file_list",
+          "arguments": {
+            "path": "."
+          }
+        },
+        "dependencies": [],
+        "risk_level": "SAFE",
+        "status": "SUCCEEDED",
+        "retries_attempted": 0
+      }
+    ],
+    "created_at": "2026-11-07T09:22:36.342051Z"
+  },
+  "fleet_plan": null,
+  "artifacts": [],
+  "execution_trace": [
+    {
+      "step_id": 1,
+      "tool_name": "file_list",
+      "status": "SUCCEEDED",
+      "output": {
+        "path": "",
+        "count": 4,
+        "entries": [
+          {
+            "name": ".gitkeep",
+            "is_dir": false,
+            "size_bytes": 0,
+            "modified_at": "2026-11-03T23:17:15.923210+00:00"
+          },
+          {
+            "name": "calc_pi.py",
+            "is_dir": false,
+            "size_bytes": 51,
+            "modified_at": "2026-11-03T23:17:15.923210+00:00"
+          },
+          {
+            "name": "calc_pi_workflow.py",
+            "is_dir": false,
+            "size_bytes": 51,
+            "modified_at": "2026-11-07T09:22:35.448460+00:00"
+          },
+          {
+            "name": "welcome.txt",
+            "is_dir": false,
+            "size_bytes": 25,
+            "modified_at": "2026-11-03T23:17:15.924193+00:00"
+          }
+        ]
+      },
+      "error": null,
+      "duration_ms": 1.95,
+      "retry_classification": null
+    }
+  ],
+  "pending_approval": null,
+  "iterations_used": 1,
+  "created_at": "2026-11-07T09:22:36.275949Z",
+  "updated_at": "2026-11-07T09:22:36.348245Z",
+  "completed_at": "2026-11-07T09:22:36.348245Z",
+  "error_message": null
+}

@@ -286,4 +286,51 @@ public class NexoraApiClient : INexoraApiClient
         var response = await _httpClient.DeleteAsync($"/api/mcp/vault/{Uri.EscapeDataString(key)}", cancellationToken);
         return response.IsSuccessStatusCode;
     }
+
+    // Phase 9: Browser and Internet Research
+    public async Task<IReadOnlyList<SearchResultDto>> SearchWebAsync(string query, int maxResults = 5, CancellationToken cancellationToken = default)
+    {
+        var req = new ResearchSearchRequestDto { Query = query, MaxResults = maxResults };
+        var response = await _httpClient.PostAsJsonAsync("/api/research/search", req, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<List<SearchResultDto>>(JsonOptions, cancellationToken))
+            ?? new List<SearchResultDto>();
+    }
+
+    public async Task<FetchResultDto> FetchWebpageAsync(string url, bool renderJs = false, bool takeScreenshot = false, CancellationToken cancellationToken = default)
+    {
+        var req = new ResearchFetchRequestDto { Url = url, RenderJs = renderJs, TakeScreenshot = takeScreenshot };
+        var response = await _httpClient.PostAsJsonAsync("/api/research/fetch", req, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<FetchResultDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<IReadOnlyList<ResearchEvidenceDto>> ListTaskEvidenceAsync(string taskId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync($"/api/research/evidence/{Uri.EscapeDataString(taskId)}", cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<List<ResearchEvidenceDto>>(JsonOptions, cancellationToken))
+            ?? new List<ResearchEvidenceDto>();
+    }
+
+    public async Task<ResearchEvidenceDto> GetEvidenceDetailAsync(string taskId, string evidenceId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync($"/api/research/evidence/{Uri.EscapeDataString(taskId)}/{Uri.EscapeDataString(evidenceId)}", cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<ResearchEvidenceDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<IReadOnlyList<QuarantineItemDto>> ListQuarantinedDownloadsAsync(string taskId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync($"/api/research/quarantine/{Uri.EscapeDataString(taskId)}", cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<List<QuarantineItemDto>>(JsonOptions, cancellationToken))
+            ?? new List<QuarantineItemDto>();
+    }
+
+    public async Task<bool> DeleteQuarantinedDownloadAsync(string taskId, string filename, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.DeleteAsync($"/api/research/quarantine/{Uri.EscapeDataString(taskId)}/{Uri.EscapeDataString(filename)}", cancellationToken);
+        return response.IsSuccessStatusCode;
+    }
 }

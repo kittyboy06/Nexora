@@ -44,6 +44,10 @@ class Settings(BaseSettings):
     MCP_IDLE_TIMEOUT_SECONDS: float = 600.0
     MCP_TOOL_TIMEOUT_SECONDS: float = 30.0
 
+    # Phase 9 Browser and Internet Research
+    RESEARCH_DATA_DIR: str = "data/research"
+    QUARANTINE_DATA_DIR: str = "data/quarantine"
+
     # Phase 3 Real-World Tool Limits
     WORKSPACE_DIR: str = "data/workspace"
     MAX_FILE_SIZE_BYTES: int = 5_000_000  # 5 MB
@@ -118,6 +122,28 @@ class Settings(BaseSettings):
     def get_mcp_data_dir(self) -> Path:
         """Resolve data/mcp directory relative to workspace or absolute."""
         p = Path(self.MCP_DATA_DIR)
+        if p.is_absolute():
+            return p
+        if Path.cwd().name == "backend":
+            candidate = Path.cwd().parent / p
+        else:
+            candidate = Path.cwd() / p
+        return candidate.resolve()
+
+    def get_research_data_dir(self) -> Path:
+        """Resolve data/research directory relative to workspace or absolute."""
+        p = Path(self.RESEARCH_DATA_DIR)
+        if p.is_absolute():
+            return p
+        if Path.cwd().name == "backend":
+            candidate = Path.cwd().parent / p
+        else:
+            candidate = Path.cwd() / p
+        return candidate.resolve()
+
+    def get_quarantine_data_dir(self) -> Path:
+        """Resolve data/quarantine directory relative to workspace or absolute."""
+        p = Path(self.QUARANTINE_DATA_DIR)
         if p.is_absolute():
             return p
         if Path.cwd().name == "backend":

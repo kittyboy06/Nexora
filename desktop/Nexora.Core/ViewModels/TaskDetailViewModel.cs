@@ -41,6 +41,15 @@ public partial class TaskDetailViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<ArtifactModel> _artifacts = new();
 
+    public ObservableCollection<ResearchEvidenceDto> ResearchEvidence { get; } = new();
+    public ObservableCollection<QuarantineItemDto> QuarantinedDownloads { get; } = new();
+
+    [ObservableProperty]
+    private bool _hasResearchEvidence;
+
+    [ObservableProperty]
+    private bool _hasQuarantinedDownloads;
+
     public bool HasCurrentTask => CurrentTask != null;
     public string CurrentTaskId => CurrentTask?.TaskId ?? string.Empty;
     public TaskStatus CurrentTaskStatus => CurrentTask?.Status ?? TaskStatus.SUBMITTED;
@@ -98,6 +107,44 @@ public partial class TaskDetailViewModel : ObservableObject
             {
                 Artifacts.Add(art);
             }
+        }
+
+        _ = RefreshResearchAsync();
+    }
+
+    [RelayCommand]
+    public async Task RefreshResearchAsync()
+    {
+        if (CurrentTask == null)
+        {
+            ResearchEvidence.Clear();
+            QuarantinedDownloads.Clear();
+            HasResearchEvidence = false;
+            HasQuarantinedDownloads = false;
+            return;
+        }
+
+        try
+        {
+            var evidenceList = await _apiClient.ListTaskEvidenceAsync(CurrentTask.TaskId);
+            ResearchEvidence.Clear();
+            foreach (var ev in evidenceList)
+            {
+                ResearchEvidence.Add(ev);
+            }
+            HasResearchEvidence = ResearchEvidence.Count > 0;
+
+            var downloads = await _apiClient.ListQuarantinedDownloadsAsync(CurrentTask.TaskId);
+            QuarantinedDownloads.Clear();
+            foreach (var dl in downloads)
+            {
+                QuarantinedDownloads.Add(dl);
+            }
+            HasQuarantinedDownloads = QuarantinedDownloads.Count > 0;
+        }
+        catch
+        {
+            // Ignore background refresh errors
         }
     }
 
