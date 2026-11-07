@@ -12,6 +12,8 @@ public class FleetViewModelTests
     {
         public System.Threading.Tasks.Task<HealthResponse> GetHealthAsync(System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
         public System.Threading.Tasks.Task<OllamaStatusResponse> GetOllamaStatusAsync(System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<string> GetActiveModelAsync(System.Threading.CancellationToken cancellationToken = default) => System.Threading.Tasks.Task.FromResult("llama3:latest");
+        public System.Threading.Tasks.Task<bool> SetActiveModelAsync(string modelName, System.Threading.CancellationToken cancellationToken = default) => System.Threading.Tasks.Task.FromResult(true);
         public System.Threading.Tasks.Task<ModelProfileListResponse> GetModelProfilesAsync(bool refresh = false, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
         public System.Threading.Tasks.Task<AgentTask> CreateTaskAsync(string prompt, string? profileId = null, string? executionMode = "auto", System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
         public System.Threading.Tasks.Task<AgentTask> GetTaskAsync(string taskId, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();

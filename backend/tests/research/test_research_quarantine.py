@@ -55,6 +55,7 @@ async def test_quarantine_download_success(tmp_path):
 
     mock_resp = MagicMock()
     mock_resp.status_code = 200
+    mock_resp.is_redirect = False
     mock_resp.headers = {"content-type": "application/pdf"}
 
     async def mock_aiter():
@@ -151,6 +152,7 @@ async def test_quarantine_download_oversized_cleanup(tmp_path):
 
     mock_resp = MagicMock()
     mock_resp.status_code = 200
+    mock_resp.is_redirect = False
     mock_resp.headers = {"content-type": "application/octet-stream"}
 
     async def mock_aiter():

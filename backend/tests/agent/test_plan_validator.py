@@ -3,7 +3,7 @@ from backend.app.agent.plan_validator import PlanValidator
 from backend.app.core.config import Settings
 from backend.app.core.exceptions import PlanValidationException
 from backend.app.models.agent import PlanStep, RiskLevel, TaskPlan, ToolCall
-from backend.app.tools.mock_tools import register_mock_tools
+from backend.tests.fixtures.mock_tools import register_mock_tools
 from backend.app.tools.registry import ToolRegistry
 
 

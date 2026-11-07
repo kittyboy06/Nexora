@@ -15,15 +15,18 @@ logger = logging.getLogger("nexora.ollama")
 
 
 class OllamaService:
-    """Service wrapping local Ollama daemon communication."""
+    """Service wrapping local Ollama daemon communication with dynamic model discovery."""
 
     def __init__(self, client: httpx.AsyncClient, settings: Settings):
         self.client = client
         self.settings = settings
+        self._active_model: str | None = None
 
     @staticmethod
     def model_matches(target: str, available_models: list[str]) -> bool:
-        """Check if target model exists, accounting for tags."""
+        """Check if target model exists, accounting for tags and dynamic keywords."""
+        if not target or target.strip().lower() in ("auto", "*", "any"):
+            return len(available_models) > 0
         if target in available_models:
             return True
         # If target has no tag (e.g. 'qwen3.5'), match 'qwen3.5:latest'
@@ -38,6 +41,37 @@ class OllamaService:
     def _matches_model(self, target: str, available_models: list[str]) -> bool:
         """Backward-compatible private alias for existing callers."""
         return self.model_matches(target, available_models)
+
+    def set_active_model(self, model_name: str) -> None:
+        """Explicitly switch the active model at runtime."""
+        self._active_model = model_name
+        logger.info("Active model explicitly set to: %s", model_name)
+
+    async def resolve_active_model(self) -> str:
+        """Dynamically resolve the active model without hardcoded defaults."""
+        models = []
+        try:
+            models = await self.list_models()
+        except Exception as exc:
+            logger.debug("Could not query models during active model resolution: %s", exc)
+
+        installed_names = [m.name for m in models]
+
+        # 1. If an active model was explicitly selected and is installed, use it
+        if self._active_model and self.model_matches(self._active_model, installed_names):
+            return self._active_model
+
+        # 2. If configured in settings and is installed, use it
+        if self.settings.OLLAMA_MODEL and self.model_matches(self.settings.OLLAMA_MODEL, installed_names):
+            return self.settings.OLLAMA_MODEL
+
+        # 3. Otherwise auto-discover the first available installed model
+        if installed_names:
+            self._active_model = installed_names[0]
+            logger.info("Auto-discovered active model from local Ollama: %s", self._active_model)
+            return self._active_model
+
+        return self.settings.OLLAMA_MODEL or "default"
 
     async def check_reachability(self) -> bool:
         """Probe Ollama reachability with a short timeout."""
@@ -98,18 +132,38 @@ class OllamaService:
         try:
             models = await self.list_models()
             model_names = [m.name for m in models]
-            is_available = self._matches_model(self.settings.OLLAMA_MODEL, model_names)
+
+            configured = self._active_model or self.settings.OLLAMA_MODEL
+            if configured:
+                is_available = self._matches_model(configured, model_names)
+                return OllamaStatusResponse(
+                    reachable=True,
+                    model_available=is_available,
+                    configured_model=configured,
+                    installed_models=model_names,
+                )
+
+            # Dynamic auto-discovery mode
+            if model_names:
+                self._active_model = model_names[0]
+                return OllamaStatusResponse(
+                    reachable=True,
+                    model_available=True,
+                    configured_model=self._active_model,
+                    installed_models=model_names,
+                )
+
             return OllamaStatusResponse(
                 reachable=True,
-                model_available=is_available,
-                configured_model=self.settings.OLLAMA_MODEL,
-                installed_models=model_names,
+                model_available=False,
+                configured_model="",
+                installed_models=[],
             )
         except OllamaUnavailableException:
             return OllamaStatusResponse(
                 reachable=False,
                 model_available=False,
-                configured_model=self.settings.OLLAMA_MODEL,
+                configured_model=self._active_model or self.settings.OLLAMA_MODEL,
                 installed_models=[],
             )
         except Exception as exc:
@@ -117,13 +171,17 @@ class OllamaService:
             return OllamaStatusResponse(
                 reachable=False,
                 model_available=False,
-                configured_model=self.settings.OLLAMA_MODEL,
+                configured_model=self._active_model or self.settings.OLLAMA_MODEL,
                 installed_models=[],
             )
 
     async def generate_chat(self, request: ChatRequest) -> ChatResponse:
         """Execute chat completion against Ollama with model checks and timeouts."""
-        target_model = request.model or self.settings.OLLAMA_MODEL
+        raw_target = request.model or ""
+        if not raw_target or raw_target.strip().lower() in ("auto", "default"):
+            target_model = await self.resolve_active_model()
+        else:
+            target_model = raw_target
 
         # 1. Verify model is installed before starting generation
         models = await self.list_models()

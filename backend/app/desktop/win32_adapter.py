@@ -24,6 +24,29 @@ class RECT(ctypes.Structure):
     ]
 
 
+class BITMAPINFOHEADER(ctypes.Structure):
+    _fields_ = [
+        ("biSize", wintypes.DWORD),
+        ("biWidth", wintypes.LONG),
+        ("biHeight", wintypes.LONG),
+        ("biPlanes", wintypes.WORD),
+        ("biBitCount", wintypes.WORD),
+        ("biCompression", wintypes.DWORD),
+        ("biSizeImage", wintypes.DWORD),
+        ("biXPelsPerMeter", wintypes.LONG),
+        ("biYPelsPerMeter", wintypes.LONG),
+        ("biClrUsed", wintypes.DWORD),
+        ("biClrImportant", wintypes.DWORD),
+    ]
+
+
+class BITMAPINFO(ctypes.Structure):
+    _fields_ = [
+        ("bmiHeader", BITMAPINFOHEADER),
+        ("bmiColors", wintypes.DWORD * 3),
+    ]
+
+
 class Win32DesktopAdapter(DesktopAdapter):
     """Direct Win32 API implementation for Windows desktop observation and interaction."""
 
@@ -174,16 +197,18 @@ class Win32DesktopAdapter(DesktopAdapter):
 
     def capture_window(self, hwnd: int) -> tuple[bytes, int, int]:
         """Capture window client rect using Win32 PrintWindow / BitBlt."""
-        if not self._user32 or not self._gdi32:
-            from backend.app.desktop.mock_adapter import DUMMY_PNG_BYTES
-            return DUMMY_PNG_BYTES, 800, 600
-
         rect = self.get_window_rect(hwnd)
         width, height = rect.width, rect.height
         if width <= 0 or height <= 0:
             width, height = 800, 600
 
-        # Attempt PrintWindow or fallback to dummy frame
+        if not self._user32 or not self._gdi32:
+            from PIL import Image
+            img = Image.new("RGB", (width, height), color=(30, 30, 30))
+            buf = io.BytesIO()
+            img.save(buf, format="PNG")
+            return buf.getvalue(), width, height
+
         try:
             hwnd_dc = self._user32.GetWindowDC(hwnd)
             mem_dc = self._gdi32.CreateCompatibleDC(hwnd_dc)
@@ -191,16 +216,43 @@ class Win32DesktopAdapter(DesktopAdapter):
             self._gdi32.SelectObject(mem_dc, bitmap)
 
             # PW_RENDERFULLCONTENT = 0x00000002
-            self._user32.PrintWindow(hwnd, mem_dc, 2)
+            pw_res = self._user32.PrintWindow(hwnd, mem_dc, 2)
+            if not pw_res:
+                # SRCCOPY = 0x00CC0020
+                self._gdi32.BitBlt(mem_dc, 0, 0, width, height, hwnd_dc, 0, 0, 0x00CC0020)
+
+            # Extract DIB bits
+            bmi = BITMAPINFO()
+            bmi.bmiHeader.biSize = ctypes.sizeof(BITMAPINFOHEADER)
+            bmi.bmiHeader.biWidth = width
+            bmi.bmiHeader.biHeight = -height  # top-down DIB
+            bmi.bmiHeader.biPlanes = 1
+            bmi.bmiHeader.biBitCount = 32
+            bmi.bmiHeader.biCompression = 0  # BI_RGB
+
+            buffer_size = width * height * 4
+            pixel_data = ctypes.create_string_buffer(buffer_size)
+
+            self._gdi32.GetDIBits(
+                mem_dc, bitmap, 0, height, pixel_data, ctypes.byref(bmi), 0
+            )
 
             self._gdi32.DeleteObject(bitmap)
             self._gdi32.DeleteDC(mem_dc)
             self._user32.ReleaseDC(hwnd, hwnd_dc)
+
+            from PIL import Image
+            img = Image.frombuffer("RGBA", (width, height), pixel_data, "raw", "BGRA", 0, 1)
+            buf = io.BytesIO()
+            img.convert("RGB").save(buf, format="PNG")
+            return buf.getvalue(), width, height
         except Exception as e:
             logger.debug("Win32 direct capture fallback triggered: %s", e)
-
-        from backend.app.desktop.mock_adapter import DUMMY_PNG_BYTES
-        return DUMMY_PNG_BYTES, width, height
+            from PIL import Image
+            img = Image.new("RGB", (width, height), color=(30, 30, 30))
+            buf = io.BytesIO()
+            img.save(buf, format="PNG")
+            return buf.getvalue(), width, height
 
     def click_element(self, hwnd: int, element_id: str) -> bool:
         """Click UI element center by extracting HWND from ID or finding its rect."""

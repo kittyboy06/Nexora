@@ -174,6 +174,7 @@ async def test_full_research_platform_e2e_lifecycle(tmp_path):
     dl_payload = b"%PDF-1.4 Mock binary PDF content for Raft paper."
     mock_dl_resp = MagicMock()
     mock_dl_resp.status_code = 200
+    mock_dl_resp.is_redirect = False
     mock_dl_resp.headers = {"content-type": "application/pdf"}
 
     async def mock_dl_aiter():

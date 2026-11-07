@@ -27,7 +27,6 @@ data/scheduler/
 data/skills/
 data/workspace/*
 !data/workspace/.gitkeep
-data/model_profiles.json
 backups/
 diagnostics/
 
@@ -46,3 +45,6 @@ TestResults/
 desktop/testdiag.txt
 dist/
 publish/
+build/
+*.spec
+desktop/Nexora.Desktop/Resources/*.exe

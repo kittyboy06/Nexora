@@ -5,7 +5,7 @@ import pytest
 import pytest_asyncio
 import httpx
 
-from backend.app.desktop.mock_adapter import MockDesktopAdapter
+from backend.tests.fixtures.desktop_mock_adapter import MockDesktopAdapter
 from backend.app.desktop.models import DesktopActionType
 from backend.app.desktop.service import DesktopService
 from backend.app.main import create_app

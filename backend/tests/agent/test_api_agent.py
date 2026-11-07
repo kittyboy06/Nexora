@@ -13,6 +13,13 @@ from backend.app.services.ollama_service import OllamaService
 @pytest.mark.asyncio
 async def test_agent_api_endpoints():
     app = create_app()
+    settings = get_settings()
+
+    # Pre-create test file for sensitive file_delete tool
+    ws = settings.get_workspace_dir()
+    ws.mkdir(parents=True, exist_ok=True)
+    test_file = ws / "test_delete.txt"
+    test_file.write_text("to be deleted", encoding="utf-8")
 
     def mock_ollama_handler(request: httpx.Request):
         if request.url.path == "/api/chat":
@@ -24,14 +31,14 @@ async def test_agent_api_endpoints():
                         "role": "assistant",
                         "content": json.dumps({
                             "plan_id": "plan_test_api",
-                            "goal": "Read simulated configuration file",
+                            "goal": "Delete temporary test file",
                             "steps": [
                                 {
                                     "step_id": 1,
-                                    "description": "Read file contents",
+                                    "description": "Delete temporary file",
                                     "tool_call": {
-                                        "tool_name": "mock_file_read",
-                                        "arguments": {"filepath": "config.json"}
+                                        "tool_name": "file_delete",
+                                        "arguments": {"path": "test_delete.txt", "recursive": False}
                                     },
                                     "dependencies": []
                                 }
@@ -57,8 +64,8 @@ async def test_agent_api_endpoints():
         app.state.task_manager.orchestrator.evaluator.ollama = OllamaService(client=mock_client, settings=get_settings())
 
         async with httpx.AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-            # 1. Create Task (mock_file_read is SENSITIVE, so it will pause in WAITING_APPROVAL)
-            res = await client.post("/api/agent/tasks", json={"prompt": "Read the config file"})
+            # 1. Create Task (file_delete is SENSITIVE, so it will pause in WAITING_APPROVAL)
+            res = await client.post("/api/agent/tasks", json={"prompt": "Delete the test file"})
             assert res.status_code == 201
             data = res.json()
             task_id = data["task"]["task_id"]
@@ -92,7 +99,7 @@ async def test_agent_api_endpoints():
             assert get_res.json()["task"]["status"] == TaskStatus.COMPLETED
 
             # 3. Create another task and test Cancel while waiting for approval
-            res2 = await client.post("/api/agent/tasks", json={"prompt": "Read another file"})
+            res2 = await client.post("/api/agent/tasks", json={"prompt": "Delete another file"})
             task_id2 = res2.json()["task"]["task_id"]
 
             for _ in range(10):

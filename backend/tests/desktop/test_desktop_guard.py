@@ -7,7 +7,7 @@ from backend.app.desktop.guard import (
     WindowFocusGuard,
     WindowTitleChangedException,
 )
-from backend.app.desktop.mock_adapter import MockDesktopAdapter
+from backend.tests.fixtures.desktop_mock_adapter import MockDesktopAdapter
 from backend.app.desktop.session import TargetSessionManager
 
 

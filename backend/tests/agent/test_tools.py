@@ -1,9 +1,9 @@
 import pytest
 from backend.app.models.agent import RiskLevel
-from backend.app.tools.mock_tools.calculate import MockCalculateTool
-from backend.app.tools.mock_tools.file_read import MockFileReadTool
-from backend.app.tools.mock_tools.search import MockSearchTool
-from backend.app.tools.mock_tools.summarize import MockSummarizeTool
+from backend.tests.fixtures.mock_tools.calculate import MockCalculateTool
+from backend.tests.fixtures.mock_tools.file_read import MockFileReadTool
+from backend.tests.fixtures.mock_tools.search import MockSearchTool
+from backend.tests.fixtures.mock_tools.summarize import MockSummarizeTool
 from backend.app.tools.registry import ToolRegistry
 
 

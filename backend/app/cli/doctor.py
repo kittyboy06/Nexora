@@ -140,7 +140,7 @@ def check_ollama_service(base_url: str = "http://localhost:11434") -> CheckResul
                     return CheckResult(
                         name="Ollama Model Service",
                         status="WARN",
-                        message="Ollama is running, but no models are downloaded. Run 'ollama pull qwen2.5:7b'.",
+                        message="Ollama is running, but no models are downloaded. Run 'ollama pull <model>' (e.g. llama3.2, mistral, or qwen2.5).",
                         details={"endpoint": base_url, "model_count": 0},
                     )
     except Exception as exc:

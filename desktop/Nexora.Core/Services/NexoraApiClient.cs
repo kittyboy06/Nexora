@@ -68,6 +68,22 @@ public class NexoraApiClient : INexoraApiClient
         return (await response.Content.ReadFromJsonAsync<OllamaStatusResponse>(JsonOptions, cancellationToken))!;
     }
 
+    public async Task<string> GetActiveModelAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync("/api/ollama/active-model", cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var body = await response.Content.ReadFromJsonAsync<SetActiveModelResponse>(JsonOptions, cancellationToken);
+        return body?.ActiveModel ?? string.Empty;
+    }
+
+    public async Task<bool> SetActiveModelAsync(string modelName, CancellationToken cancellationToken = default)
+    {
+        var request = new SetActiveModelRequest(modelName);
+        var response = await _httpClient.PostAsJsonAsync("/api/ollama/active-model", request, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return response.IsSuccessStatusCode;
+    }
+
     public async Task<ModelProfileListResponse> GetModelProfilesAsync(bool refresh = false, CancellationToken cancellationToken = default)
     {
         var url = refresh ? "/api/ollama/profiles?refresh=true" : "/api/ollama/profiles";

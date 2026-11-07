@@ -7,7 +7,7 @@ from backend.app.desktop.capture import CaptureBroker
 from backend.app.desktop.emergency import EmergencyStopManager
 from backend.app.desktop.executor import DesktopActionExecutor
 from backend.app.desktop.guard import WindowFocusGuard
-from backend.app.desktop.mock_adapter import MockDesktopAdapter
+from backend.tests.fixtures.desktop_mock_adapter import MockDesktopAdapter
 from backend.app.desktop.session import TargetSessionManager
 from backend.app.desktop.tools import (
     DesktopCaptureWindowTool,

@@ -7,6 +7,7 @@ from backend.app.agent.plan_validator import PlanValidator
 from backend.app.core.config import Settings
 from backend.app.core.exceptions import PlanValidationException
 from backend.app.core.guard import InferenceGuard
+from backend.app.core.json_utils import extract_json_object
 from backend.app.models.agent import TaskPlan
 from backend.app.models.model_profile import RouteSelection
 from backend.app.models.chat import ChatMessage, ChatRequest
@@ -130,14 +131,9 @@ class Planner:
                 )
 
             content = chat_resp.message.content.strip()
-            # Parse JSON
+            # Parse JSON robustly
             try:
-                # Strip markdown fences if present
-                if content.startswith("```json"):
-                    content = content[7:]
-                if content.endswith("```"):
-                    content = content[:-3]
-                raw_json = json.loads(content.strip())
+                raw_json = extract_json_object(content)
                 if "plan_id" not in raw_json:
                     raw_json["plan_id"] = f"plan_{uuid4().hex[:8]}"
 

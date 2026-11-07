@@ -13,7 +13,7 @@ from backend.app.models.agent import (
 )
 from backend.app.permissions.manager import PermissionManager
 from backend.app.tools.base import BaseTool
-from backend.app.tools.mock_tools import register_mock_tools
+from backend.tests.fixtures.mock_tools import register_mock_tools
 from backend.app.tools.registry import ToolRegistry
 from pydantic import BaseModel
 

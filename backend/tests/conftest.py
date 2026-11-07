@@ -2,6 +2,7 @@ import pytest
 import pytest_asyncio
 import httpx
 from httpx import ASGITransport
+from backend.app.api.dependencies import get_app_settings
 from backend.app.core.config import Settings
 from backend.app.core.guard import InferenceGuard
 from backend.app.main import create_app
@@ -34,7 +35,8 @@ async def app_with_mock_ollama(test_settings: Settings):
         )
 
         app = create_app()
-        # Override state directly for testing
+        # Override settings and state for testing
+        app.dependency_overrides[get_app_settings] = lambda: test_settings
         app.state.http_client = mock_http_client
         app.state.inference_guard = InferenceGuard(
             limit=test_settings.INFERENCE_CONCURRENCY_LIMIT,

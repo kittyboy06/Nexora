@@ -18,7 +18,6 @@ from backend.app.services.model_registry import ModelProfileRegistry
 from backend.app.services.ollama_service import OllamaService
 from backend.app.services.terminal_service import TerminalService
 from backend.app.tools.filesystem import register_filesystem_tools
-from backend.app.tools.mock_tools import register_mock_tools
 from backend.app.tools.registry import ToolRegistry
 from backend.app.tools.terminal import register_terminal_tools
 from backend.app.tools.windows import register_windows_tools
@@ -73,11 +72,16 @@ def get_inference_guard(request: Request) -> InferenceGuard:
 
 
 def get_ollama_service(
+    request: Request,
     client: httpx.AsyncClient = Depends(get_http_client),
     settings: Settings = Depends(get_app_settings),
 ) -> OllamaService:
     """Dependency provider for OllamaService instance."""
-    return OllamaService(client=client, settings=settings)
+    service: OllamaService = getattr(request.app.state, "ollama_service", None)
+    if service is None or getattr(service, "client", None) != client:
+        service = OllamaService(client=client, settings=settings)
+        request.app.state.ollama_service = service
+    return service
 
 
 @lru_cache
@@ -85,7 +89,6 @@ def get_tool_registry() -> ToolRegistry:
     """Singleton ToolRegistry populated with Phase 2 mock tools and Phase 3 real tools."""
     settings = get_settings()
     registry = ToolRegistry()
-    register_mock_tools(registry)
     fs_service = FilesystemService(
         workspace_root=settings.get_workspace_dir(),
         max_file_size_bytes=settings.MAX_FILE_SIZE_BYTES,

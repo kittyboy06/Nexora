@@ -112,7 +112,7 @@ public class TrayIconService : IDisposable
     public void Initialize()
     {
         _hwnd = WinRT.Interop.WindowNative.GetWindowHandle(_mainWindow);
-        _isSubclassed = SetWindowSubclass(_hwnd, _subclassProc, UIntPtr.One, UIntPtr.Zero);
+        _isSubclassed = SetWindowSubclass(_hwnd, _subclassProc, (UIntPtr)1, UIntPtr.Zero);
 
         var data = new NOTIFYICONDATA
         {
@@ -190,7 +190,7 @@ public class TrayIconService : IDisposable
     {
         if (_isSubclassed && _hwnd != IntPtr.Zero)
         {
-            RemoveWindowSubclass(_hwnd, _subclassProc, UIntPtr.One);
+            RemoveWindowSubclass(_hwnd, _subclassProc, (UIntPtr)1);
             _isSubclassed = false;
         }
         if (_isCreated && _hwnd != IntPtr.Zero)
@@ -204,5 +204,6 @@ public class TrayIconService : IDisposable
             Shell_NotifyIcon(NIM_DELETE, ref data);
             _isCreated = false;
         }
+        GC.SuppressFinalize(this);
     }
 }

@@ -44,3 +44,12 @@ public record ErrorDetail(
 public record ErrorResponse(
     [property: JsonPropertyName("error")] ErrorDetail Error
 );
+
+public record SetActiveModelRequest(
+    [property: JsonPropertyName("model")] string Model
+);
+
+public record SetActiveModelResponse(
+    [property: JsonPropertyName("status")] string Status,
+    [property: JsonPropertyName("active_model")] string ActiveModel
+);

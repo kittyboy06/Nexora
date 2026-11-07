@@ -4,6 +4,7 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from backend.app.core.guard import InferenceGuard
+from backend.app.core.json_utils import extract_json_object
 from backend.app.models.agent import AgentTask, PlanStep, StepResult, ToolCall
 from backend.app.models.chat import ChatMessage, ChatRequest
 from backend.app.services.ollama_service import OllamaService

@@ -2,7 +2,7 @@
   "profiles": [
     {
       "profile_id": "router-fast",
-      "model": "qwen3.5:9b",
+      "model": "auto",
       "specialties": ["general"],
       "system_instruction": "Classify tasks concisely and return structured JSON only.",
       "role": "router",
@@ -10,7 +10,7 @@
     },
     {
       "profile_id": "general-planner",
-      "model": "qwen3.5:9b",
+      "model": "auto",
       "specialties": ["general", "reasoning"],
       "system_instruction": "Create safe, executable plans using only available tools.",
       "role": "planner",

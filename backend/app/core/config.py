@@ -14,10 +14,10 @@ class Settings(BaseSettings):
 
     # Ollama LLM Configuration
     OLLAMA_BASE_URL: str = "http://localhost:11434"
-    OLLAMA_MODEL: str = "qwen3.5:9b"
+    OLLAMA_MODEL: str = ""
     OLLAMA_CONNECT_TIMEOUT_SECONDS: float = 3.0
     OLLAMA_INFERENCE_TIMEOUT_SECONDS: float = 120.0
-    MODEL_ROUTER_MODEL: str = "qwen3.5:9b"
+    MODEL_ROUTER_MODEL: str = ""
     MODEL_ROUTER_CONFIDENCE_THRESHOLD: float = Field(default=0.65, ge=0.0, le=1.0)
     MODEL_PROFILES_FILE: str = "data/model_profiles.json"
 

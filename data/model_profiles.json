@@ -2,7 +2,7 @@
   "profiles": [
     {
       "profile_id": "router",
-      "model": "qwen3.5:9b",
+      "model": "auto",
       "specialties": ["general"],
       "system_instruction": "Classify task intent and return the requested routing JSON only.",
       "role": "router",
@@ -10,7 +10,7 @@
     },
     {
       "profile_id": "general-planner",
-      "model": "qwen3.5:9b",
+      "model": "auto",
       "specialties": ["general"],
       "system_instruction": "Create concise, tool-grounded plans and do not assume tools that are not listed.",
       "role": "planner",
@@ -18,7 +18,7 @@
     },
     {
       "profile_id": "coding-planner",
-      "model": "qwen3.5:9b",
+      "model": "auto",
       "specialties": ["code"],
       "system_instruction": "For coding goals, plan small, verifiable steps and use only registered tools.",
       "role": "planner",
@@ -26,7 +26,7 @@
     },
     {
       "profile_id": "research-planner",
-      "model": "qwen3.5:9b",
+      "model": "auto",
       "specialties": ["research"],
       "system_instruction": "For research goals, identify evidence needs and use only registered tools.",
       "role": "planner",
@@ -34,7 +34,7 @@
     },
     {
       "profile_id": "reasoning-planner",
-      "model": "qwen3.5:9b",
+      "model": "auto",
       "specialties": ["reasoning"],
       "system_instruction": "For analytical goals, decompose dependencies and validate each conclusion.",
       "role": "planner",

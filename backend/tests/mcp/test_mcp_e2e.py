@@ -187,7 +187,7 @@ async def test_full_mcp_platform_e2e_lifecycle(tmp_path: Path):
     # 8. Check PermissionManager governance
     tool_def = tool_registry.get("mcp__e2e-srv__echo_vault_key")
     assert tool_def is not None
-    assert tool_def.risk_level == RiskLevel.CONTROLLED
+    assert tool_def.risk_level == RiskLevel.SENSITIVE
 
     task = AgentTask(task_id="task_e2e", prompt="Test MCP tool")
     step = PlanStep(

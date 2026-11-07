@@ -1,7 +1,7 @@
 """Unit tests for Desktop Adapters and Domain Models (Milestone 1)."""
 
 import pytest
-from backend.app.desktop.mock_adapter import DUMMY_PNG_BYTES, MockDesktopAdapter
+from backend.tests.fixtures.desktop_mock_adapter import DUMMY_PNG_BYTES, MockDesktopAdapter
 from backend.app.desktop.models import (
     DesktopActionRequest,
     DesktopActionResult,

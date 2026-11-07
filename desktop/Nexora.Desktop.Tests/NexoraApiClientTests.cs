@@ -147,4 +147,42 @@ public class NexoraApiClientTests
         Assert.Equal("Model not found", ex.Message);
         Assert.Equal(404, ex.StatusCode);
     }
+
+    [Fact]
+    public async Task GetActiveModelAsync_ReturnsModel()
+    {
+        var handler = new MockHttpMessageHandler(req =>
+        {
+            Assert.Equal(HttpMethod.Get, req.Method);
+            Assert.Equal("/api/ollama/active-model", req.RequestUri?.AbsolutePath);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\"status\":\"ok\",\"active_model\":\"llama3.2:latest\"}")
+            };
+        });
+
+        var client = new NexoraApiClient(new HttpClient(handler));
+        var active = await client.GetActiveModelAsync();
+
+        Assert.Equal("llama3.2:latest", active);
+    }
+
+    [Fact]
+    public async Task SetActiveModelAsync_SendsRequest()
+    {
+        var handler = new MockHttpMessageHandler(req =>
+        {
+            Assert.Equal(HttpMethod.Post, req.Method);
+            Assert.Equal("/api/ollama/active-model", req.RequestUri?.AbsolutePath);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{\"status\":\"ok\",\"active_model\":\"mistral:latest\"}")
+            };
+        });
+
+        var client = new NexoraApiClient(new HttpClient(handler));
+        var success = await client.SetActiveModelAsync("mistral:latest");
+
+        Assert.True(success);
+    }
 }

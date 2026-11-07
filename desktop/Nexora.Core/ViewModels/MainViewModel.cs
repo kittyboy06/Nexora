@@ -44,6 +44,13 @@ public partial class MainViewModel : ObservableObject
     private string _activeModel = "None";
 
     [ObservableProperty]
+    private string _selectedModel = string.Empty;
+
+    public ObservableCollection<string> InstalledModels { get; } = new();
+
+    private bool _isSyncingModel;
+
+    [ObservableProperty]
     private string _statusMessage = "Initializing...";
 
     public TaskComposerViewModel Composer { get; }
@@ -212,13 +219,70 @@ public partial class MainViewModel : ObservableObject
 
             var ollama = await _apiClient.GetOllamaStatusAsync();
             IsOllamaOnline = ollama.Reachable;
-            ActiveModel = ollama.ConfiguredModel;
+            ActiveModel = !string.IsNullOrWhiteSpace(ollama.ConfiguredModel) ? ollama.ConfiguredModel : "auto";
+
+            InstalledModels.Clear();
+            if (ollama.InstalledModels != null)
+            {
+                foreach (var model in ollama.InstalledModels)
+                {
+                    InstalledModels.Add(model);
+                }
+            }
+
+            _isSyncingModel = true;
+            try
+            {
+                if (!string.IsNullOrEmpty(ActiveModel) && InstalledModels.Contains(ActiveModel))
+                {
+                    if (SelectedModel != ActiveModel)
+                    {
+                        SelectedModel = ActiveModel;
+                    }
+                }
+                else if (InstalledModels.Count > 0 && string.IsNullOrEmpty(SelectedModel))
+                {
+                    SelectedModel = InstalledModels[0];
+                }
+            }
+            finally
+            {
+                _isSyncingModel = false;
+            }
         }
         catch
         {
             StatusMessage = "Backend unreachable.";
             IsBackendOnline = false;
             IsOllamaOnline = false;
+        }
+    }
+
+    async partial void OnSelectedModelChanged(string value)
+    {
+        if (_isSyncingModel || string.IsNullOrWhiteSpace(value) || value == ActiveModel)
+        {
+            return;
+        }
+
+        try
+        {
+            StatusMessage = $"Switching active model to {value}...";
+            var success = await _apiClient.SetActiveModelAsync(value);
+            if (success)
+            {
+                ActiveModel = value;
+                StatusMessage = $"Active model set to {value}";
+                await Composer.LoadProfilesAsync();
+            }
+            else
+            {
+                StatusMessage = $"Failed to switch model to {value}";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error switching model: {ex.Message}";
         }
     }
 

@@ -6,7 +6,7 @@ import pytest
 from PIL import Image
 
 from backend.app.desktop.capture import CaptureBroker
-from backend.app.desktop.mock_adapter import MockDesktopAdapter
+from backend.tests.fixtures.desktop_mock_adapter import MockDesktopAdapter
 from backend.app.desktop.models import TargetWindowBinding, UIElementNode, WindowRect
 
 

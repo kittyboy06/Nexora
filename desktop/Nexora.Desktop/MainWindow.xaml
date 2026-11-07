@@ -226,8 +226,13 @@
                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Backend:" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding StatusMessage}" FontSize="12" FontWeight="SemiBold" />
 
-                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Ollama Model:" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ActiveModel}" FontSize="12" FontWeight="SemiBold" />
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Ollama Model:" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                                <ComboBox Grid.Row="1" Grid.Column="1"
+                                          ItemsSource="{Binding InstalledModels}"
+                                          SelectedItem="{Binding SelectedModel, Mode=TwoWay}"
+                                          PlaceholderText="{Binding ActiveModel}"
+                                          FontSize="12"
+                                          HorizontalAlignment="Stretch" />
                             </Grid>
                         </StackPanel>
                     </Border>

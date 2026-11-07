@@ -9,6 +9,8 @@ public interface INexoraApiClient
 {
     Task<HealthResponse> GetHealthAsync(CancellationToken cancellationToken = default);
     Task<OllamaStatusResponse> GetOllamaStatusAsync(CancellationToken cancellationToken = default);
+    Task<string> GetActiveModelAsync(CancellationToken cancellationToken = default);
+    Task<bool> SetActiveModelAsync(string modelName, CancellationToken cancellationToken = default);
     Task<ModelProfileListResponse> GetModelProfilesAsync(bool refresh = false, CancellationToken cancellationToken = default);
     Task<AgentTask> CreateTaskAsync(string prompt, string? profileId = null, string? executionMode = "auto", CancellationToken cancellationToken = default);
     Task<AgentTask> GetTaskAsync(string taskId, CancellationToken cancellationToken = default);

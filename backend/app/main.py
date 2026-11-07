@@ -65,7 +65,6 @@ from backend.app.services.model_registry import ModelProfileRegistry
 from backend.app.services.ollama_service import OllamaService
 from backend.app.services.terminal_service import TerminalService
 from backend.app.tools.filesystem import register_filesystem_tools
-from backend.app.tools.mock_tools import register_mock_tools
 from backend.app.tools.registry import ToolRegistry
 from backend.app.tools.terminal import register_terminal_tools
 from backend.app.tools.windows import register_windows_tools
@@ -107,7 +106,6 @@ async def lifespan(app: FastAPI):
 
     # Initialize Phase 2 & 3 Agent Engine Components
     tool_registry = ToolRegistry()
-    register_mock_tools(tool_registry)
 
     fs_service = FilesystemService(
         workspace_root=settings.get_workspace_dir(),
@@ -160,6 +158,7 @@ async def lifespan(app: FastAPI):
     app.state.desktop_service = desktop_service
 
     ollama_service = OllamaService(client=client, settings=settings)
+    app.state.ollama_service = ollama_service
     plan_validator = PlanValidator(registry=tool_registry, settings=settings)
     model_profile_registry = ModelProfileRegistry(settings)
     app.state.model_profile_registry = model_profile_registry

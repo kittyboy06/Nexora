@@ -2,10 +2,13 @@
 
 import json
 import logging
+import sys
+from pathlib import Path
 
 from backend.app.core.config import Settings
 from backend.app.core.exceptions import ModelNotFoundException
 from backend.app.core.guard import InferenceGuard
+from backend.app.core.json_utils import extract_json_object
 from backend.app.models.chat import ChatMessage, ChatRequest
 from backend.app.models.model_profile import (
     ModelProfile,
@@ -31,7 +34,10 @@ class ModelProfileRegistry:
 
     def _ensure_primary_fallback(self, catalogue: ModelProfileCatalogue) -> None:
         """Preserve pre-registry behavior when users configure a different primary model."""
-        if not any(profile.enabled and profile.model == self.settings.OLLAMA_MODEL for profile in catalogue.profiles):
+        target_model = self.settings.OLLAMA_MODEL
+        if not target_model:
+            return
+        if not any(profile.enabled and (profile.model in (target_model, "auto", "")) for profile in catalogue.profiles):
             fallback_id = "default-primary"
             existing_ids = {profile.profile_id for profile in catalogue.profiles}
             suffix = 2
@@ -40,7 +46,7 @@ class ModelProfileRegistry:
                 suffix += 1
             catalogue.profiles.append(ModelProfile(
                 profile_id=fallback_id,
-                model=self.settings.OLLAMA_MODEL,
+                model=target_model,
                 specialties=[TaskKind.GENERAL],
                 system_instruction="",
                 role="planner",
@@ -57,16 +63,71 @@ class ModelProfileRegistry:
 
     def _load(self) -> ModelProfileCatalogue:
         try:
-            data = json.loads(self.path.read_text(encoding="utf-8"))
-            catalogue = ModelProfileCatalogue.model_validate(data)
-        except FileNotFoundError as exc:
-            raise RuntimeError(f"Model profile catalogue not found: {self.path}") from exc
-        except (json.JSONDecodeError, ValueError) as exc:
-            raise RuntimeError(f"Invalid model profile catalogue {self.path}: {exc}") from exc
-        ids = [profile.profile_id for profile in catalogue.profiles]
-        if len(ids) != len(set(ids)):
-            raise RuntimeError(f"Duplicate profile_id in model profile catalogue: {self.path}")
-        return catalogue
+            if self.path.exists():
+                data = json.loads(self.path.read_text(encoding="utf-8"))
+                catalogue = ModelProfileCatalogue.model_validate(data)
+                ids = [profile.profile_id for profile in catalogue.profiles]
+                if len(ids) != len(set(ids)):
+                    raise RuntimeError(f"Duplicate profile_id in model profile catalogue: {self.path}")
+                return catalogue
+        except Exception as exc:
+            logger.warning("Could not load model profiles from %s: %s", self.path, exc)
+
+        # Check PyInstaller bundle
+        if getattr(sys, "frozen", False):
+            try:
+                meipass = getattr(sys, "_MEIPASS", "")
+                if meipass:
+                    bundled = Path(meipass) / "data" / "model_profiles.json"
+                    if bundled.exists():
+                        data = json.loads(bundled.read_text(encoding="utf-8"))
+                        return ModelProfileCatalogue.model_validate(data)
+            except Exception as exc:
+                logger.warning("Could not load bundled model profiles: %s", exc)
+
+        # Built-in fallback default profiles
+        return ModelProfileCatalogue(profiles=[
+            ModelProfile(
+                profile_id="router",
+                model="auto",
+                specialties=[TaskKind.GENERAL],
+                system_instruction="Classify task intent and return the requested routing JSON only.",
+                role="router",
+                enabled=True,
+            ),
+            ModelProfile(
+                profile_id="general-planner",
+                model="auto",
+                specialties=[TaskKind.GENERAL],
+                system_instruction="Create concise, tool-grounded plans and do not assume tools that are not listed.",
+                role="planner",
+                enabled=True,
+            ),
+            ModelProfile(
+                profile_id="coding-planner",
+                model="auto",
+                specialties=[TaskKind.CODE],
+                system_instruction="For coding goals, plan small, verifiable steps and use only registered tools.",
+                role="planner",
+                enabled=True,
+            ),
+            ModelProfile(
+                profile_id="research-planner",
+                model="auto",
+                specialties=[TaskKind.RESEARCH],
+                system_instruction="For research goals, identify evidence needs and use only registered tools.",
+                role="planner",
+                enabled=True,
+            ),
+            ModelProfile(
+                profile_id="reasoning-planner",
+                model="auto",
+                specialties=[TaskKind.REASONING],
+                system_instruction="For analytical goals, decompose dependencies and validate each conclusion.",
+                role="planner",
+                enabled=True,
+            ),
+        ])
 
     async def list_profiles(self, ollama: ModelProvider) -> ModelProfileListResponse:
         installed = [item.name for item in await ollama.list_models()]
@@ -103,18 +164,25 @@ class HybridModelRouter:
             if not self.ollama.model_matches(profile.model, inventory):
                 raise ModelNotFoundException(model_name=profile.model, details={"profile_id": profile.profile_id})
             kind = next(iter(profile.specialties), TaskKind.GENERAL)
-            return RouteSelection(profile_id=profile.profile_id, model=profile.model, task_kind=kind,
+            actual_model = profile.model
+            if actual_model in ("auto", "", "default"):
+                actual_model = await self.ollama.resolve_active_model()
+            return RouteSelection(profile_id=profile.profile_id, model=actual_model, task_kind=kind,
                                   reason="manual profile override")
 
         router_model = self.settings.MODEL_ROUTER_MODEL
-        if not self.ollama.model_matches(router_model, inventory):
+        if not router_model or not self.ollama.model_matches(router_model, inventory):
             router_model = self.settings.OLLAMA_MODEL
+        if not router_model or not self.ollama.model_matches(router_model, inventory):
+            router_model = await self.ollama.resolve_active_model()
+
         kind, confidence = await self._classify(task, router_model)
         escalated = False
         if kind is None or confidence < self.settings.MODEL_ROUTER_CONFIDENCE_THRESHOLD:
-            if router_model != self.settings.OLLAMA_MODEL:
+            fallback_model = self.settings.OLLAMA_MODEL or router_model
+            if fallback_model != router_model and self.ollama.model_matches(fallback_model, inventory):
                 escalated = True
-                kind, confidence = await self._classify(task, self.settings.OLLAMA_MODEL)
+                kind, confidence = await self._classify(task, fallback_model)
                 if confidence < self.settings.MODEL_ROUTER_CONFIDENCE_THRESHOLD:
                     kind = None
             else:
@@ -133,10 +201,14 @@ class HybridModelRouter:
             selected = next((p for p in available if p.role != "router"), None)
         if selected is None:
             raise ModelNotFoundException(
-                model_name=self.settings.OLLAMA_MODEL,
+                model_name=self.settings.OLLAMA_MODEL or "auto",
                 details={"reason": "No enabled specialist profile references an installed model"},
             )
-        return RouteSelection(profile_id=selected.profile_id, model=selected.model, task_kind=kind,
+        actual_model = selected.model
+        if actual_model in ("auto", "", "default"):
+            actual_model = await self.ollama.resolve_active_model()
+
+        return RouteSelection(profile_id=selected.profile_id, model=actual_model, task_kind=kind,
                               reason=reason, escalated=escalated)
 
     async def _classify(self, task: str, model: str) -> tuple[TaskKind | None, float]:
@@ -153,7 +225,7 @@ class HybridModelRouter:
                     messages=[ChatMessage(role="system", content="You route tasks to specialist models."),
                               ChatMessage(role="user", content=prompt)],
                 ))
-            data = json.loads(response.message.content.strip())
+            data = extract_json_object(response.message.content.strip())
             kind = TaskKind(data["task_kind"])
             confidence = float(data["confidence"])
             if not 0.0 <= confidence <= 1.0:
