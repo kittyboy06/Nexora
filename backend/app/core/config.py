@@ -39,6 +39,11 @@ class Settings(BaseSettings):
     SKILLS_DATA_DIR: str = "data/skills"
     GITHUB_TOKEN: str = ""
 
+    # Phase 8 Universal MCP Platform
+    MCP_DATA_DIR: str = "data/mcp"
+    MCP_IDLE_TIMEOUT_SECONDS: float = 600.0
+    MCP_TOOL_TIMEOUT_SECONDS: float = 30.0
+
     # Phase 3 Real-World Tool Limits
     WORKSPACE_DIR: str = "data/workspace"
     MAX_FILE_SIZE_BYTES: int = 5_000_000  # 5 MB
@@ -102,6 +107,17 @@ class Settings(BaseSettings):
     def get_skills_data_dir(self) -> Path:
         """Resolve data/skills directory relative to workspace or absolute."""
         p = Path(self.SKILLS_DATA_DIR)
+        if p.is_absolute():
+            return p
+        if Path.cwd().name == "backend":
+            candidate = Path.cwd().parent / p
+        else:
+            candidate = Path.cwd() / p
+        return candidate.resolve()
+
+    def get_mcp_data_dir(self) -> Path:
+        """Resolve data/mcp directory relative to workspace or absolute."""
+        p = Path(self.MCP_DATA_DIR)
         if p.is_absolute():
             return p
         if Path.cwd().name == "backend":

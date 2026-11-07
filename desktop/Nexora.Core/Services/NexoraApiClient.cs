@@ -201,4 +201,89 @@ public class NexoraApiClient : INexoraApiClient
         await EnsureSuccessAsync(response, cancellationToken);
         return (await response.Content.ReadFromJsonAsync<GitHubRateLimitStatusDto>(JsonOptions, cancellationToken))!;
     }
+
+    // Phase 8: Universal MCP Platform
+    public async Task<IReadOnlyList<McpServerRecordDto>> ListMcpServersAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync("/api/mcp/servers", cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<List<McpServerRecordDto>>(JsonOptions, cancellationToken))
+            ?? new List<McpServerRecordDto>();
+    }
+
+    public async Task<McpServerRecordDto> GetMcpServerAsync(string serverId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync($"/api/mcp/servers/{Uri.EscapeDataString(serverId)}", cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<McpServerRecordDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<McpServerRecordDto> RegisterMcpServerAsync(McpServerCreateRequestDto request, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync("/api/mcp/servers", request, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<McpServerRecordDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<McpServerRecordDto> UpdateMcpServerAsync(string serverId, McpServerUpdateRequestDto request, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PatchAsJsonAsync($"/api/mcp/servers/{Uri.EscapeDataString(serverId)}", request, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<McpServerRecordDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<bool> DeleteMcpServerAsync(string serverId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.DeleteAsync($"/api/mcp/servers/{Uri.EscapeDataString(serverId)}", cancellationToken);
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<McpServerRecordDto> ApproveMcpServerAsync(string serverId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsync($"/api/mcp/servers/{Uri.EscapeDataString(serverId)}/approve", null, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<McpServerRecordDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<McpServerRecordDto> ConnectMcpServerAsync(string serverId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsync($"/api/mcp/servers/{Uri.EscapeDataString(serverId)}/connect", null, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<McpServerRecordDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<McpServerRecordDto> DisconnectMcpServerAsync(string serverId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsync($"/api/mcp/servers/{Uri.EscapeDataString(serverId)}/disconnect", null, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<McpServerRecordDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<McpPingResponseDto> PingMcpServerAsync(string serverId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsync($"/api/mcp/servers/{Uri.EscapeDataString(serverId)}/ping", null, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<McpPingResponseDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<IReadOnlyList<McpVaultItemSummaryDto>> ListMcpVaultSecretsAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync("/api/mcp/vault", cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<List<McpVaultItemSummaryDto>>(JsonOptions, cancellationToken))
+            ?? new List<McpVaultItemSummaryDto>();
+    }
+
+    public async Task<McpVaultItemSummaryDto> WriteMcpVaultSecretAsync(McpVaultWriteRequestDto request, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync("/api/mcp/vault", request, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<McpVaultItemSummaryDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<bool> DeleteMcpVaultSecretAsync(string key, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.DeleteAsync($"/api/mcp/vault/{Uri.EscapeDataString(key)}", cancellationToken);
+        return response.IsSuccessStatusCode;
+    }
 }

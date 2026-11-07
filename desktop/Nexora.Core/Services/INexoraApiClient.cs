@@ -25,4 +25,18 @@ public interface INexoraApiClient
     Task<SkillDiscoveryCandidateDto> PreviewDiscoveryAsync(string owner, string repo, string branch = "main", string? path = null, CancellationToken cancellationToken = default);
     Task<SkillBundleDto> InstallSkillAsync(InstallSkillRequestDto request, CancellationToken cancellationToken = default);
     Task<GitHubRateLimitStatusDto> GetGitHubRateLimitAsync(CancellationToken cancellationToken = default);
+
+    // Phase 8: Universal MCP Platform
+    Task<IReadOnlyList<McpServerRecordDto>> ListMcpServersAsync(CancellationToken cancellationToken = default);
+    Task<McpServerRecordDto> GetMcpServerAsync(string serverId, CancellationToken cancellationToken = default);
+    Task<McpServerRecordDto> RegisterMcpServerAsync(McpServerCreateRequestDto request, CancellationToken cancellationToken = default);
+    Task<McpServerRecordDto> UpdateMcpServerAsync(string serverId, McpServerUpdateRequestDto request, CancellationToken cancellationToken = default);
+    Task<bool> DeleteMcpServerAsync(string serverId, CancellationToken cancellationToken = default);
+    Task<McpServerRecordDto> ApproveMcpServerAsync(string serverId, CancellationToken cancellationToken = default);
+    Task<McpServerRecordDto> ConnectMcpServerAsync(string serverId, CancellationToken cancellationToken = default);
+    Task<McpServerRecordDto> DisconnectMcpServerAsync(string serverId, CancellationToken cancellationToken = default);
+    Task<McpPingResponseDto> PingMcpServerAsync(string serverId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<McpVaultItemSummaryDto>> ListMcpVaultSecretsAsync(CancellationToken cancellationToken = default);
+    Task<McpVaultItemSummaryDto> WriteMcpVaultSecretAsync(McpVaultWriteRequestDto request, CancellationToken cancellationToken = default);
+    Task<bool> DeleteMcpVaultSecretAsync(string key, CancellationToken cancellationToken = default);
 }

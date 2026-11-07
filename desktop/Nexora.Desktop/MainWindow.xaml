@@ -59,6 +59,13 @@
                             <TextBlock Text="Skills &amp; Discovery" FontSize="12" FontWeight="SemiBold" />
                         </StackPanel>
                     </Button>
+                    <Button Command="{Binding ShowMcpViewCommand}"
+                            Padding="12,6">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE74C;" FontSize="13" />
+                            <TextBlock Text="MCP Platform" FontSize="12" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
 
                 <!-- Status Pills & Actions -->
@@ -91,7 +98,7 @@
 
         <!-- MAIN TASK WORKSPACE AREA: 2 Columns -->
         <Grid Grid.Row="1" Padding="20" ColumnSpacing="20"
-              Visibility="{Binding IsSkillsViewVisible, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+              Visibility="{Binding IsTasksViewVisible, Converter={StaticResource BoolToVisibilityConverter}}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="380" />
                 <ColumnDefinition Width="*" />
@@ -558,8 +565,10 @@
                                     <StackPanel Spacing="6">
                                         <TextBlock Text="{Binding Skills.InspectedBundle.Manifest.Name}" FontWeight="Bold" FontSize="14" />
                                         <TextBlock Text="{Binding Skills.InspectedBundle.Manifest.Description}" FontSize="12" TextWrapping="Wrap" />
-                                        <TextBlock Text="{Binding Skills.InspectedBundle.Provenance.SkillSha256, StringFormat='SHA-256 Provenance: {0}'}"
-                                                   FontFamily="Consolas" FontSize="10" Foreground="MediumSeaGreen" />
+                                        <TextBlock FontFamily="Consolas" FontSize="10" Foreground="MediumSeaGreen">
+                                            <Run Text="SHA-256 Provenance: " />
+                                            <Run Text="{Binding Skills.InspectedBundle.Provenance.SkillSha256}" />
+                                        </TextBlock>
                                     </StackPanel>
                                 </Border>
 
@@ -730,6 +739,347 @@
                                              BorderThickness="0"
                                              Background="Transparent" />
                                 </ScrollViewer>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </TabViewItem>
+            </TabView>
+        </Grid>
+
+        <!-- MCP PLATFORM VIEW AREA -->
+        <Grid Grid.Row="1" Padding="20"
+              Visibility="{Binding IsMcpViewVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+            <TabView HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <!-- TAB 1: SERVER FLEET & CAPABILITIES -->
+                <TabViewItem Header="MCP Servers &amp; Capabilities">
+                    <TabViewItem.IconSource>
+                        <FontIconSource Glyph="&#xE74C;" />
+                    </TabViewItem.IconSource>
+                    <Grid Padding="0,16,0,0" ColumnSpacing="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="460" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left Column: Server Inventory + Add Form -->
+                        <Border Grid.Column="0"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <Grid RowSpacing="12">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Header -->
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Registered MCP Servers" FontWeight="SemiBold" FontSize="15" VerticalAlignment="Center" />
+                                    <Button Grid.Column="1" Command="{Binding Mcp.LoadServersCommand}" Padding="8,4">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <FontIcon Glyph="&#xE72C;" FontSize="11" />
+                                            <TextBlock Text="Refresh" FontSize="11" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+
+                                <!-- Server Cards List -->
+                                <ListView Grid.Row="1"
+                                          ItemsSource="{Binding Mcp.Servers}"
+                                          SelectedItem="{Binding Mcp.SelectedServer, Mode=TwoWay}"
+                                          SelectionMode="Single">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,4" Padding="12"
+                                                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="6">
+                                                <Grid RowSpacing="8">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <!-- Server Name, ID & Status -->
+                                                    <Grid Grid.Row="0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel Grid.Column="0" Spacing="2">
+                                                            <TextBlock Text="{Binding Config.Name}" FontWeight="Bold" FontSize="13" />
+                                                            <TextBlock Text="{Binding Config.Id}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" FontFamily="Consolas" />
+                                                        </StackPanel>
+                                                        <Border Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                                                CornerRadius="4" Padding="6,2" VerticalAlignment="Top">
+                                                            <TextBlock Text="{Binding Status}" FontSize="10" FontWeight="SemiBold" />
+                                                        </Border>
+                                                    </Grid>
+
+                                                    <!-- Command -->
+                                                    <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="4">
+                                                        <TextBlock Text="Cmd:" FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                                        <TextBlock Text="{Binding Config.Command}" FontSize="11" FontFamily="Consolas" />
+                                                    </StackPanel>
+
+                                                    <!-- Quick Action Buttons -->
+                                                    <Grid Grid.Row="2" ColumnSpacing="6">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <Button Grid.Column="0" Content="Approve"
+                                                                Command="{Binding DataContext.Mcp.ApproveServerCommand, ElementName=MainRootGrid}"
+                                                                CommandParameter="{Binding Config.Id}"
+                                                                Padding="8,2" FontSize="11" />
+
+                                                        <Button Grid.Column="1" Content="Connect"
+                                                                Command="{Binding DataContext.Mcp.ConnectServerCommand, ElementName=MainRootGrid}"
+                                                                CommandParameter="{Binding Config.Id}"
+                                                                Padding="8,2" FontSize="11" />
+
+                                                        <Button Grid.Column="2" Content="Disconnect"
+                                                                Command="{Binding DataContext.Mcp.DisconnectServerCommand, ElementName=MainRootGrid}"
+                                                                CommandParameter="{Binding Config.Id}"
+                                                                Padding="8,2" FontSize="11" />
+
+                                                        <Button Grid.Column="4" Content="Delete"
+                                                                Command="{Binding DataContext.Mcp.DeleteServerCommand, ElementName=MainRootGrid}"
+                                                                CommandParameter="{Binding Config.Id}"
+                                                                Padding="8,2" FontSize="11" />
+                                                    </Grid>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+
+                                <!-- Add Server Expander -->
+                                <Expander Grid.Row="2" Header="Add MCP Server" HorizontalAlignment="Stretch">
+                                    <StackPanel Spacing="8" Padding="8">
+                                        <TextBox Text="{Binding Mcp.NewServerId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 Header="Server ID (slug)" PlaceholderText="e.g. filesystem" />
+                                        <TextBox Text="{Binding Mcp.NewServerName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 Header="Display Name" PlaceholderText="e.g. Local Filesystem" />
+                                        <TextBox Text="{Binding Mcp.NewServerCommand, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 Header="Executable Command" PlaceholderText="e.g. npx or python" />
+                                        <TextBox Text="{Binding Mcp.NewServerArgs, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 Header="Arguments (space-separated)" PlaceholderText="e.g. -y @modelcontextprotocol/server-filesystem" />
+                                        <TextBox Text="{Binding Mcp.NewServerEnv, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 Header="Environment (KEY=ref:vault/KEY or KEY=VAL)" AcceptsReturn="True" Height="60" />
+                                        <Button Content="Register Server"
+                                                Style="{ThemeResource AccentButtonStyle}"
+                                                Command="{Binding Mcp.RegisterServerCommand}"
+                                                HorizontalAlignment="Stretch" />
+                                    </StackPanel>
+                                </Expander>
+                            </Grid>
+                        </Border>
+
+                        <!-- Right Column: Capability Inspector & Tool Viewer -->
+                        <Border Grid.Column="1"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <Grid RowSpacing="12">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Active Server Header & Controls -->
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0" Spacing="4">
+                                        <TextBlock Text="{Binding Mcp.SelectedServer.Config.Name, FallbackValue='Select an MCP Server'}"
+                                                   FontWeight="Bold" FontSize="16" />
+                                        <StackPanel Orientation="Horizontal" Spacing="12">
+                                            <TextBlock Text="{Binding Mcp.SelectedServer.Status, FallbackValue='None'}"
+                                                       FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock Text="{Binding Mcp.PingLatencyText}"
+                                                       FontSize="11" Foreground="{ThemeResource AccentFillColorDefaultBrush}" FontWeight="SemiBold" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Content="Ping"
+                                            Command="{Binding Mcp.PingServerCommand}"
+                                            CommandParameter="{Binding Mcp.SelectedServer.Config.Id}"
+                                            Padding="10,4" />
+                                </Grid>
+
+                                <!-- Capabilities Label -->
+                                <TextBlock Grid.Row="1" Text="Advertised Tools &amp; Schemas"
+                                           FontWeight="SemiBold" FontSize="13" />
+
+                                <!-- Tools ListView -->
+                                <ListView Grid.Row="2"
+                                          ItemsSource="{Binding Mcp.AdvertisedTools}"
+                                          SelectionMode="None">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,4" Padding="12"
+                                                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="6">
+                                                <Grid RowSpacing="6">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto" />
+                                                        <RowDefinition Height="Auto" />
+                                                    </Grid.RowDefinitions>
+
+                                                    <Grid Grid.Row="0">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0" Text="{Binding Name}"
+                                                                   FontFamily="Consolas" FontWeight="Bold" FontSize="13" />
+                                                        <Border Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                                                CornerRadius="4" Padding="6,2">
+                                                            <TextBlock Text="{Binding RiskLevel}" FontSize="10" FontWeight="SemiBold" />
+                                                        </Border>
+                                                    </Grid>
+
+                                                    <TextBlock Grid.Row="1" Text="{Binding Description}"
+                                                               FontSize="12" TextWrapping="Wrap"
+                                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </TabViewItem>
+
+                <!-- TAB 2: ENCRYPTED SECRETS VAULT -->
+                <TabViewItem Header="Encrypted Secrets Vault">
+                    <TabViewItem.IconSource>
+                        <FontIconSource Glyph="&#xE8D7;" />
+                    </TabViewItem.IconSource>
+                    <Grid Padding="0,16,0,0" ColumnSpacing="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="420" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left Column: Add Secret Form -->
+                        <Border Grid.Column="0"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <StackPanel Spacing="14">
+                                <TextBlock Text="Store Encrypted Secret" FontWeight="SemiBold" FontSize="15" />
+                                <TextBlock Text="Secrets are encrypted at rest with PBKDF2/Fernet bound to this machine. Plaintext is never emitted in UI or LLM prompts."
+                                           FontSize="12" TextWrapping="Wrap"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+                                <TextBox Text="{Binding Mcp.NewSecretKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Header="Secret Key Identifier" PlaceholderText="e.g. GITHUB_TOKEN or BRAVE_API_KEY" />
+                                <TextBox Text="{Binding Mcp.NewSecretValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Header="Secret Plaintext Value" PlaceholderText="Paste token / key value" />
+                                <TextBox Text="{Binding Mcp.NewSecretDescription, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         Header="Description (optional)" PlaceholderText="e.g. Read-only repo access token" />
+
+                                <Button Content="Encrypt and Save to Vault"
+                                        Style="{ThemeResource AccentButtonStyle}"
+                                        Command="{Binding Mcp.SaveSecretCommand}"
+                                        HorizontalAlignment="Stretch" />
+
+                                <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                        CornerRadius="6" Padding="10">
+                                    <TextBlock Text="Usage in Server Configuration:&#x0a;Set environment variable value to 'ref:vault/&lt;KEY&gt;'. Nexora resolves secrets in-memory inside the child process."
+                                               FontSize="11" TextWrapping="Wrap"
+                                               Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Right Column: Vault Inventory -->
+                        <Border Grid.Column="1"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <Grid RowSpacing="12">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Stored Vault Keys" FontWeight="SemiBold" FontSize="15" VerticalAlignment="Center" />
+                                    <Button Grid.Column="1" Command="{Binding Mcp.LoadVaultSecretsCommand}" Padding="8,4">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <FontIcon Glyph="&#xE72C;" FontSize="11" />
+                                            <TextBlock Text="Refresh" FontSize="11" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+
+                                <ListView Grid.Row="1"
+                                          ItemsSource="{Binding Mcp.VaultSecrets}"
+                                          SelectionMode="None">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,4" Padding="12"
+                                                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="6">
+                                                <Grid ColumnSpacing="12">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <StackPanel Grid.Column="0" Spacing="4">
+                                                        <TextBlock Text="{Binding Key}" FontFamily="Consolas" FontWeight="Bold" FontSize="13" />
+                                                        <TextBlock Text="{Binding Description}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                    </StackPanel>
+
+                                                    <Border Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                                            CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                                        <TextBlock Text="[Encrypted]" FontSize="10" FontWeight="SemiBold" Foreground="LimeGreen" />
+                                                    </Border>
+
+                                                    <Button Grid.Column="2" Content="Delete"
+                                                            Command="{Binding DataContext.Mcp.DeleteSecretCommand, ElementName=MainRootGrid}"
+                                                            CommandParameter="{Binding Key}"
+                                                            Padding="8,4" FontSize="11" VerticalAlignment="Center" />
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
                             </Grid>
                         </Border>
                     </Grid>

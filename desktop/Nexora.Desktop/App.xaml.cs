@@ -32,10 +32,11 @@ public partial class App : Application
         var taskDetail = new TaskDetailViewModel(apiClient, poller);
         var approvalDialog = new ApprovalDialogViewModel(apiClient);
         var skills = new SkillsViewModel(apiClient);
+        var mcp = new McpViewModel(apiClient);
 
         taskDetail.ApprovalRequested += approval => approvalDialog.SetApproval(approval);
 
-        var mainViewModel = new MainViewModel(apiClient, _supervisor, composer, taskDetail, approvalDialog, skills);
+        var mainViewModel = new MainViewModel(apiClient, _supervisor, composer, taskDetail, approvalDialog, skills, mcp);
         MainViewModelInstance = mainViewModel;
 
         var window = new MainWindow(mainViewModel);

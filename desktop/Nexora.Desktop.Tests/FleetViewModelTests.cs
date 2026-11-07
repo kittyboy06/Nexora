@@ -26,6 +26,18 @@ public class FleetViewModelTests
         public System.Threading.Tasks.Task<SkillDiscoveryCandidateDto> PreviewDiscoveryAsync(string owner, string repo, string branch = "main", string? path = null, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
         public System.Threading.Tasks.Task<SkillBundleDto> InstallSkillAsync(InstallSkillRequestDto request, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
         public System.Threading.Tasks.Task<GitHubRateLimitStatusDto> GetGitHubRateLimitAsync(System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<McpServerRecordDto>> ListMcpServersAsync(System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<McpServerRecordDto> GetMcpServerAsync(string serverId, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<McpServerRecordDto> RegisterMcpServerAsync(McpServerCreateRequestDto request, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<McpServerRecordDto> UpdateMcpServerAsync(string serverId, McpServerUpdateRequestDto request, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<bool> DeleteMcpServerAsync(string serverId, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<McpServerRecordDto> ApproveMcpServerAsync(string serverId, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<McpServerRecordDto> ConnectMcpServerAsync(string serverId, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<McpServerRecordDto> DisconnectMcpServerAsync(string serverId, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<McpPingResponseDto> PingMcpServerAsync(string serverId, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<McpVaultItemSummaryDto>> ListMcpVaultSecretsAsync(System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<McpVaultItemSummaryDto> WriteMcpVaultSecretAsync(McpVaultWriteRequestDto request, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<bool> DeleteMcpVaultSecretAsync(string key, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
     }
 
     private class DummyPoller : ITaskPoller

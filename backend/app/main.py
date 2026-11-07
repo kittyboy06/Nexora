@@ -15,6 +15,10 @@ from backend.app.skills.router import router as skills_router
 from backend.app.skills.manager import SkillManager
 from backend.app.skills.discovery import GitHubDiscoveryService
 from backend.app.skills.composer import SkillPromptComposer
+from backend.app.mcp.router import router as mcp_router
+from backend.app.mcp.vault import McpVaultService
+from backend.app.mcp.registry import McpServerRegistry
+from backend.app.mcp.session import McpSessionPool
 from backend.app.agent.executor import Executor
 from backend.app.agent.fleet.coordinator import FleetCoordinator
 from backend.app.agent.orchestrator import AgentOrchestrator
@@ -129,6 +133,18 @@ async def lifespan(app: FastAPI):
     app.state.github_discovery = github_discovery
     app.state.skill_composer = skill_composer
 
+    # Initialize Phase 8 Universal MCP Platform
+    mcp_vault = McpVaultService(settings.get_mcp_data_dir())
+    mcp_registry = McpServerRegistry(settings.get_mcp_data_dir())
+    mcp_session_pool = McpSessionPool(
+        registry=mcp_registry,
+        vault=mcp_vault,
+        idle_timeout_seconds=settings.MCP_IDLE_TIMEOUT_SECONDS,
+    )
+    app.state.mcp_vault = mcp_vault
+    app.state.mcp_registry = mcp_registry
+    app.state.mcp_session_pool = mcp_session_pool
+
     fleet_coordinator = FleetCoordinator(
         tool_registry=tool_registry,
         guard=guard,
@@ -149,12 +165,13 @@ async def lifespan(app: FastAPI):
         permissions=permission_manager,
     )
     app.state.task_manager = task_manager
-    logger.info("Phase 2, 3, 6, and 7 Agent Engine components initialized.")
+    logger.info("Phase 2, 3, 6, 7, and 8 Agent Engine components initialized.")
 
     yield
 
     # Clean shutdown
     logger.info("Shutting down %s...", settings.APP_NAME)
+    await mcp_session_pool.disconnect_all()
     await client.aclose()
     logger.info("Application shutdown complete.")
 
@@ -227,6 +244,7 @@ def create_app() -> FastAPI:
     app.include_router(chat_router, prefix="/api")
     app.include_router(agent_router, prefix="/api")
     app.include_router(skills_router, prefix="/api")
+    app.include_router(mcp_router, prefix="/api")
 
     return app
 

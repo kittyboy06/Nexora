@@ -18,6 +18,14 @@ class ToolRegistry:
         self._tools[tool.name] = tool
         logger.debug("Registered tool: %s (risk=%s)", tool.name, tool.risk_level.value)
 
+    def unregister(self, name: str) -> bool:
+        """Unregister a tool by name."""
+        if name in self._tools:
+            del self._tools[name]
+            logger.debug("Unregistered tool: %s", name)
+            return True
+        return False
+
     def get(self, name: str) -> BaseTool | None:
         """Lookup a registered tool by name."""
         return self._tools.get(name)
