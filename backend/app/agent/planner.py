@@ -8,6 +8,7 @@ from backend.app.core.config import Settings
 from backend.app.core.exceptions import PlanValidationException
 from backend.app.core.guard import InferenceGuard
 from backend.app.models.agent import TaskPlan
+from backend.app.models.model_profile import RouteSelection
 from backend.app.models.chat import ChatMessage, ChatRequest
 from backend.app.services.model_registry import HybridModelRouter, ModelProfileRegistry
 from backend.app.services.model_provider import ModelProvider
@@ -74,15 +75,23 @@ class Planner:
             f"\n\nSpecialist instructions:\n{profile_instruction}" if profile_instruction else ""
         )
 
-    async def generate_plan(self, prompt: str, profile_override: str | None = None) -> TaskPlan:
-        """Generate, validate, and return a TaskPlan with up to 1 self-correction retry."""
-        # Keep router calls on the same live service as planner inference (also supports service injection).
+    async def route_task(self, prompt: str, profile_override: str | None = None) -> RouteSelection:
+        """Classify task and select a model profile with escalation and fallback."""
         self.model_router.ollama = self.ollama
         selection = await self.model_router.route(prompt, profile_override=profile_override)
+        logger.info(
+            "Routed planning task to profile=%s model=%s kind=%s escalated=%s reason=%s",
+            selection.profile_id,
+            selection.model,
+            selection.task_kind.value,
+            selection.escalated,
+            selection.reason,
+        )
+        return selection
+
+    async def generate_plan_for_route(self, prompt: str, selection: RouteSelection) -> TaskPlan:
+        """Generate, validate, and return a TaskPlan using the routed specialist profile."""
         profile = self.model_profiles.profile(selection.profile_id)
-        logger.info("Routed planning task to profile=%s model=%s kind=%s escalated=%s reason=%s",
-                    selection.profile_id, selection.model, selection.task_kind.value,
-                    selection.escalated, selection.reason)
         system_prompt = self._build_system_prompt(profile.system_instruction)
         messages = [
             ChatMessage(role="system", content=system_prompt),
@@ -136,3 +145,8 @@ class Planner:
             message=f"Failed to generate a valid plan after {self.settings.MAX_PLANNING_ATTEMPTS} attempts: {last_error}",
             details={"prompt": prompt, "last_error": last_error},
         )
+
+    async def generate_plan(self, prompt: str, profile_override: str | None = None) -> TaskPlan:
+        """Backward-compatible helper that routes and generates a plan."""
+        selection = await self.route_task(prompt, profile_override=profile_override)
+        return await self.generate_plan_for_route(prompt, selection)

@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends
-from backend.app.api.dependencies import get_ollama_service
+from backend.app.api.dependencies import get_model_profile_registry, get_ollama_service
 from backend.app.models.ollama import ModelListResponse, OllamaStatusResponse
 from backend.app.services.ollama_service import OllamaService
-from backend.app.core.config import Settings, get_settings
 from backend.app.models.model_profile import ModelProfileListResponse
 from backend.app.services.model_registry import ModelProfileRegistry
 
@@ -34,8 +33,21 @@ async def list_ollama_models(
 
 @router.get("/profiles", response_model=ModelProfileListResponse, summary="List specialist profiles and local model availability")
 async def list_model_profiles(
+    refresh: bool = False,
     service: OllamaService = Depends(get_ollama_service),
-    settings: Settings = Depends(get_settings),
+    registry: ModelProfileRegistry = Depends(get_model_profile_registry),
 ) -> ModelProfileListResponse:
     """Show configured specialist profiles and whether each model is installed."""
-    return await ModelProfileRegistry(settings).list_profiles(service)
+    if refresh:
+        registry.reload()
+    return await registry.list_profiles(service)
+
+
+@router.post("/profiles/reload", response_model=ModelProfileListResponse, summary="Reload specialist profile catalogue from disk")
+async def reload_model_profiles(
+    service: OllamaService = Depends(get_ollama_service),
+    registry: ModelProfileRegistry = Depends(get_model_profile_registry),
+) -> ModelProfileListResponse:
+    """Reload profile definitions from disk and report updated catalogue with local model availability."""
+    registry.reload()
+    return await registry.list_profiles(service)

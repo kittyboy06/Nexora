@@ -1,0 +1,49 @@
+{
+  "task_id": "task_d4f5c28fd1c7",
+  "prompt": "Read another file",
+  "model_profile_id": null,
+  "status": "CANCELLED",
+  "routing": {
+    "profile_id": "general-planner",
+    "model": "qwen3.5:9b",
+    "task_kind": "general",
+    "reason": "capability fallback after uncertain classification",
+    "escalated": false
+  },
+  "plan": {
+    "plan_id": "plan_test_api",
+    "goal": "Read simulated configuration file",
+    "steps": [
+      {
+        "step_id": 1,
+        "description": "Read file contents",
+        "tool_call": {
+          "tool_name": "mock_file_read",
+          "arguments": {
+            "filepath": "config.json"
+          }
+        },
+        "dependencies": [],
+        "risk_level": "SENSITIVE",
+        "status": "PENDING",
+        "retries_attempted": 0
+      }
+    ],
+    "created_at": "2026-11-06T14:06:38.850213Z"
+  },
+  "execution_trace": [],
+  "pending_approval": {
+    "approval_id": "appr_5bbb67a2",
+    "task_id": "task_d4f5c28fd1c7",
+    "step_id": 1,
+    "tool_name": "mock_file_read",
+    "argument_hash": "29c6e963c42a347465273f5e50a6b65aaed2ab6b31fc1b064def4907d60f2dfa",
+    "expires_at": "2026-11-06T14:16:38.853275Z",
+    "created_at": "2026-11-06T14:06:38.853275Z"
+  },
+  "iterations_used": 0,
+  "created_at": "2026-11-06T14:06:38.799939Z",
+  "updated_at": "2026-11-06T14:06:38.923863Z",
+  "completed_at": "2026-11-06T14:06:38.923863Z",
+  "error_message": "Cancelled by user."
+}

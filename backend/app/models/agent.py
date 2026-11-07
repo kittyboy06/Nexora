@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
 from pydantic import BaseModel, Field
+from backend.app.models.model_profile import RouteSelection
 
 
 class TaskStatus(str, Enum):
@@ -86,6 +87,7 @@ class AgentTask(BaseModel):
     prompt: str = Field(..., description="Original user prompt or instruction")
     model_profile_id: str | None = Field(default=None, description="Optional specialist profile override")
     status: TaskStatus = Field(default=TaskStatus.SUBMITTED, description="Current task lifecycle status")
+    routing: RouteSelection | None = Field(default=None, description="Hybrid routing decision, profile, model, and escalation metadata")
     plan: TaskPlan | None = Field(default=None, description="Validated task plan")
     execution_trace: list[StepResult] = Field(default_factory=list, description="Ordered step execution results")
     pending_approval: ActionApproval | None = Field(default=None, description="Pending approval token if paused")

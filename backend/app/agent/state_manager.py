@@ -18,6 +18,8 @@ from backend.app.models.agent import (
     TaskStatus,
 )
 
+from backend.app.models.model_profile import RouteSelection
+
 logger = logging.getLogger("nexora.state_manager")
 
 VALID_TRANSITIONS: dict[TaskStatus, set[TaskStatus]] = {
@@ -150,6 +152,17 @@ class StateManager:
 
             self._persist_atomic(task)
             logger.info("Task %s transitioned: %s -> %s", task_id, current.value, target.value)
+            return task
+
+    async def record_routing(self, task_id: str, routing: RouteSelection) -> AgentTask:
+        """Store the routing decision in task."""
+        async with self._lock:
+            task = self._tasks.get(task_id)
+            if not task:
+                task = await self._load_task_from_disk(task_id)
+            task.routing = routing
+            task.updated_at = datetime.now(timezone.utc)
+            self._persist_atomic(task)
             return task
 
     async def update_plan(self, task_id: str, plan: TaskPlan) -> AgentTask:

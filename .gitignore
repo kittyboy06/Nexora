@@ -22,4 +22,13 @@ data/logs/*.log
 # IDE
 .vscode/
 .idea/
+.vs/
 .agents/*
+
+# .NET / C#
+bin/
+obj/
+*.user
+*.suo
+TestResults/
+desktop/testdiag.txt

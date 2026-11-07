@@ -103,3 +103,29 @@ async def test_same_router_and_primary_model_uses_fallback_without_duplicate_cal
     assert decision.profile_id == "coder"
     assert decision.escalated is False
     assert len(ollama.requests) == 1
+
+
+def test_profile_registry_reload_updates_catalogue(profiles_file):
+    settings = Settings(
+        OLLAMA_MODEL="worker-large",
+        MODEL_ROUTER_MODEL="router-small",
+        MODEL_PROFILES_FILE=str(profiles_file),
+    )
+    registry = ModelProfileRegistry(settings)
+    assert len(registry.catalogue.profiles) == 4
+
+    # Update file with an extra profile
+    new_data = {
+        "profiles": [
+            {"profile_id": "router", "model": "router-small", "specialties": ["general"], "role": "router"},
+            {"profile_id": "general", "model": "worker-large", "specialties": ["general"]},
+            {"profile_id": "coder", "model": "worker-large", "specialties": ["code"]},
+            {"profile_id": "researcher", "model": "worker-large", "specialties": ["research"]},
+            {"profile_id": "analyst", "model": "worker-large", "specialties": ["reasoning"]},
+        ]
+    }
+    profiles_file.write_text(json.dumps(new_data), encoding="utf-8")
+    reloaded = registry.reload()
+    assert len(reloaded.profiles) == 5
+    assert registry.profile("analyst").profile_id == "analyst"
+

@@ -27,22 +27,33 @@ class ModelProfileRegistry:
         self.path = settings.get_model_profiles_file()
         self.settings = settings
         self.catalogue = self._load()
-        # Preserve the pre-registry behavior when users configure a different primary model.
-        if not any(profile.enabled and profile.model == settings.OLLAMA_MODEL for profile in self.catalogue.profiles):
+        self._ensure_primary_fallback(self.catalogue)
+
+    def _ensure_primary_fallback(self, catalogue: ModelProfileCatalogue) -> None:
+        """Preserve pre-registry behavior when users configure a different primary model."""
+        if not any(profile.enabled and profile.model == self.settings.OLLAMA_MODEL for profile in catalogue.profiles):
             fallback_id = "default-primary"
-            existing_ids = {profile.profile_id for profile in self.catalogue.profiles}
+            existing_ids = {profile.profile_id for profile in catalogue.profiles}
             suffix = 2
             while fallback_id in existing_ids:
                 fallback_id = f"default-primary-{suffix}"
                 suffix += 1
-            self.catalogue.profiles.append(ModelProfile(
+            catalogue.profiles.append(ModelProfile(
                 profile_id=fallback_id,
-                model=settings.OLLAMA_MODEL,
+                model=self.settings.OLLAMA_MODEL,
                 specialties=[TaskKind.GENERAL],
                 system_instruction="",
                 role="planner",
                 enabled=True,
             ))
+
+    def reload(self) -> ModelProfileCatalogue:
+        """Reload the profile catalogue from disk and refresh in-memory state."""
+        catalogue = self._load()
+        self._ensure_primary_fallback(catalogue)
+        self.catalogue = catalogue
+        logger.info("Reloaded %d model profiles from %s", len(self.catalogue.profiles), self.path)
+        return self.catalogue
 
     def _load(self) -> ModelProfileCatalogue:
         try:

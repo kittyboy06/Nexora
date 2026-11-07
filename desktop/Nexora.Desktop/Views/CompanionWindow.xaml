@@ -1,0 +1,164 @@
+<Window
+    x:Class="Nexora.Desktop.Views.CompanionWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Title="NEXORA Companion"
+    mc:Ignorable="d">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid Padding="16" Background="Transparent">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Companion Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Border Background="{ThemeResource AccentFillColorDefaultBrush}"
+                        CornerRadius="6"
+                        Width="24" Height="24">
+                    <FontIcon Glyph="&#xE7E8;" Foreground="White" FontSize="12" />
+                </Border>
+                <TextBlock Text="NEXORA Companion" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" />
+                <Ellipse Width="7" Height="7" Margin="4,0,0,0"
+                         Fill="{Binding IsBackendOnline, Converter={StaticResource StatusToBrushConverter}}"
+                         VerticalAlignment="Center" />
+            </StackPanel>
+
+            <Button Grid.Column="1"
+                    x:Name="OpenDashboardButton"
+                    ToolTipService.ToolTip="Open Full Dashboard"
+                    Padding="6,4">
+                <FontIcon Glyph="&#xE740;" FontSize="12" />
+            </Button>
+        </Grid>
+
+        <!-- Companion Body -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="12">
+                <!-- If Approval Pending -->
+                <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
+                        BorderBrush="Goldenrod"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="12"
+                        Visibility="{Binding ApprovalDialog.Approval, Converter={StaticResource NullToVisibilityConverter}}">
+                    <StackPanel Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE7BA;" Foreground="Goldenrod" FontSize="14" />
+                            <TextBlock Text="Approval Required" FontWeight="SemiBold" FontSize="12" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding ApprovalDialog.Approval.ToolName}" FontFamily="Consolas" FontSize="12" />
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0"
+                                    Content="Reject"
+                                    HorizontalAlignment="Stretch"
+                                    FontSize="11"
+                                    Command="{Binding ApprovalDialog.RejectCommand}" />
+                            <Button Grid.Column="1"
+                                    Content="Approve"
+                                    Style="{ThemeResource AccentButtonStyle}"
+                                    HorizontalAlignment="Stretch"
+                                    FontSize="11"
+                                    Command="{Binding ApprovalDialog.ApproveCommand}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Active Task Card -->
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="12"
+                        Visibility="{Binding TaskDetail.HasCurrentTask, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <StackPanel Spacing="8">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding TaskDetail.CurrentTaskId}"
+                                       FontFamily="Consolas"
+                                       FontSize="11"
+                                       FontWeight="Bold" />
+                            <Border Grid.Column="1"
+                                    Background="{Binding TaskDetail.CurrentTaskStatus, Converter={StaticResource StatusToBrushConverter}}"
+                                    CornerRadius="6"
+                                    Padding="6,1">
+                                <TextBlock Text="{Binding TaskDetail.CurrentTaskStatus}"
+                                           Foreground="White"
+                                           FontSize="10"
+                                           FontWeight="Bold" />
+                            </Border>
+                        </Grid>
+
+                        <TextBlock Text="{Binding TaskDetail.CurrentTaskPrompt}"
+                                   FontSize="12"
+                                   MaxLines="3"
+                                   TextWrapping="Wrap" />
+
+                        <!-- Cancel Button -->
+                        <Button Content="Cancel Task"
+                                HorizontalAlignment="Stretch"
+                                FontSize="11"
+                                Command="{Binding TaskDetail.CancelTaskCommand}"
+                                IsEnabled="{Binding TaskDetail.CanCancel}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Quick Composer (When no task or for quick instructions) -->
+                <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="12">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Quick Instruction" FontWeight="SemiBold" FontSize="12" />
+                        <TextBox PlaceholderText="Enter prompt..."
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 Height="70"
+                                 FontSize="12"
+                                 Text="{Binding Composer.Prompt, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                        <Button Content="Run"
+                                Style="{ThemeResource AccentButtonStyle}"
+                                HorizontalAlignment="Stretch"
+                                FontSize="12"
+                                Command="{Binding Composer.SubmitTaskCommand}"
+                                IsEnabled="{Binding Composer.CanSubmit}" />
+
+                        <ProgressBar IsIndeterminate="True"
+                                     Visibility="{Binding Composer.IsSubmitting, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Companion Footer -->
+        <Border Grid.Row="2" Margin="0,10,0,0">
+            <Button x:Name="FooterDashboardButton"
+                    Content="Open Full Dashboard"
+                    HorizontalAlignment="Stretch"
+                    FontSize="12" />
+        </Border>
+    </Grid>
+</Window>

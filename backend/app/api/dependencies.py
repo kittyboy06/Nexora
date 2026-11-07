@@ -14,6 +14,7 @@ from backend.app.core.guard import InferenceGuard
 from backend.app.permissions.manager import PermissionManager
 from backend.app.services.app_service import AppService
 from backend.app.services.filesystem_service import FilesystemService
+from backend.app.services.model_registry import ModelProfileRegistry
 from backend.app.services.ollama_service import OllamaService
 from backend.app.services.terminal_service import TerminalService
 from backend.app.tools.filesystem import register_filesystem_tools
@@ -127,12 +128,26 @@ def get_plan_validator(
     return PlanValidator(registry=registry, settings=settings)
 
 
+_model_profile_registry: ModelProfileRegistry | None = None
+
+
+def get_model_profile_registry(
+    settings: Settings = Depends(get_app_settings),
+) -> ModelProfileRegistry:
+    """Dependency provider for ModelProfileRegistry."""
+    global _model_profile_registry
+    if _model_profile_registry is None or _model_profile_registry.settings.MODEL_PROFILES_FILE != settings.MODEL_PROFILES_FILE:
+        _model_profile_registry = ModelProfileRegistry(settings)
+    return _model_profile_registry
+
+
 def get_planner(
     ollama: OllamaService = Depends(get_ollama_service),
     validator: PlanValidator = Depends(get_plan_validator),
     registry: ToolRegistry = Depends(get_tool_registry),
     settings: Settings = Depends(get_app_settings),
     guard: InferenceGuard = Depends(get_inference_guard),
+    model_profiles: ModelProfileRegistry = Depends(get_model_profile_registry),
 ) -> Planner:
     """Dependency provider for Planner."""
     return Planner(
@@ -141,6 +156,7 @@ def get_planner(
         registry=registry,
         settings=settings,
         guard=guard,
+        model_profiles=model_profiles,
     )
 
 

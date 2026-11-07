@@ -26,6 +26,7 @@ from backend.app.models.common import ErrorDetail, ErrorResponse
 from backend.app.permissions.manager import PermissionManager
 from backend.app.services.app_service import AppService
 from backend.app.services.filesystem_service import FilesystemService
+from backend.app.services.model_registry import ModelProfileRegistry
 from backend.app.services.ollama_service import OllamaService
 from backend.app.services.terminal_service import TerminalService
 from backend.app.tools.filesystem import register_filesystem_tools
@@ -92,12 +93,15 @@ async def lifespan(app: FastAPI):
 
     ollama_service = OllamaService(client=client, settings=settings)
     plan_validator = PlanValidator(registry=tool_registry, settings=settings)
+    model_profile_registry = ModelProfileRegistry(settings)
+    app.state.model_profile_registry = model_profile_registry
     planner = Planner(
         ollama_service=ollama_service,
         validator=plan_validator,
         registry=tool_registry,
         settings=settings,
         guard=guard,
+        model_profiles=model_profile_registry,
     )
     permission_manager = PermissionManager(settings=settings)
     executor = Executor(

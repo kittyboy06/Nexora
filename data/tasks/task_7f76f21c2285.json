@@ -1,0 +1,15 @@
+{
+  "task_id": "task_7f76f21c2285",
+  "prompt": "Do work while Ollama is offline",
+  "model_profile_id": null,
+  "status": "FAILED",
+  "routing": null,
+  "plan": null,
+  "execution_trace": [],
+  "pending_approval": null,
+  "iterations_used": 0,
+  "created_at": "2026-11-07T05:54:29.998876Z",
+  "updated_at": "2026-11-07T05:54:30.016742Z",
+  "completed_at": "2026-11-07T05:54:30.016742Z",
+  "error_message": "Local Ollama service is unreachable at configured URL."
+}

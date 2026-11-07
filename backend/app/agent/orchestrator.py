@@ -42,12 +42,15 @@ class AgentOrchestrator:
                 await asyncio.sleep(0.01)
 
                 await self.state_manager.transition_state(task_id, TaskStatus.PLANNING)
-                plan = await self.planner.generate_plan(task.prompt, profile_override=task.model_profile_id)
+                selection = await self.planner.route_task(task.prompt, profile_override=task.model_profile_id)
+                task = await self.state_manager.record_routing(task_id, selection)
+                plan = await self.planner.generate_plan_for_route(task.prompt, selection)
                 task = await self.state_manager.update_plan(task_id, plan)
                 task = await self.state_manager.transition_state(task_id, TaskStatus.EXECUTING)
             except Exception as exc:
                 logger.error("Planning failed for task %s: %s", task_id, exc)
-                await self.state_manager.transition_state(task_id, TaskStatus.FAILED, error_message=str(exc))
+                error_msg = getattr(exc, "message", str(exc))
+                await self.state_manager.transition_state(task_id, TaskStatus.FAILED, error_message=error_msg)
                 return
 
         elif task.status == TaskStatus.APPROVED:

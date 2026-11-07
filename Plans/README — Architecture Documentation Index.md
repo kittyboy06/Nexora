@@ -10,14 +10,14 @@ This folder is the source of truth for Antigravity before it changes NEXORA. Rea
 | `Phase 1 — Design Specification.md` and implementation plan | FastAPI, Ollama, chat, logging and inference guard | Implemented; verify |
 | `Phase 2 — Design Specification.md` and implementation plan | Deterministic agent engine, state, validation, approvals | Implemented; preserve |
 | `Phase 3 — Design Specification.md` and implementation plan | Filesystem, Windows application and terminal tools | Implemented; preserve |
-| `Phase 4 — Agent Fleet Foundation.md` | Model profiles and hybrid routing foundation | Started; verify and complete |
+| `Phase 4 — Design Specification.md`, plan & guide | Model profiles, hybrid routing, diagnostics & reload | Implemented & verified |
+| `Phase 5 — Design Specification.md`, plan & guide | Native WinUI 3 Windows Shell, Mica Dashboard, Companion, System Tray | Implemented & verified |
 | `NEXORA — Master Architecture and Antigravity Build Guide.md` | Complete product direction and roadmap | Architecture reference |
 
 ## Future phase specifications
 
 | Phase | Document | Module specifications to read |
 |---|---|---|
-| 5 | `Phase 5 — Dashboard and Control Plane.md` | Native Windows Shell module, Control Plane module, Governance module |
 | 6 | `Phase 6 — Dynamic Agent Fleet and DAG.md` | Fleet module, Model module, Governance module |
 | 7 | `Phase 7 — Skills and GitHub Discovery.md` | Skills module, Governance module |
 | 8 | `Phase 8 — Universal MCP Platform.md` | MCP module, Governance module |
