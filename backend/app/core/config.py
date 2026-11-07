@@ -52,6 +52,9 @@ class Settings(BaseSettings):
     SANDBOX_DATA_DIR: str = "data/sandbox"
     GENERATED_TOOLS_DIR: str = "data/tools/generated"
 
+    # Phase 11 Memory and Persistence
+    MEMORY_DATA_DIR: str = "data/memory"
+
     # Phase 3 Real-World Tool Limits
     WORKSPACE_DIR: str = "data/workspace"
     MAX_FILE_SIZE_BYTES: int = 5_000_000  # 5 MB
@@ -170,6 +173,17 @@ class Settings(BaseSettings):
     def get_generated_tools_dir(self) -> Path:
         """Resolve data/tools/generated directory relative to workspace or absolute."""
         p = Path(self.GENERATED_TOOLS_DIR)
+        if p.is_absolute():
+            return p
+        if Path.cwd().name == "backend":
+            candidate = Path.cwd().parent / p
+        else:
+            candidate = Path.cwd() / p
+        return candidate.resolve()
+
+    def get_memory_data_dir(self) -> Path:
+        """Resolve data/memory directory relative to workspace or absolute."""
+        p = Path(self.MEMORY_DATA_DIR)
         if p.is_absolute():
             return p
         if Path.cwd().name == "backend":

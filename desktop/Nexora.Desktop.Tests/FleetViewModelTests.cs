@@ -54,6 +54,18 @@ public class FleetViewModelTests
         public System.Threading.Tasks.Task<GeneratedToolRecordDto> PromoteToolAsync(ToolPromotionRequestDto request, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
         public System.Threading.Tasks.Task<GeneratedToolRecordDto> UpdateGeneratedToolAsync(string toolName, ToolUpdateRequestDto request, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
         public System.Threading.Tasks.Task<bool> DeleteGeneratedToolAsync(string toolName, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<MemoryRecordDto>> ListMemoriesAsync(string? category = null, string? status = null, string? query = null, int limit = 50, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<MemoryRecordDto> CreateMemoryAsync(MemoryProposalDto proposal, bool autoApprove = false, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<MemoryRecordDto> GetMemoryAsync(string memoryId, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<MemoryRecordDto> UpdateMemoryAsync(string memoryId, MemoryUpdateRequestDto request, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<MemoryRecordDto> ApproveMemoryAsync(string memoryId, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<bool> RevokeMemoryAsync(string memoryId, string reason = "Revoked by operator", System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<bool> DeleteMemoryAsync(string memoryId, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<MemoryAuditEntryDto>> ListMemoryAuditAsync(string? memoryId = null, int limit = 50, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<MemoryBackupInfoDto> CreateMemoryBackupAsync(System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<MemoryBackupInfoDto>> ListMemoryBackupsAsync(System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<bool> RestoreMemoryBackupAsync(string backupPath, System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
+        public System.Threading.Tasks.Task<string> ExportMemoriesAsync(string format = "json", System.Threading.CancellationToken cancellationToken = default) => throw new System.NotImplementedException();
     }
 
     private class DummyPoller : ITaskPoller

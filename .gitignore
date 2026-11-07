@@ -15,9 +15,13 @@ ENV/
 .coverage
 htmlcov/
 
-# Logs
+# Logs & Runtime Data
 data/logs/*.log
 *.log
+data/tasks/*.json
+data/memory/*.db
+data/memory/*.db-*
+data/memory/backups/
 
 # IDE
 .vscode/

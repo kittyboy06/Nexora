@@ -59,4 +59,18 @@ public interface INexoraApiClient
     Task<GeneratedToolRecordDto> PromoteToolAsync(ToolPromotionRequestDto request, CancellationToken cancellationToken = default);
     Task<GeneratedToolRecordDto> UpdateGeneratedToolAsync(string toolName, ToolUpdateRequestDto request, CancellationToken cancellationToken = default);
     Task<bool> DeleteGeneratedToolAsync(string toolName, CancellationToken cancellationToken = default);
+
+    // Phase 11: Memory and Persistence Platform
+    Task<IReadOnlyList<MemoryRecordDto>> ListMemoriesAsync(string? category = null, string? status = null, string? query = null, int limit = 50, CancellationToken cancellationToken = default);
+    Task<MemoryRecordDto> CreateMemoryAsync(MemoryProposalDto proposal, bool autoApprove = false, CancellationToken cancellationToken = default);
+    Task<MemoryRecordDto> GetMemoryAsync(string memoryId, CancellationToken cancellationToken = default);
+    Task<MemoryRecordDto> UpdateMemoryAsync(string memoryId, MemoryUpdateRequestDto request, CancellationToken cancellationToken = default);
+    Task<MemoryRecordDto> ApproveMemoryAsync(string memoryId, CancellationToken cancellationToken = default);
+    Task<bool> RevokeMemoryAsync(string memoryId, string reason = "Revoked by operator", CancellationToken cancellationToken = default);
+    Task<bool> DeleteMemoryAsync(string memoryId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<MemoryAuditEntryDto>> ListMemoryAuditAsync(string? memoryId = null, int limit = 50, CancellationToken cancellationToken = default);
+    Task<MemoryBackupInfoDto> CreateMemoryBackupAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<MemoryBackupInfoDto>> ListMemoryBackupsAsync(CancellationToken cancellationToken = default);
+    Task<bool> RestoreMemoryBackupAsync(string backupPath, CancellationToken cancellationToken = default);
+    Task<string> ExportMemoriesAsync(string format = "json", CancellationToken cancellationToken = default);
 }

@@ -60,6 +60,7 @@ class Planner:
         settings: Settings,
         guard: InferenceGuard,
         model_profiles: ModelProfileRegistry | None = None,
+        memory_service: Any | None = None,
     ):
         self.ollama = ollama_service
         self.validator = validator
@@ -68,6 +69,7 @@ class Planner:
         self.guard = guard
         self.model_profiles = model_profiles or ModelProfileRegistry(settings)
         self.model_router = HybridModelRouter(self.model_profiles, settings, ollama_service, guard)
+        self.memory_service = memory_service
 
     def _build_system_prompt(self, profile_instruction: str = "") -> str:
         tools_spec = json.dumps(self.registry.get_specs(), indent=2)
@@ -93,9 +95,15 @@ class Planner:
         """Generate, validate, and return a TaskPlan using the routed specialist profile."""
         profile = self.model_profiles.profile(selection.profile_id)
         system_prompt = self._build_system_prompt(profile.system_instruction)
+        user_prompt_content = f"Generate a task plan for this objective: {prompt}"
+        if self.memory_service:
+            recalled_ctx = self.memory_service.format_planner_prompt_context(prompt)
+            if recalled_ctx:
+                user_prompt_content += f"\n\n{recalled_ctx}"
+
         messages = [
             ChatMessage(role="system", content=system_prompt),
-            ChatMessage(role="user", content=f"Generate a task plan for this objective: {prompt}"),
+            ChatMessage(role="user", content=user_prompt_content),
         ]
 
         last_error = ""

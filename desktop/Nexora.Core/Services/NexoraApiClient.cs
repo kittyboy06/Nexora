@@ -409,4 +409,97 @@ public class NexoraApiClient : INexoraApiClient
         var response = await _httpClient.DeleteAsync($"/api/sandbox/tools/{Uri.EscapeDataString(toolName)}", cancellationToken);
         return response.IsSuccessStatusCode;
     }
+
+    // Phase 11: Memory and Persistence Platform
+    public async Task<IReadOnlyList<MemoryRecordDto>> ListMemoriesAsync(string? category = null, string? status = null, string? query = null, int limit = 50, CancellationToken cancellationToken = default)
+    {
+        var url = $"/api/memory/records?limit={limit}";
+        if (!string.IsNullOrEmpty(category)) url += $"&category={Uri.EscapeDataString(category)}";
+        if (!string.IsNullOrEmpty(status)) url += $"&status={Uri.EscapeDataString(status)}";
+        if (!string.IsNullOrEmpty(query)) url += $"&query={Uri.EscapeDataString(query)}";
+
+        var response = await _httpClient.GetAsync(url, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<List<MemoryRecordDto>>(JsonOptions, cancellationToken))
+            ?? new List<MemoryRecordDto>();
+    }
+
+    public async Task<MemoryRecordDto> CreateMemoryAsync(MemoryProposalDto proposal, bool autoApprove = false, CancellationToken cancellationToken = default)
+    {
+        var url = $"/api/memory/records?auto_approve={autoApprove.ToString().ToLowerInvariant()}";
+        var response = await _httpClient.PostAsJsonAsync(url, proposal, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<MemoryRecordDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<MemoryRecordDto> GetMemoryAsync(string memoryId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync($"/api/memory/records/{Uri.EscapeDataString(memoryId)}", cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<MemoryRecordDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<MemoryRecordDto> UpdateMemoryAsync(string memoryId, MemoryUpdateRequestDto request, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PatchAsJsonAsync($"/api/memory/records/{Uri.EscapeDataString(memoryId)}", request, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<MemoryRecordDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<MemoryRecordDto> ApproveMemoryAsync(string memoryId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsync($"/api/memory/records/{Uri.EscapeDataString(memoryId)}/approve", null, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<MemoryRecordDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<bool> RevokeMemoryAsync(string memoryId, string reason = "Revoked by operator", CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsync($"/api/memory/records/{Uri.EscapeDataString(memoryId)}/revoke?reason={Uri.EscapeDataString(reason)}", null, cancellationToken);
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> DeleteMemoryAsync(string memoryId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.DeleteAsync($"/api/memory/records/{Uri.EscapeDataString(memoryId)}", cancellationToken);
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<IReadOnlyList<MemoryAuditEntryDto>> ListMemoryAuditAsync(string? memoryId = null, int limit = 50, CancellationToken cancellationToken = default)
+    {
+        var url = $"/api/memory/audit?limit={limit}";
+        if (!string.IsNullOrEmpty(memoryId)) url += $"&memory_id={Uri.EscapeDataString(memoryId)}";
+        var response = await _httpClient.GetAsync(url, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<List<MemoryAuditEntryDto>>(JsonOptions, cancellationToken))
+            ?? new List<MemoryAuditEntryDto>();
+    }
+
+    public async Task<MemoryBackupInfoDto> CreateMemoryBackupAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsync("/api/memory/backup", null, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<MemoryBackupInfoDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<IReadOnlyList<MemoryBackupInfoDto>> ListMemoryBackupsAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync("/api/memory/backups", cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<List<MemoryBackupInfoDto>>(JsonOptions, cancellationToken))
+            ?? new List<MemoryBackupInfoDto>();
+    }
+
+    public async Task<bool> RestoreMemoryBackupAsync(string backupPath, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsync($"/api/memory/restore?backup_path={Uri.EscapeDataString(backupPath)}", null, cancellationToken);
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<string> ExportMemoriesAsync(string format = "json", CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync($"/api/memory/export?format={Uri.EscapeDataString(format)}", cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return await response.Content.ReadAsStringAsync(cancellationToken);
+    }
 }

@@ -32,6 +32,9 @@ public partial class MainViewModel : ObservableObject
     private bool _isGeneratedToolsViewVisible;
 
     [ObservableProperty]
+    private bool _isMemoryViewVisible;
+
+    [ObservableProperty]
     private string _activeModel = "None";
 
     [ObservableProperty]
@@ -43,6 +46,7 @@ public partial class MainViewModel : ObservableObject
     public SkillsViewModel Skills { get; }
     public McpViewModel Mcp { get; }
     public GeneratedToolsViewModel GeneratedTools { get; }
+    public MemoryViewModel Memory { get; }
 
     public ObservableCollection<AgentTask> RecentTasks { get; } = new();
 
@@ -54,7 +58,8 @@ public partial class MainViewModel : ObservableObject
         ApprovalDialogViewModel approvalDialog,
         SkillsViewModel? skills = null,
         McpViewModel? mcp = null,
-        GeneratedToolsViewModel? generatedTools = null)
+        GeneratedToolsViewModel? generatedTools = null,
+        MemoryViewModel? memory = null)
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
         _supervisor = supervisor ?? throw new ArgumentNullException(nameof(supervisor));
@@ -64,6 +69,7 @@ public partial class MainViewModel : ObservableObject
         Skills = skills ?? new SkillsViewModel(_apiClient);
         Mcp = mcp ?? new McpViewModel(_apiClient);
         GeneratedTools = generatedTools ?? new GeneratedToolsViewModel(_apiClient);
+        Memory = memory ?? new MemoryViewModel(_apiClient);
 
         Composer.TaskCreated += OnTaskCreated;
         ApprovalDialog.DecisionCompleted += OnApprovalDecided;
@@ -76,6 +82,7 @@ public partial class MainViewModel : ObservableObject
         IsSkillsViewVisible = false;
         IsMcpViewVisible = false;
         IsGeneratedToolsViewVisible = false;
+        IsMemoryViewVisible = false;
     }
 
     [RelayCommand]
@@ -85,6 +92,7 @@ public partial class MainViewModel : ObservableObject
         IsSkillsViewVisible = true;
         IsMcpViewVisible = false;
         IsGeneratedToolsViewVisible = false;
+        IsMemoryViewVisible = false;
     }
 
     [RelayCommand]
@@ -94,6 +102,7 @@ public partial class MainViewModel : ObservableObject
         IsSkillsViewVisible = false;
         IsMcpViewVisible = true;
         IsGeneratedToolsViewVisible = false;
+        IsMemoryViewVisible = false;
     }
 
     [RelayCommand]
@@ -103,6 +112,17 @@ public partial class MainViewModel : ObservableObject
         IsSkillsViewVisible = false;
         IsMcpViewVisible = false;
         IsGeneratedToolsViewVisible = true;
+        IsMemoryViewVisible = false;
+    }
+
+    [RelayCommand]
+    public void ShowMemoryView()
+    {
+        IsTasksViewVisible = false;
+        IsSkillsViewVisible = false;
+        IsMcpViewVisible = false;
+        IsGeneratedToolsViewVisible = false;
+        IsMemoryViewVisible = true;
     }
 
     public async Task InitializeAsync(string repoRoot)
@@ -120,6 +140,8 @@ public partial class MainViewModel : ObservableObject
                 await Skills.LoadInstalledSkillsAsync();
                 await Mcp.LoadServersAsync();
                 await Mcp.LoadVaultSecretsAsync();
+                await GeneratedTools.LoadAllAsync();
+                await Memory.LoadAllAsync();
                 StatusMessage = "Ready";
             }
             else

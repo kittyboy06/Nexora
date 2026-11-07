@@ -73,6 +73,13 @@
                             <TextBlock Text="Generated Tools" FontSize="12" FontWeight="SemiBold" />
                         </StackPanel>
                     </Button>
+                    <Button Command="{Binding ShowMemoryViewCommand}"
+                            Padding="12,6">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <FontIcon Glyph="&#xE753;" FontSize="13" />
+                            <TextBlock Text="Memory &amp; Persistence" FontSize="12" FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
 
                 <!-- Status Pills & Actions -->
@@ -1406,6 +1413,272 @@
                                     </ListView>
                                 </StackPanel>
                             </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </TabViewItem>
+            </TabView>
+        </Grid>
+
+        <!-- MEMORY & PERSISTENCE VIEW AREA -->
+        <Grid Grid.Row="1" Padding="20"
+              Visibility="{Binding IsMemoryViewVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+            <TabView HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                <!-- TAB 1: DURABLE MEMORIES CATALOG -->
+                <TabViewItem Header="Durable Memories &amp; Policies">
+                    <TabViewItem.IconSource>
+                        <FontIconSource Glyph="&#xE753;" />
+                    </TabViewItem.IconSource>
+                    <Grid Padding="0,16,0,0" ColumnSpacing="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="420" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- LEFT: Memory List & Search -->
+                        <Border Grid.Column="0"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <Grid RowSpacing="12">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Spacing="4">
+                                    <TextBlock Text="Retained Intelligence" FontWeight="SemiBold" FontSize="15" />
+                                    <TextBlock Text="Local, inspectable user preferences and project facts"
+                                               FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </StackPanel>
+
+                                <!-- Search Box -->
+                                <TextBox Grid.Row="1"
+                                         PlaceholderText="Search memory content, keys, categories..."
+                                         Text="{Binding Memory.SearchQuery, Mode=TwoWay}">
+                                </TextBox>
+
+                                <ListView Grid.Row="2"
+                                          ItemsSource="{Binding Memory.Memories}"
+                                          SelectedItem="{Binding Memory.SelectedRecord, Mode=TwoWay}">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Margin="0,4" Padding="12"
+                                                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="6">
+                                                <Grid ColumnSpacing="8">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Grid.Column="0" Spacing="4">
+                                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                                            <TextBlock Text="{Binding Key}" FontWeight="Bold" FontSize="13" />
+                                                            <Border Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                                                    CornerRadius="4" Padding="6,2">
+                                                                <TextBlock Text="{Binding Category}" FontSize="10" Foreground="DodgerBlue" />
+                                                            </Border>
+                                                        </StackPanel>
+                                                        <TextBlock Text="{Binding Value}" FontSize="11"
+                                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" MaxLines="2" />
+                                                    </StackPanel>
+                                                    <Border Grid.Column="1"
+                                                            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                                                            CornerRadius="4" Padding="6,2" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding Status}" FontSize="10" FontWeight="SemiBold" />
+                                                    </Border>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Grid>
+                        </Border>
+
+                        <!-- RIGHT: Memory Details, Governance & Audit -->
+                        <Border Grid.Column="1"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Spacing="16">
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Spacing="4">
+                                            <TextBlock Text="{Binding Memory.SelectedRecord.Key, TargetNullValue='No Record Selected'}"
+                                                       FontWeight="Bold" FontSize="18" />
+                                            <TextBlock Text="{Binding Memory.SelectedRecord.ProvenanceReason}"
+                                                       FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        </StackPanel>
+
+                                        <Button Grid.Column="1" Content="Approve"
+                                                Style="{ThemeResource AccentButtonStyle}"
+                                                Command="{Binding Memory.ApproveMemoryCommand}"
+                                                Padding="12,6" VerticalAlignment="Center" />
+                                        <Button Grid.Column="2" Content="Revoke"
+                                                Command="{Binding Memory.RevokeMemoryCommand}"
+                                                Padding="12,6" VerticalAlignment="Center" />
+                                        <Button Grid.Column="3" Content="Delete"
+                                                Command="{Binding Memory.DeleteMemoryCommand}"
+                                                Padding="12,6" VerticalAlignment="Center" />
+                                    </Grid>
+
+                                    <!-- Content Box -->
+                                    <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="6"
+                                            Padding="12">
+                                        <StackPanel Spacing="8">
+                                            <TextBlock Text="Stored Memory Value" FontWeight="SemiBold" FontSize="12" />
+                                            <TextBox Text="{Binding Memory.SelectedRecord.Value}"
+                                                     IsReadOnly="True"
+                                                     AcceptsReturn="True"
+                                                     FontFamily="Consolas"
+                                                     FontSize="11"
+                                                     MinHeight="100" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Audit History -->
+                                    <TextBlock Text="Lifecycle Audit Trail" FontWeight="SemiBold" FontSize="13" />
+                                    <ListView ItemsSource="{Binding Memory.AuditEntries}" MaxHeight="220">
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Margin="0,2" Padding="8" Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="4">
+                                                    <Grid ColumnSpacing="8">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Grid.Column="0" Text="{Binding Action}" FontWeight="Bold" FontSize="11" Foreground="DodgerBlue" />
+                                                        <TextBlock Grid.Column="1" Text="{Binding Actor}" FontSize="11" Foreground="DarkGray" />
+                                                        <TextBlock Grid.Column="2" Text="{Binding Details}" FontSize="11" />
+                                                        <TextBlock Grid.Column="3" Text="{Binding Timestamp}" FontSize="10" Foreground="Gray" />
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </TabViewItem>
+
+                <!-- TAB 2: PROPOSE OR CREATE MEMORY -->
+                <TabViewItem Header="Author New Memory">
+                    <TabViewItem.IconSource>
+                        <FontIconSource Glyph="&#xE710;" />
+                    </TabViewItem.IconSource>
+                    <Grid Padding="0,16,0,0">
+                        <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="20"
+                                MaxWidth="600"
+                                HorizontalAlignment="Left">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel Spacing="14">
+                                    <TextBlock Text="Manual Memory Entry" FontWeight="SemiBold" FontSize="16" />
+                                    <TextBox Header="Memory Key" PlaceholderText="e.g. pref:editor_theme or fact:database_version"
+                                             Text="{Binding Memory.NewKey, Mode=TwoWay}" />
+                                    <TextBox Header="Category" PlaceholderText="user_preference, project_fact, system_constraint"
+                                             Text="{Binding Memory.NewCategory, Mode=TwoWay}" />
+                                    <TextBox Header="Memory Value" PlaceholderText="Enter preference or verified project fact..."
+                                             Text="{Binding Memory.NewValue, Mode=TwoWay}"
+                                             AcceptsReturn="True" MinHeight="100" />
+                                    <TextBox Header="Sensitivity" PlaceholderText="LOW, MEDIUM, HIGH"
+                                             Text="{Binding Memory.NewSensitivity, Mode=TwoWay}" />
+                                    <TextBox Header="Provenance / Justification" PlaceholderText="Why should Nexora remember this?"
+                                             Text="{Binding Memory.NewReason, Mode=TwoWay}" />
+
+                                    <Button Content="Save to Long-Term Memory"
+                                            Style="{ThemeResource AccentButtonStyle}"
+                                            Command="{Binding Memory.CreateMemoryCommand}"
+                                            HorizontalAlignment="Stretch" />
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+                </TabViewItem>
+
+                <!-- TAB 3: BACKUPS & RECOVERY -->
+                <TabViewItem Header="Backups &amp; Disaster Recovery">
+                    <TabViewItem.IconSource>
+                        <FontIconSource Glyph="&#xE74E;" />
+                    </TabViewItem.IconSource>
+                    <Grid Padding="0,16,0,0" RowSpacing="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Top Action Bar -->
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="12">
+                            <Button Content="Create Online Backup"
+                                    Style="{ThemeResource AccentButtonStyle}"
+                                    Command="{Binding Memory.CreateBackupCommand}" />
+                            <Button Content="Export Memories (JSON)"
+                                    Command="{Binding Memory.ExportMemoriesCommand}"
+                                    CommandParameter="json" />
+                            <Button Content="Export Memories (CSV)"
+                                    Command="{Binding Memory.ExportMemoriesCommand}"
+                                    CommandParameter="csv" />
+                        </StackPanel>
+
+                        <!-- Backups List -->
+                        <Border Grid.Row="1"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="8"
+                                Padding="16">
+                            <ListView ItemsSource="{Binding Memory.Backups}">
+                                <ListView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Margin="0,4" Padding="12"
+                                                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="6">
+                                            <Grid ColumnSpacing="12">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" Spacing="4">
+                                                    <TextBlock Text="{Binding BackupPath}" FontFamily="Consolas" FontWeight="Bold" FontSize="12" />
+                                                    <TextBlock Text="{Binding CreatedAt}" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                </StackPanel>
+                                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding RecordCount}" FontSize="11" FontWeight="Bold" />
+                                                </StackPanel>
+                                                <Button Grid.Column="2" Content="Restore"
+                                                        Command="{Binding DataContext.Memory.RestoreBackupCommand, ElementName=MainRootGrid}"
+                                                        CommandParameter="{Binding BackupPath}"
+                                                        Padding="10,4" VerticalAlignment="Center" />
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListView.ItemTemplate>
+                            </ListView>
                         </Border>
                     </Grid>
                 </TabViewItem>

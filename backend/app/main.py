@@ -31,6 +31,13 @@ from backend.app.sandbox.router import router as sandbox_router
 from backend.app.sandbox.runners.job_object import Win32JobObjectRunner
 from backend.app.sandbox.service import SandboxOrchestrationService
 from backend.app.sandbox.validator import AstSecurityValidator
+from backend.app.memory.backup import MemoryBackupService
+from backend.app.memory.database import MemoryDatabase
+from backend.app.memory.retrieval import MemoryRetrievalEngine
+from backend.app.memory.router import router as memory_router
+from backend.app.memory.service import MemoryService
+from backend.app.memory.store import DurableMemoryStore
+from backend.app.memory.tools import register_memory_tools
 from backend.app.agent.executor import Executor
 from backend.app.agent.fleet.coordinator import FleetCoordinator
 from backend.app.agent.orchestrator import AgentOrchestrator
@@ -112,6 +119,25 @@ async def lifespan(app: FastAPI):
     app.state.terminal_service = terminal_service
     app.state.tool_registry = tool_registry
 
+    # Initialize Phase 11 Memory and Persistence Platform
+    memory_db = MemoryDatabase(db_path=settings.get_memory_data_dir() / "nexora_memory.db")
+    memory_store = DurableMemoryStore(database=memory_db)
+    memory_retrieval_engine = MemoryRetrievalEngine(store=memory_store, database=memory_db)
+    memory_backup_service = MemoryBackupService(database=memory_db, backup_dir=settings.get_memory_data_dir() / "backups")
+    memory_service = MemoryService(
+        store=memory_store,
+        retrieval_engine=memory_retrieval_engine,
+        backup_service=memory_backup_service,
+        database=memory_db,
+    )
+    register_memory_tools(tool_registry, memory_retrieval_engine, memory_store)
+
+    app.state.memory_db = memory_db
+    app.state.memory_store = memory_store
+    app.state.memory_retrieval_engine = memory_retrieval_engine
+    app.state.memory_backup_service = memory_backup_service
+    app.state.memory_service = memory_service
+
     ollama_service = OllamaService(client=client, settings=settings)
     plan_validator = PlanValidator(registry=tool_registry, settings=settings)
     model_profile_registry = ModelProfileRegistry(settings)
@@ -123,6 +149,7 @@ async def lifespan(app: FastAPI):
         settings=settings,
         guard=guard,
         model_profiles=model_profile_registry,
+        memory_service=memory_service,
     )
     permission_manager = PermissionManager(settings=settings)
     executor = Executor(
@@ -296,6 +323,7 @@ def create_app() -> FastAPI:
     app.include_router(mcp_router, prefix="/api")
     app.include_router(research_router)
     app.include_router(sandbox_router)
+    app.include_router(memory_router)
 
     return app
 
