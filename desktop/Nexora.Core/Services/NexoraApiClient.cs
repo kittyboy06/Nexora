@@ -76,9 +76,9 @@ public class NexoraApiClient : INexoraApiClient
         return (await response.Content.ReadFromJsonAsync<ModelProfileListResponse>(JsonOptions, cancellationToken))!;
     }
 
-    public async Task<AgentTask> CreateTaskAsync(string prompt, string? profileId = null, CancellationToken cancellationToken = default)
+    public async Task<AgentTask> CreateTaskAsync(string prompt, string? profileId = null, string? executionMode = "auto", CancellationToken cancellationToken = default)
     {
-        var request = new TaskCreateRequest(Prompt: prompt, ModelProfileId: profileId);
+        var request = new TaskCreateRequest(Prompt: prompt, ModelProfileId: profileId, ExecutionMode: executionMode);
         var response = await _httpClient.PostAsJsonAsync("/api/agent/tasks", request, JsonOptions, cancellationToken);
         await EnsureSuccessAsync(response, cancellationToken);
         var body = await response.Content.ReadFromJsonAsync<TaskResponse>(JsonOptions, cancellationToken);

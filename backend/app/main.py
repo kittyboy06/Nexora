@@ -12,6 +12,7 @@ from backend.app.api.routes.chat import router as chat_router
 from backend.app.api.routes.health import router as health_router
 from backend.app.api.routes.ollama import router as ollama_router
 from backend.app.agent.executor import Executor
+from backend.app.agent.fleet.coordinator import FleetCoordinator
 from backend.app.agent.orchestrator import AgentOrchestrator
 from backend.app.agent.plan_validator import PlanValidator
 from backend.app.agent.planner import Planner
@@ -115,12 +116,18 @@ async def lifespan(app: FastAPI):
         registry=tool_registry,
         guard=guard,
     )
+    fleet_coordinator = FleetCoordinator(
+        tool_registry=tool_registry,
+        guard=guard,
+    )
+    app.state.fleet_coordinator = fleet_coordinator
     orchestrator = AgentOrchestrator(
         state_manager=state_manager,
         planner=planner,
         executor=executor,
         evaluator=evaluator,
         settings=settings,
+        fleet_coordinator=fleet_coordinator,
     )
     task_manager = TaskManager(
         state_manager=state_manager,

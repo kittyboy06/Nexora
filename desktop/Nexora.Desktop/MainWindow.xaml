@@ -110,6 +110,16 @@
                                       DisplayMemberPath="ProfileId"
                                       PlaceholderText="Auto (Hybrid Routing)" />
 
+                            <!-- Execution Mode Selector (Phase 6) -->
+                            <ComboBox Header="Fleet Mode"
+                                      HorizontalAlignment="Stretch"
+                                      SelectedValue="{Binding Composer.ExecutionMode, Mode=TwoWay}"
+                                      SelectedValuePath="Tag">
+                                <ComboBoxItem Content="Auto (Adaptive Fleet)" Tag="auto" IsSelected="True" />
+                                <ComboBoxItem Content="Single Agent Only" Tag="single" />
+                                <ComboBoxItem Content="Multi-Agent Fleet" Tag="fleet" />
+                            </ComboBox>
+
                             <!-- Submit Button -->
                             <Button Content="Submit Task"
                                     Style="{ThemeResource AccentButtonStyle}"
@@ -189,6 +199,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
 
@@ -235,8 +246,61 @@
                             </StackPanel>
                         </Border>
 
+                        <!-- Fleet Progression Stepper (Phase 6 Dynamic Fleet) -->
+                        <Border Grid.Row="2"
+                                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                CornerRadius="6"
+                                Padding="12"
+                                Margin="0,0,0,12"
+                                Visibility="{Binding TaskDetail.HasFleetNodes, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Dynamic Agent Fleet (DAG)"
+                                           FontSize="11"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                           FontWeight="SemiBold" />
+
+                                <ItemsControl ItemsSource="{Binding TaskDetail.FleetNodes}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="8" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="6"
+                                                    Padding="10,8"
+                                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+                                                <StackPanel Spacing="4">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding Role}"
+                                                                   FontWeight="SemiBold"
+                                                                   FontSize="12" />
+                                                        <Border Background="{Binding State, Converter={StaticResource StatusToBrushConverter}}"
+                                                                CornerRadius="4"
+                                                                Padding="6,1">
+                                                            <TextBlock Text="{Binding StatusBadgeText}"
+                                                                       Foreground="White"
+                                                                       FontSize="10"
+                                                                       FontWeight="Bold" />
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding Objective}"
+                                                               FontSize="11"
+                                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                               MaxWidth="160"
+                                                               TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
                         <!-- Routing Diagnostic Card (Phase 4 integration) -->
-                        <Expander Grid.Row="2"
+                        <Expander Grid.Row="3"
                                   HorizontalAlignment="Stretch"
                                   Margin="0,0,0,12"
                                   Header="Routing Diagnostic"
@@ -270,7 +334,7 @@
                         </Expander>
 
                         <!-- Plan & Step Trace List -->
-                        <Grid Grid.Row="3">
+                        <Grid Grid.Row="4">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="*" />

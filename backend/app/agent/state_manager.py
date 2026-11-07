@@ -19,11 +19,12 @@ from backend.app.models.agent import (
 )
 
 from backend.app.models.model_profile import RouteSelection
+from backend.app.agent.fleet.models import Artifact, FleetPlan
 
 logger = logging.getLogger("nexora.state_manager")
 
 VALID_TRANSITIONS: dict[TaskStatus, set[TaskStatus]] = {
-    TaskStatus.SUBMITTED: {TaskStatus.PARSING, TaskStatus.CANCELLED},
+    TaskStatus.SUBMITTED: {TaskStatus.PARSING, TaskStatus.PLANNING, TaskStatus.EXECUTING, TaskStatus.CANCELLED},
     TaskStatus.PARSING: {TaskStatus.PLANNING, TaskStatus.FAILED, TaskStatus.CANCELLED},
     TaskStatus.PLANNING: {TaskStatus.EXECUTING, TaskStatus.FAILED, TaskStatus.CANCELLED},
     TaskStatus.EXECUTING: {TaskStatus.WAITING_APPROVAL, TaskStatus.COMPLETED, TaskStatus.FAILED, TaskStatus.CANCELLED},
@@ -256,3 +257,37 @@ class StateManager:
         task = AgentTask(**data)
         self._tasks[task_id] = task
         return task
+
+
+    async def update_fleet_plan(self, task_id: str, fleet_plan: FleetPlan) -> AgentTask:
+        """Update and persist the fleet plan for a task."""
+        async with self._lock:
+            task = self._tasks.get(task_id)
+            if not task:
+                task = self._load_from_disk(task_id)
+            if not task:
+                raise TaskNotFoundException(task_id)
+
+            updated = task.model_copy(
+                update={"fleet_plan": fleet_plan, "updated_at": datetime.now(timezone.utc)}
+            )
+            self._tasks[task_id] = updated
+            self._persist_atomic(updated)
+            return updated
+
+    async def record_artifact(self, task_id: str, artifact: Artifact) -> AgentTask:
+        """Append an immutable artifact to task state and persist atomically."""
+        async with self._lock:
+            task = self._tasks.get(task_id)
+            if not task:
+                task = self._load_from_disk(task_id)
+            if not task:
+                raise TaskNotFoundException(task_id)
+
+            artifacts = list(task.artifacts) + [artifact]
+            updated = task.model_copy(
+                update={"artifacts": artifacts, "updated_at": datetime.now(timezone.utc)}
+            )
+            self._tasks[task_id] = updated
+            self._persist_atomic(updated)
+            return updated

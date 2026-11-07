@@ -20,6 +20,9 @@ public partial class TaskComposerViewModel : ObservableObject
     private string? _selectedProfileId;
 
     [ObservableProperty]
+    private string _executionMode = "auto";
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanSubmit))]
     private bool _isSubmitting;
 
@@ -70,7 +73,7 @@ public partial class TaskComposerViewModel : ObservableObject
 
         try
         {
-            var task = await _apiClient.CreateTaskAsync(Prompt.Trim(), SelectedProfileId);
+            var task = await _apiClient.CreateTaskAsync(Prompt.Trim(), SelectedProfileId, ExecutionMode);
             Prompt = string.Empty;
             TaskCreated?.Invoke(task);
         }

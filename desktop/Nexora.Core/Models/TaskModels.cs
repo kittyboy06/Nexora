@@ -47,6 +47,19 @@ public enum RetryClassification
     UNCERTAIN
 }
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
+public enum FleetNodeState
+{
+    QUEUED,
+    READY,
+    RUNNING,
+    WAITING_APPROVAL,
+    COMPLETED,
+    BLOCKED,
+    FAILED,
+    CANCELLED
+}
+
 public record RouteSelection(
     [property: JsonPropertyName("profile_id")] string ProfileId,
     [property: JsonPropertyName("model")] string Model,
@@ -87,6 +100,39 @@ public record StepResult(
     [property: JsonPropertyName("retry_classification")] RetryClassification? RetryClassification = null
 );
 
+public record ArtifactModel(
+    [property: JsonPropertyName("artifact_id")] string ArtifactId,
+    [property: JsonPropertyName("node_id")] string NodeId,
+    [property: JsonPropertyName("producer_role")] string ProducerRole,
+    [property: JsonPropertyName("schema_version")] string SchemaVersion,
+    [property: JsonPropertyName("content")] object? Content,
+    [property: JsonPropertyName("content_hash")] string ContentHash,
+    [property: JsonPropertyName("evidence_refs")] List<string>? EvidenceRefs = null,
+    [property: JsonPropertyName("created_at")] string? CreatedAt = null
+);
+
+public record FleetNodeModel(
+    [property: JsonPropertyName("node_id")] string NodeId,
+    [property: JsonPropertyName("role")] string Role,
+    [property: JsonPropertyName("objective")] string Objective,
+    [property: JsonPropertyName("dependencies")] List<string>? Dependencies = null,
+    [property: JsonPropertyName("input_artifact_refs")] List<string>? InputArtifactRefs = null,
+    [property: JsonPropertyName("capability_allowlist")] List<string>? CapabilityAllowlist = null,
+    [property: JsonPropertyName("token_budget")] int TokenBudget = 2048,
+    [property: JsonPropertyName("state")] FleetNodeState State = FleetNodeState.QUEUED,
+    [property: JsonPropertyName("result_artifact_id")] string? ResultArtifactId = null,
+    [property: JsonPropertyName("error")] string? Error = null
+);
+
+public record FleetPlanModel(
+    [property: JsonPropertyName("fleet_id")] string FleetId,
+    [property: JsonPropertyName("parent_task_id")] string ParentTaskId,
+    [property: JsonPropertyName("goal")] string Goal,
+    [property: JsonPropertyName("nodes")] Dictionary<string, FleetNodeModel> Nodes,
+    [property: JsonPropertyName("max_nodes")] int MaxNodes = 5,
+    [property: JsonPropertyName("version")] string Version = "1.0"
+);
+
 public record AgentTask(
     [property: JsonPropertyName("task_id")] string TaskId,
     [property: JsonPropertyName("prompt")] string Prompt,
@@ -94,6 +140,8 @@ public record AgentTask(
     [property: JsonPropertyName("status")] TaskStatus Status = TaskStatus.SUBMITTED,
     [property: JsonPropertyName("routing")] RouteSelection? Routing = null,
     [property: JsonPropertyName("plan")] TaskPlan? Plan = null,
+    [property: JsonPropertyName("fleet_plan")] FleetPlanModel? FleetPlan = null,
+    [property: JsonPropertyName("artifacts")] List<ArtifactModel>? Artifacts = null,
     [property: JsonPropertyName("execution_trace")] List<StepResult>? ExecutionTrace = null,
     [property: JsonPropertyName("pending_approval")] ActionApproval? PendingApproval = null,
     [property: JsonPropertyName("iterations_used")] int IterationsUsed = 0,
@@ -105,7 +153,8 @@ public record AgentTask(
 
 public record TaskCreateRequest(
     [property: JsonPropertyName("prompt")] string Prompt,
-    [property: JsonPropertyName("model_profile_id")] string? ModelProfileId = null
+    [property: JsonPropertyName("model_profile_id")] string? ModelProfileId = null,
+    [property: JsonPropertyName("execution_mode")] string? ExecutionMode = "auto"
 );
 
 public record TaskResponse(

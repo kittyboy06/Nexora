@@ -10,7 +10,7 @@ public interface INexoraApiClient
     Task<HealthResponse> GetHealthAsync(CancellationToken cancellationToken = default);
     Task<OllamaStatusResponse> GetOllamaStatusAsync(CancellationToken cancellationToken = default);
     Task<ModelProfileListResponse> GetModelProfilesAsync(bool refresh = false, CancellationToken cancellationToken = default);
-    Task<AgentTask> CreateTaskAsync(string prompt, string? profileId = null, CancellationToken cancellationToken = default);
+    Task<AgentTask> CreateTaskAsync(string prompt, string? profileId = null, string? executionMode = "auto", CancellationToken cancellationToken = default);
     Task<AgentTask> GetTaskAsync(string taskId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<AgentTask>> ListTasksAsync(CancellationToken cancellationToken = default);
     Task<AgentTask> CancelTaskAsync(string taskId, CancellationToken cancellationToken = default);

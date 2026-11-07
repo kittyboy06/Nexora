@@ -5,6 +5,8 @@ import time
 from backend.app.agent.executor import Executor
 from backend.app.agent.planner import Planner
 from backend.app.agent.result_evaluator import ResultEvaluator
+from backend.app.agent.fleet.coordinator import FleetCoordinator
+from backend.app.agent.fleet.models import FleetPlan, FleetResult
 from backend.app.agent.state_manager import StateManager
 from backend.app.core.config import Settings
 from backend.app.models.agent import RetryClassification, StepStatus, TaskStatus
@@ -22,12 +24,14 @@ class AgentOrchestrator:
         executor: Executor,
         evaluator: ResultEvaluator,
         settings: Settings,
+        fleet_coordinator: FleetCoordinator | None = None,
     ):
         self.state_manager = state_manager
         self.planner = planner
         self.executor = executor
         self.evaluator = evaluator
         self.settings = settings
+        self.fleet_coordinator = fleet_coordinator
 
     async def run_task(self, task_id: str, pre_authorized_step_id: int | None = None) -> None:
         """Execute or resume an agent task through the complete lifecycle."""
@@ -56,6 +60,23 @@ class AgentOrchestrator:
         elif task.status == TaskStatus.APPROVED:
             # Resuming execution after user approval
             task = await self.state_manager.transition_state(task_id, TaskStatus.EXECUTING)
+
+
+        # Check if task is running as a Fleet Plan
+        if task.fleet_plan and self.fleet_coordinator:
+            logger.info("Executing task %s via FleetCoordinator (%d nodes)", task_id, len(task.fleet_plan.nodes))
+            if task.status != TaskStatus.EXECUTING:
+                task = await self.state_manager.transition_state(task_id, TaskStatus.EXECUTING)
+            fleet_result = await self.fleet_coordinator.execute_fleet(task.fleet_plan)
+            for art in fleet_result.artifacts:
+                await self.state_manager.record_artifact(task_id, art)
+            if fleet_result.is_verified:
+                await self.state_manager.transition_state(task_id, TaskStatus.COMPLETED)
+            else:
+                await self.state_manager.transition_state(
+                    task_id, TaskStatus.FAILED, error_message=fleet_result.error or fleet_result.summary
+                )
+            return
 
         if not task.plan:
             await self.state_manager.transition_state(task_id, TaskStatus.FAILED, error_message="Task has no plan.")
@@ -152,3 +173,26 @@ class AgentOrchestrator:
         # 3. All Steps Succeeded
         await self.state_manager.transition_state(task_id, TaskStatus.COMPLETED)
         logger.info("Task %s completed successfully (%d steps).", task_id, len(task.plan.steps))
+
+
+    async def run_fleet_task(self, task_id: str, fleet_plan: FleetPlan) -> FleetResult:
+        """Explicitly run a task using FleetCoordinator."""
+        await self.state_manager.update_fleet_plan(task_id, fleet_plan)
+        if not self.fleet_coordinator:
+            raise RuntimeError("FleetCoordinator is not configured on AgentOrchestrator.")
+
+        task = await self.state_manager.get_task(task_id)
+        if task.status != TaskStatus.EXECUTING:
+            await self.state_manager.transition_state(task_id, TaskStatus.EXECUTING)
+
+        result = await self.fleet_coordinator.execute_fleet(fleet_plan)
+        for art in result.artifacts:
+            await self.state_manager.record_artifact(task_id, art)
+
+        if result.is_verified:
+            await self.state_manager.transition_state(task_id, TaskStatus.COMPLETED)
+        else:
+            await self.state_manager.transition_state(
+                task_id, TaskStatus.FAILED, error_message=result.error or result.summary
+            )
+        return result

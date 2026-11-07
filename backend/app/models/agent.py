@@ -3,6 +3,7 @@ from enum import Enum
 from typing import Any
 from pydantic import BaseModel, Field
 from backend.app.models.model_profile import RouteSelection
+from backend.app.agent.fleet.models import Artifact, FleetPlan
 
 
 class TaskStatus(str, Enum):
@@ -89,6 +90,8 @@ class AgentTask(BaseModel):
     status: TaskStatus = Field(default=TaskStatus.SUBMITTED, description="Current task lifecycle status")
     routing: RouteSelection | None = Field(default=None, description="Hybrid routing decision, profile, model, and escalation metadata")
     plan: TaskPlan | None = Field(default=None, description="Validated task plan")
+    fleet_plan: FleetPlan | None = Field(default=None, description="Optional dynamic agent fleet DAG plan")
+    artifacts: list[Artifact] = Field(default_factory=list, description="Immutable evidence records produced by fleet nodes")
     execution_trace: list[StepResult] = Field(default_factory=list, description="Ordered step execution results")
     pending_approval: ActionApproval | None = Field(default=None, description="Pending approval token if paused")
     iterations_used: int = Field(default=0, le=15, description="Count of tool executions attempted")
@@ -102,6 +105,7 @@ class AgentTask(BaseModel):
 class TaskCreateRequest(BaseModel):
     prompt: str = Field(..., min_length=1, max_length=4096, description="User goal or task instruction")
     model_profile_id: str | None = Field(default=None, min_length=1, max_length=100, description="Optional manual specialist profile override")
+    execution_mode: str | None = Field(default="auto", description="Execution mode: auto, single, fleet")
 
 
 class TaskResponse(BaseModel):

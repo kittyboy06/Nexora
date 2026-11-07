@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -30,6 +31,16 @@ public partial class TaskDetailViewModel : ObservableObject
     [ObservableProperty]
     private string? _errorMessage;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasFleetNodes))]
+    private ObservableCollection<FleetNodeViewModel> _fleetNodes = new();
+
+    [ObservableProperty]
+    private FleetNodeViewModel? _selectedFleetNode;
+
+    [ObservableProperty]
+    private ObservableCollection<ArtifactModel> _artifacts = new();
+
     public bool HasCurrentTask => CurrentTask != null;
     public string CurrentTaskId => CurrentTask?.TaskId ?? string.Empty;
     public TaskStatus CurrentTaskStatus => CurrentTask?.Status ?? TaskStatus.SUBMITTED;
@@ -37,6 +48,7 @@ public partial class TaskDetailViewModel : ObservableObject
     public RouteSelection? CurrentTaskRouting => CurrentTask?.Routing;
     public System.Collections.Generic.IReadOnlyList<PlanStep> CurrentTaskSteps => (System.Collections.Generic.IReadOnlyList<PlanStep>?)CurrentTask?.Plan?.Steps ?? Array.Empty<PlanStep>();
     public bool CanCancel => CurrentTask != null && !IsCancelling && CurrentTask.Status is not (TaskStatus.COMPLETED or TaskStatus.FAILED or TaskStatus.CANCELLED);
+    public bool HasFleetNodes => FleetNodes.Count > 0;
 
     public event Action<ActionApproval>? ApprovalRequested;
 
@@ -55,6 +67,37 @@ public partial class TaskDetailViewModel : ObservableObject
         if (task.Status is TaskStatus.SUBMITTED or TaskStatus.PARSING or TaskStatus.PLANNING or TaskStatus.EXECUTING)
         {
             _taskPoller.StartPolling(task.TaskId);
+        }
+    }
+
+    partial void OnCurrentTaskChanged(AgentTask? value)
+    {
+        FleetNodes.Clear();
+        Artifacts.Clear();
+
+        if (value?.FleetPlan?.Nodes != null)
+        {
+            foreach (var kvp in value.FleetPlan.Nodes)
+            {
+                var n = kvp.Value;
+                FleetNodes.Add(new FleetNodeViewModel
+                {
+                    NodeId = n.NodeId,
+                    Role = n.Role,
+                    Objective = n.Objective,
+                    State = n.State,
+                    Error = n.Error,
+                    ResultArtifactId = n.ResultArtifactId,
+                });
+            }
+        }
+
+        if (value?.Artifacts != null)
+        {
+            foreach (var art in value.Artifacts)
+            {
+                Artifacts.Add(art);
+            }
         }
     }
 

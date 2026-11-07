@@ -71,8 +71,9 @@ public class StatusToBrushConverter : IValueConverter
         {
             "COMPLETED" => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 46, 160, 67)),      // Green
             "EXECUTING" or "RUNNING" => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 120, 212)), // Accent Blue
-            "PLANNING" or "ROUTING" => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 138, 99, 210)), // Purple
+            "PLANNING" or "ROUTING" or "READY" => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 138, 99, 210)), // Purple
             "WAITING_APPROVAL" => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 230, 140, 20)),     // Amber/Orange
+            "BLOCKED" => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 168, 0, 0)),          // Dark Red
             "FAILED" => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 209, 36, 47)),          // Red
             "CANCELLED" => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 120, 120, 120)),     // Slate Gray
             _ => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 90, 90, 90)),
@@ -102,6 +103,7 @@ public class StatusToGlyphConverter : IValueConverter
             "EXECUTING" or "RUNNING" => "\uE768", // Play / Sync
             "PLANNING" or "ROUTING" => "\uE945",  // Brain / Gear
             "WAITING_APPROVAL" => "\uE7BA",      // Warning / Shield
+            "BLOCKED" => "\uE71A",               // Blocked Circle
             "FAILED" => "\uE711",                // Error X
             "CANCELLED" => "\uE71A",             // Blocked / Cancel
             _ => "\uE823",                       // Clock / Pending
