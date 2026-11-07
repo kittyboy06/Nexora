@@ -32,3 +32,5 @@ obj/
 *.suo
 TestResults/
 desktop/testdiag.txt
+dist/
+publish/
