@@ -41,17 +41,45 @@ class AgentOrchestrator:
         # 1. Parsing & Planning (if not already planned)
         if task.status == TaskStatus.SUBMITTED:
             try:
+                current = await self.state_manager.get_task(task_id)
+                if current.status == TaskStatus.CANCELLED:
+                    logger.info("Task %s was cancelled before parsing.", task_id)
+                    return
+
                 await self.state_manager.transition_state(task_id, TaskStatus.PARSING)
-                # Parse intent
                 await asyncio.sleep(0.01)
+
+                current = await self.state_manager.get_task(task_id)
+                if current.status == TaskStatus.CANCELLED:
+                    logger.info("Task %s was cancelled before planning.", task_id)
+                    return
 
                 await self.state_manager.transition_state(task_id, TaskStatus.PLANNING)
                 selection = await self.planner.route_task(task.prompt, profile_override=task.model_profile_id)
+
+                current = await self.state_manager.get_task(task_id)
+                if current.status == TaskStatus.CANCELLED:
+                    logger.info("Task %s was cancelled after routing.", task_id)
+                    return
+
                 task = await self.state_manager.record_routing(task_id, selection)
                 plan = await self.planner.generate_plan_for_route(task.prompt, selection)
+
+                current = await self.state_manager.get_task(task_id)
+                if current.status == TaskStatus.CANCELLED:
+                    logger.info("Task %s was cancelled after plan generation.", task_id)
+                    return
+
                 task = await self.state_manager.update_plan(task_id, plan)
                 task = await self.state_manager.transition_state(task_id, TaskStatus.EXECUTING)
+            except asyncio.CancelledError:
+                logger.info("Planning for task %s was cancelled.", task_id)
+                raise
             except Exception as exc:
+                current = await self.state_manager.get_task(task_id)
+                if current.status == TaskStatus.CANCELLED:
+                    logger.info("Task %s was cancelled during planning exception handling.", task_id)
+                    return
                 logger.error("Planning failed for task %s: %s", task_id, exc)
                 error_msg = getattr(exc, "message", str(exc))
                 await self.state_manager.transition_state(task_id, TaskStatus.FAILED, error_message=error_msg)

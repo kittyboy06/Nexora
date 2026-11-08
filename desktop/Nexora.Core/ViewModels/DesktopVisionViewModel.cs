@@ -60,6 +60,28 @@ public partial class DesktopVisionViewModel : ObservableObject
     [ObservableProperty]
     private DesktopActionResultDto? _lastActionResult;
 
+    // Phase 15: Autonomous Desktop Loop Properties
+    [ObservableProperty]
+    private string _autonomyGoal = string.Empty;
+
+    [ObservableProperty]
+    private int _autonomyMaxActions = 10;
+
+    [ObservableProperty]
+    private double _autonomyMaxDurationSeconds = 300.0;
+
+    [ObservableProperty]
+    private AutonomousSessionStateDto? _activeAutonomySession;
+
+    [ObservableProperty]
+    private bool _isAutonomyRunning;
+
+    [ObservableProperty]
+    private bool _isAutonomyPaused;
+
+    [ObservableProperty]
+    private string _autonomyStatusText = "IDLE";
+
     public ObservableCollection<WindowSummaryDto> Windows { get; } = new();
     public ObservableCollection<ScreenshotEvidenceDto> EvidenceList { get; } = new();
     public ObservableCollection<UIElementNodeDto> FlattenedElements { get; } = new();
@@ -322,6 +344,179 @@ public partial class DesktopVisionViewModel : ObservableObject
         catch (Exception ex)
         {
             StatusMessage = $"Failed to load evidence: {ex.Message}";
+        }
+    }
+
+    // Phase 15: Autonomous Desktop Loop Commands
+    [RelayCommand]
+    public async Task StartAutonomyAsync()
+    {
+        if (string.IsNullOrWhiteSpace(AutonomyGoal))
+        {
+            StatusMessage = "Please specify an autonomy goal before starting.";
+            return;
+        }
+
+        IsLoading = true;
+        StatusMessage = "Starting autonomous desktop session...";
+        try
+        {
+            var allowedHwnds = new List<int>();
+            if (ActiveBinding != null && ActiveBinding.Hwnd > 0)
+            {
+                allowedHwnds.Add(ActiveBinding.Hwnd);
+            }
+            else if (SelectedWindow != null && SelectedWindow.Hwnd > 0)
+            {
+                allowedHwnds.Add(SelectedWindow.Hwnd);
+            }
+
+            var config = new AutonomousSessionConfigDto
+            {
+                SessionId = $"sess_{Guid.NewGuid():N}"[..12],
+                Goal = AutonomyGoal,
+                AllowedHwnds = allowedHwnds,
+                MaxActions = AutonomyMaxActions > 0 ? AutonomyMaxActions : 10,
+                MaxDurationSeconds = AutonomyMaxDurationSeconds > 0 ? AutonomyMaxDurationSeconds : 300.0,
+            };
+
+            var state = await _apiClient.StartAutonomousSessionAsync(config);
+            ActiveAutonomySession = state;
+            IsAutonomyRunning = true;
+            IsAutonomyPaused = false;
+            AutonomyStatusText = state.Status;
+            StatusMessage = $"Autonomous session {state.SessionId} initialized (Budget: {state.MaxActions} actions).";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Failed to start autonomy: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task StepAutonomyAsync()
+    {
+        if (ActiveAutonomySession == null)
+        {
+            StatusMessage = "No active autonomous session to step.";
+            return;
+        }
+
+        IsLoading = true;
+        StatusMessage = $"Stepping session {ActiveAutonomySession.SessionId}...";
+        try
+        {
+            var result = await _apiClient.ExecuteAutonomousStepAsync(ActiveAutonomySession.SessionId);
+            ActiveAutonomySession = result.SessionState;
+            AutonomyStatusText = result.SessionState.Status;
+
+            if (result.IsTerminal)
+            {
+                IsAutonomyRunning = false;
+                IsAutonomyPaused = false;
+                StatusMessage = $"Autonomy ended: {result.TerminalReason ?? result.SessionState.Status}";
+            }
+            else
+            {
+                IsAutonomyPaused = result.SessionState.Status == "PAUSED";
+                StatusMessage = $"Step {result.StepNumber}: {result.ActionResult?.Message ?? "Inspected"}";
+            }
+
+            await LoadEvidenceAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Autonomy step failed: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task PauseAutonomyAsync()
+    {
+        if (ActiveAutonomySession == null)
+        {
+            return;
+        }
+
+        IsLoading = true;
+        try
+        {
+            var state = await _apiClient.PauseAutonomousSessionAsync(ActiveAutonomySession.SessionId);
+            ActiveAutonomySession = state;
+            IsAutonomyPaused = true;
+            AutonomyStatusText = state.Status;
+            StatusMessage = $"Session {state.SessionId} paused.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Failed to pause session: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task ResumeAutonomyAsync()
+    {
+        if (ActiveAutonomySession == null)
+        {
+            return;
+        }
+
+        IsLoading = true;
+        try
+        {
+            var state = await _apiClient.ResumeAutonomousSessionAsync(ActiveAutonomySession.SessionId);
+            ActiveAutonomySession = state;
+            IsAutonomyPaused = false;
+            AutonomyStatusText = state.Status;
+            StatusMessage = $"Session {state.SessionId} resumed.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Failed to resume session: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task StopAutonomyAsync()
+    {
+        if (ActiveAutonomySession == null)
+        {
+            return;
+        }
+
+        IsLoading = true;
+        try
+        {
+            var state = await _apiClient.StopAutonomousSessionAsync(ActiveAutonomySession.SessionId);
+            ActiveAutonomySession = state;
+            IsAutonomyRunning = false;
+            IsAutonomyPaused = false;
+            AutonomyStatusText = state.Status;
+            StatusMessage = $"Session {state.SessionId} stopped.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Failed to stop session: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
         }
     }
 

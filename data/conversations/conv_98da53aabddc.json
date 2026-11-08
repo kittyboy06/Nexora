@@ -1,0 +1,50 @@
+{
+  "conversation_id": "conv_98da53aabddc",
+  "title": "Analyze system performance and logs",
+  "created_at": "2026-11-07T17:28:34.095061Z",
+  "updated_at": "2026-11-07T17:28:34.101305Z",
+  "archived": false,
+  "messages": [
+    {
+      "message_id": "msg_582b8597feb2",
+      "conversation_id": "conv_98da53aabddc",
+      "role": "user",
+      "content": "Analyze system performance and logs",
+      "mode": "task",
+      "model": null,
+      "routing": null,
+      "work_item_ids": [],
+      "created_at": "2026-11-07T17:28:34.098225Z"
+    },
+    {
+      "message_id": "msg_169732e0be0c",
+      "conversation_id": "conv_98da53aabddc",
+      "role": "assistant",
+      "content": "I've initiated an operational task (**task_fe98fb744374**): Execute task: Analyze system performance and logs.\n\nYou can monitor its plan and step approvals directly in the work card below or on the Tasks page.",
+      "mode": "task",
+      "model": "mock-model:latest",
+      "routing": null,
+      "work_item_ids": [
+        "work_73e9bf4fa07c"
+      ],
+      "created_at": "2026-11-07T17:28:34.101305Z"
+    }
+  ],
+  "work_items": [
+    {
+      "work_item_id": "work_73e9bf4fa07c",
+      "conversation_id": "conv_98da53aabddc",
+      "source_message_id": "msg_582b8597feb2",
+      "intent": "task",
+      "target_module": "tasks",
+      "target_id": "task_fe98fb744374",
+      "status": "running",
+      "summary": "Execute task: Analyze system performance and logs",
+      "routing": null,
+      "authorization_state": "none",
+      "evidence_refs": [],
+      "created_at": "2026-11-07T17:28:34.100304Z",
+      "updated_at": "2026-11-07T17:28:34.100307Z"
+    }
+  ]
+}

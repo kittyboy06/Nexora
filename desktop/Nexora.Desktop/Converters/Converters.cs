@@ -56,27 +56,45 @@ public class NullToVisibilityConverter : IValueConverter
 
 public class StatusToBrushConverter : IValueConverter
 {
+    private static SolidColorBrush GetBrush(string resourceKey, Windows.UI.Color fallback)
+    {
+        try
+        {
+            if (Application.Current?.Resources != null)
+            {
+                if (Application.Current.Resources.TryGetValue(resourceKey, out var res) && res is SolidColorBrush brush)
+                {
+                    return brush;
+                }
+            }
+        }
+        catch
+        {
+            // Fallback for non-UI or test runner environments
+        }
+        return new SolidColorBrush(fallback);
+    }
+
     public object Convert(object value, Type targetType, object parameter, string language)
     {
         if (value is bool b)
         {
             return b
-                ? new SolidColorBrush(Windows.UI.Color.FromArgb(255, 46, 160, 67))      // Green
-                : new SolidColorBrush(Windows.UI.Color.FromArgb(255, 209, 36, 47));     // Red
+                ? GetBrush("StatusSuccessBrush", Windows.UI.Color.FromArgb(255, 126, 186, 138))      // Warm Success Green
+                : GetBrush("StatusDangerBrush", Windows.UI.Color.FromArgb(255, 240, 137, 127));     // Warm Danger Red
         }
 
         var statusStr = value?.ToString()?.ToUpperInvariant() ?? "";
 
         return statusStr switch
         {
-            "COMPLETED" => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 46, 160, 67)),      // Green
-            "EXECUTING" or "RUNNING" => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 0, 120, 212)), // Accent Blue
-            "PLANNING" or "ROUTING" or "READY" => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 138, 99, 210)), // Purple
-            "WAITING_APPROVAL" => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 230, 140, 20)),     // Amber/Orange
-            "BLOCKED" => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 168, 0, 0)),          // Dark Red
-            "FAILED" => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 209, 36, 47)),          // Red
-            "CANCELLED" => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 120, 120, 120)),     // Slate Gray
-            _ => new SolidColorBrush(Windows.UI.Color.FromArgb(255, 90, 90, 90)),
+            "COMPLETED" or "HEALTHY" => GetBrush("StatusSuccessBrush", Windows.UI.Color.FromArgb(255, 126, 186, 138)),
+            "EXECUTING" or "RUNNING" or "PLANNING" or "ROUTING" => GetBrush("AccentCopperBrush", Windows.UI.Color.FromArgb(255, 201, 144, 93)), // Warm Copper
+            "WAITING_APPROVAL" => GetBrush("StatusWarningBrush", Windows.UI.Color.FromArgb(255, 228, 180, 95)),     // Warm Warning Amber
+            "BLOCKED" => GetBrush("StatusDangerBrush", Windows.UI.Color.FromArgb(255, 240, 137, 127)),
+            "FAILED" or "ERROR" => GetBrush("StatusDangerBrush", Windows.UI.Color.FromArgb(255, 240, 137, 127)),
+            "CANCELLED" => GetBrush("TextDisabledBrush", Windows.UI.Color.FromArgb(255, 141, 124, 109)),     // Clay Muted
+            _ => GetBrush("TextSecondaryBrush", Windows.UI.Color.FromArgb(255, 200, 184, 165)),
         };
     }
 
@@ -99,14 +117,14 @@ public class StatusToGlyphConverter : IValueConverter
 
         return statusStr switch
         {
-            "COMPLETED" => "\uE73E",       // Checkmark
-            "EXECUTING" or "RUNNING" => "\uE768", // Play / Sync
-            "PLANNING" or "ROUTING" => "\uE945",  // Brain / Gear
-            "WAITING_APPROVAL" => "\uE7BA",      // Warning / Shield
-            "BLOCKED" => "\uE71A",               // Blocked Circle
-            "FAILED" => "\uE711",                // Error X
-            "CANCELLED" => "\uE71A",             // Blocked / Cancel
-            _ => "\uE823",                       // Clock / Pending
+            "COMPLETED" or "HEALTHY" => "\uE73E",       // Checkmark
+            "EXECUTING" or "RUNNING" => "\uE768",      // Play / Sync
+            "PLANNING" or "ROUTING" => "\uE945",       // Brain / Gear
+            "WAITING_APPROVAL" => "\uE7BA",           // Warning / Shield
+            "BLOCKED" => "\uE71A",                    // Blocked Circle
+            "FAILED" or "ERROR" => "\uE711",           // Error X
+            "CANCELLED" => "\uE71A",                  // Blocked / Cancel
+            _ => "\uE823",                            // Clock / Pending
         };
     }
 

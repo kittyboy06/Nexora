@@ -140,4 +140,94 @@ public class SkillsViewModelTests
         mockClient.Verify(c => c.InstallSkillAsync(It.IsAny<InstallSkillRequestDto>(), It.IsAny<CancellationToken>()), Times.Once);
         mockClient.Verify(c => c.ListSkillsAsync(false, null, It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Fact]
+    public async Task ImportFromFolderAsync_CallsApiAndRefreshes()
+    {
+        var mockClient = new Mock<INexoraApiClient>();
+        var sampleBundle = new SkillBundleDto
+        {
+            Manifest = new SkillManifestDto { Id = "local-git", Name = "Local Git", Version = "1.0.0" },
+            IsEnabled = false,
+        };
+
+        mockClient
+            .Setup(c => c.ImportSkillFolderAsync(It.Is<SkillImportFolderRequestDto>(r => r.FolderPath == "C:\\skills\\git"), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(sampleBundle);
+        mockClient
+            .Setup(c => c.ListSkillsAsync(false, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<SkillSummaryDto>());
+
+        var vm = new SkillsViewModel(mockClient.Object)
+        {
+            ImportFolderPath = "C:\\skills\\git",
+            EnableOnImport = false,
+        };
+
+        await vm.ImportFromFolderCommand.ExecuteAsync(null);
+
+        mockClient.Verify(c => c.ImportSkillFolderAsync(It.IsAny<SkillImportFolderRequestDto>(), It.IsAny<CancellationToken>()), Times.Once);
+        mockClient.Verify(c => c.ListSkillsAsync(false, null, It.IsAny<CancellationToken>()), Times.Once);
+        Assert.Contains("Imported 'Local Git'", vm.StatusMessage);
+    }
+
+    [Fact]
+    public async Task ImportFromPasteAsync_CallsApiAndRefreshes()
+    {
+        var mockClient = new Mock<INexoraApiClient>();
+        var sampleBundle = new SkillBundleDto
+        {
+            Manifest = new SkillManifestDto { Id = "pasted-tool", Name = "Pasted Tool", Version = "1.0.0" },
+            IsEnabled = false,
+        };
+
+        mockClient
+            .Setup(c => c.ImportSkillPasteAsync(It.IsAny<SkillImportPasteRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(sampleBundle);
+        mockClient
+            .Setup(c => c.ListSkillsAsync(false, null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<SkillSummaryDto>());
+
+        var vm = new SkillsViewModel(mockClient.Object)
+        {
+            ImportManifestYaml = "id: pasted-tool\nname: Pasted Tool\nversion: 1.0.0\n",
+            ImportInstructions = "# Instructions\nDo something safe.",
+            EnableOnImport = false,
+        };
+
+        await vm.ImportFromPasteCommand.ExecuteAsync(null);
+
+        mockClient.Verify(c => c.ImportSkillPasteAsync(It.IsAny<SkillImportPasteRequestDto>(), It.IsAny<CancellationToken>()), Times.Once);
+        mockClient.Verify(c => c.ListSkillsAsync(false, null, It.IsAny<CancellationToken>()), Times.Once);
+        Assert.Contains("Pasted skill 'Pasted Tool' imported", vm.StatusMessage);
+    }
+
+    [Fact]
+    public async Task PreviewReadmeAsync_SetsSanitizedMarkdown()
+    {
+        var mockClient = new Mock<INexoraApiClient>();
+        var candidate = new SkillDiscoveryCandidateDto
+        {
+            Owner = "octocat",
+            Repo = "hello-world",
+            DefaultBranch = "main",
+        };
+
+        mockClient
+            .Setup(c => c.PreviewSkillReadmeAsync("octocat", "hello-world", "main", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new SkillReadmePreviewResponseDto
+            {
+                Owner = "octocat",
+                Repo = "hello-world",
+                Branch = "main",
+                SanitizedMarkdown = "# Hello World\nClean description.",
+                Length = 32,
+            });
+
+        var vm = new SkillsViewModel(mockClient.Object);
+        await vm.PreviewReadmeCommand.ExecuteAsync(candidate);
+
+        Assert.Equal("# Hello World\nClean description.", vm.ReadmePreview);
+        Assert.Contains("README loaded", vm.StatusMessage);
+    }
 }

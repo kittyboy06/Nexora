@@ -3,6 +3,7 @@
 from datetime import datetime, timezone
 import json
 import logging
+import re
 from typing import Optional
 import httpx
 
@@ -14,6 +15,13 @@ from backend.app.skills.models import (
 )
 
 logger = logging.getLogger("nexora.skills.discovery")
+
+DANGEROUS_TAGS_PATTERN = re.compile(
+    r"<\s*(?:script|iframe|object|embed|style|form|input|button|link|meta)\b[^>]*>[\s\S]*?<\s*/\s*(?:script|iframe|object|embed|style|form|input|button|link|meta)\s*>|<\s*(?:script|iframe|object|embed|style|form|input|button|link|meta)\b[^>]*/>|<\s*(?:script|iframe|object|embed|style|form|input|button|link|meta)\b[^>]*>",
+    re.IGNORECASE,
+)
+ON_EVENT_PATTERN = re.compile(r"\s+on[a-z]+\s*=\s*(?:'[^']*'|\"[^\"]*\"|[^\s>]+)", re.IGNORECASE)
+JAVASCRIPT_URL_PATTERN = re.compile(r"\[([^\]]+)\]\((?:javascript|data|vbscript):[^\)]*\)", re.IGNORECASE)
 
 
 class GitHubDiscoveryError(Exception):
@@ -218,3 +226,50 @@ class GitHubDiscoveryService:
             manifest_preview=manifest_preview,
             skill_md_preview=skill_md_preview,
         )
+
+    @staticmethod
+    def sanitize_markdown(text: str) -> str:
+        """Strip executable HTML, event handlers, and active scripts from Markdown."""
+        if not text:
+            return ""
+        # 1. Strip dangerous tags
+        cleaned = DANGEROUS_TAGS_PATTERN.sub("", text)
+        # 2. Strip on* event handlers
+        cleaned = ON_EVENT_PATTERN.sub("", cleaned)
+        # 3. Disarm javascript: pseudo-links
+        cleaned = JAVASCRIPT_URL_PATTERN.sub(r"[\1](#blocked-script)", cleaned)
+        return cleaned
+
+    async def fetch_sanitized_readme(
+        self,
+        owner: str,
+        repo: str,
+        branch: str = "main",
+    ) -> dict:
+        """Fetch and sanitize repository README from GitHub for safe preview."""
+        readme_candidates = [
+            f"{self.RAW_BASE_URL}/{owner}/{repo}/{branch}/README.md",
+            f"{self.RAW_BASE_URL}/{owner}/{repo}/{branch}/readme.md",
+            f"{self.RAW_BASE_URL}/{owner}/{repo}/{branch}/Readme.md",
+        ]
+        raw_text = ""
+        for url in readme_candidates:
+            try:
+                resp = await self._request("GET", url)
+                if resp.status_code == 200 and resp.text:
+                    raw_text = resp.text
+                    break
+            except Exception:
+                pass
+
+        if not raw_text:
+            raise GitHubResourceNotFoundError(f"README not found for {owner}/{repo}@{branch}")
+
+        sanitized = self.sanitize_markdown(raw_text)
+        return {
+            "owner": owner,
+            "repo": repo,
+            "branch": branch,
+            "sanitized_markdown": sanitized,
+            "length": len(sanitized),
+        }

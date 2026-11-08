@@ -211,6 +211,28 @@ public class NexoraApiClient : INexoraApiClient
         return (await response.Content.ReadFromJsonAsync<SkillBundleDto>(JsonOptions, cancellationToken))!;
     }
 
+    public async Task<SkillBundleDto> ImportSkillFolderAsync(SkillImportFolderRequestDto request, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync("/api/skills/import/folder", request, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<SkillBundleDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<SkillBundleDto> ImportSkillPasteAsync(SkillImportPasteRequestDto request, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync("/api/skills/import/paste", request, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<SkillBundleDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<SkillReadmePreviewResponseDto> PreviewSkillReadmeAsync(string owner, string repo, string branch = "main", CancellationToken cancellationToken = default)
+    {
+        var url = $"/api/skills/preview/readme?owner={Uri.EscapeDataString(owner)}&repo={Uri.EscapeDataString(repo)}&branch={Uri.EscapeDataString(branch)}";
+        var response = await _httpClient.GetAsync(url, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<SkillReadmePreviewResponseDto>(JsonOptions, cancellationToken))!;
+    }
+
     public async Task<GitHubRateLimitStatusDto> GetGitHubRateLimitAsync(CancellationToken cancellationToken = default)
     {
         var response = await _httpClient.GetAsync("/api/skills/discover/rate-limit", cancellationToken);
@@ -257,6 +279,27 @@ public class NexoraApiClient : INexoraApiClient
     public async Task<McpServerRecordDto> ApproveMcpServerAsync(string serverId, CancellationToken cancellationToken = default)
     {
         var response = await _httpClient.PostAsync($"/api/mcp/servers/{Uri.EscapeDataString(serverId)}/approve", null, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<McpServerRecordDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<McpInspectionReportDto> InspectMcpManifestAsync(McpServerCreateRequestDto request, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync("/api/mcp/onboard/inspect", request, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<McpInspectionReportDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<McpTestConnectionResultDto> TestMcpConnectionAsync(McpServerCreateRequestDto request, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync("/api/mcp/onboard/test", request, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return (await response.Content.ReadFromJsonAsync<McpTestConnectionResultDto>(JsonOptions, cancellationToken))!;
+    }
+
+    public async Task<McpServerRecordDto> ApproveMcpManifestAsync(McpOnboardApproveRequestDto request, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync("/api/mcp/onboard/approve", request, JsonOptions, cancellationToken);
         await EnsureSuccessAsync(response, cancellationToken);
         return (await response.Content.ReadFromJsonAsync<McpServerRecordDto>(JsonOptions, cancellationToken))!;
     }
@@ -618,6 +661,54 @@ public class NexoraApiClient : INexoraApiClient
         return result ?? new List<ScreenshotEvidenceDto>();
     }
 
+    public async Task<AutonomousSessionStateDto> StartAutonomousSessionAsync(AutonomousSessionConfigDto config, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync("/api/desktop/autonomy/start", config, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<AutonomousSessionStateDto>(JsonOptions, cancellationToken);
+        return result ?? new AutonomousSessionStateDto();
+    }
+
+    public async Task<AutonomousStepResultDto> ExecuteAutonomousStepAsync(string sessionId, DesktopActionRequestDto? action = null, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsJsonAsync($"/api/desktop/autonomy/{Uri.EscapeDataString(sessionId)}/step", action, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<AutonomousStepResultDto>(JsonOptions, cancellationToken);
+        return result ?? new AutonomousStepResultDto();
+    }
+
+    public async Task<AutonomousSessionStateDto> PauseAutonomousSessionAsync(string sessionId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsync($"/api/desktop/autonomy/{Uri.EscapeDataString(sessionId)}/pause", null, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<AutonomousSessionStateDto>(JsonOptions, cancellationToken);
+        return result ?? new AutonomousSessionStateDto();
+    }
+
+    public async Task<AutonomousSessionStateDto> ResumeAutonomousSessionAsync(string sessionId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsync($"/api/desktop/autonomy/{Uri.EscapeDataString(sessionId)}/resume", null, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<AutonomousSessionStateDto>(JsonOptions, cancellationToken);
+        return result ?? new AutonomousSessionStateDto();
+    }
+
+    public async Task<AutonomousSessionStateDto> StopAutonomousSessionAsync(string sessionId, string reason = "Stopped by operator", CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.PostAsync($"/api/desktop/autonomy/{Uri.EscapeDataString(sessionId)}/stop?reason={Uri.EscapeDataString(reason)}", null, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<AutonomousSessionStateDto>(JsonOptions, cancellationToken);
+        return result ?? new AutonomousSessionStateDto();
+    }
+
+    public async Task<AutonomousSessionStateDto> GetAutonomousSessionAsync(string sessionId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync($"/api/desktop/autonomy/{Uri.EscapeDataString(sessionId)}", cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var result = await response.Content.ReadFromJsonAsync<AutonomousSessionStateDto>(JsonOptions, cancellationToken);
+        return result ?? new AutonomousSessionStateDto();
+    }
+
     // Phase 13: Scheduler and Background Work
     public async Task<IReadOnlyList<ScheduleDto>> ListSchedulesAsync(string? status = null, CancellationToken cancellationToken = default)
     {
@@ -701,5 +792,48 @@ public class NexoraApiClient : INexoraApiClient
         await EnsureSuccessAsync(response, cancellationToken);
         var result = await response.Content.ReadFromJsonAsync<List<ScheduleRunDto>>(JsonOptions, cancellationToken);
         return result ?? new List<ScheduleRunDto>();
+    }
+
+    // Phase 15: Chat-First Experience and Conversations
+
+    public async Task<IReadOnlyList<Conversation>> ListConversationsAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync("/api/conversations", cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var body = await response.Content.ReadFromJsonAsync<ConversationListResponse>(JsonOptions, cancellationToken);
+        return body?.Conversations ?? new List<Conversation>();
+    }
+
+    public async Task<Conversation> CreateConversationAsync(string? title = null, CancellationToken cancellationToken = default)
+    {
+        var request = new ConversationCreateRequest(title);
+        var response = await _httpClient.PostAsJsonAsync("/api/conversations", request, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var body = await response.Content.ReadFromJsonAsync<ConversationResponse>(JsonOptions, cancellationToken);
+        return body?.Conversation ?? throw new InvalidOperationException("Failed to deserialize created conversation.");
+    }
+
+    public async Task<Conversation> GetConversationAsync(string conversationId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.GetAsync($"/api/conversations/{Uri.EscapeDataString(conversationId)}", cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var body = await response.Content.ReadFromJsonAsync<ConversationResponse>(JsonOptions, cancellationToken);
+        return body?.Conversation ?? throw new InvalidOperationException("Failed to deserialize conversation.");
+    }
+
+    public async Task<bool> DeleteConversationAsync(string conversationId, CancellationToken cancellationToken = default)
+    {
+        var response = await _httpClient.DeleteAsync($"/api/conversations/{Uri.EscapeDataString(conversationId)}", cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<ConversationMessageResponse> SendChatMessageAsync(string conversationId, string content, ChatMode mode = ChatMode.Auto, string? modelOverride = null, CancellationToken cancellationToken = default)
+    {
+        var request = new ConversationMessageRequest(content, mode, modelOverride);
+        var response = await _httpClient.PostAsJsonAsync($"/api/conversations/{Uri.EscapeDataString(conversationId)}/messages", request, JsonOptions, cancellationToken);
+        await EnsureSuccessAsync(response, cancellationToken);
+        var body = await response.Content.ReadFromJsonAsync<ConversationMessageResponse>(JsonOptions, cancellationToken);
+        return body ?? throw new InvalidOperationException("Failed to deserialize message response.");
     }
 }

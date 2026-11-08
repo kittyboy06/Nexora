@@ -26,6 +26,9 @@ public interface INexoraApiClient
     Task<IReadOnlyList<SkillDiscoveryCandidateDto>> SearchDiscoveryAsync(string query, int page = 1, int perPage = 10, CancellationToken cancellationToken = default);
     Task<SkillDiscoveryCandidateDto> PreviewDiscoveryAsync(string owner, string repo, string branch = "main", string? path = null, CancellationToken cancellationToken = default);
     Task<SkillBundleDto> InstallSkillAsync(InstallSkillRequestDto request, CancellationToken cancellationToken = default);
+    Task<SkillBundleDto> ImportSkillFolderAsync(SkillImportFolderRequestDto request, CancellationToken cancellationToken = default);
+    Task<SkillBundleDto> ImportSkillPasteAsync(SkillImportPasteRequestDto request, CancellationToken cancellationToken = default);
+    Task<SkillReadmePreviewResponseDto> PreviewSkillReadmeAsync(string owner, string repo, string branch = "main", CancellationToken cancellationToken = default);
     Task<GitHubRateLimitStatusDto> GetGitHubRateLimitAsync(CancellationToken cancellationToken = default);
 
     // Phase 8: Universal MCP Platform
@@ -35,6 +38,9 @@ public interface INexoraApiClient
     Task<McpServerRecordDto> UpdateMcpServerAsync(string serverId, McpServerUpdateRequestDto request, CancellationToken cancellationToken = default);
     Task<bool> DeleteMcpServerAsync(string serverId, CancellationToken cancellationToken = default);
     Task<McpServerRecordDto> ApproveMcpServerAsync(string serverId, CancellationToken cancellationToken = default);
+    Task<McpInspectionReportDto> InspectMcpManifestAsync(McpServerCreateRequestDto request, CancellationToken cancellationToken = default);
+    Task<McpTestConnectionResultDto> TestMcpConnectionAsync(McpServerCreateRequestDto request, CancellationToken cancellationToken = default);
+    Task<McpServerRecordDto> ApproveMcpManifestAsync(McpOnboardApproveRequestDto request, CancellationToken cancellationToken = default);
     Task<McpServerRecordDto> ConnectMcpServerAsync(string serverId, CancellationToken cancellationToken = default);
     Task<McpServerRecordDto> DisconnectMcpServerAsync(string serverId, CancellationToken cancellationToken = default);
     Task<McpPingResponseDto> PingMcpServerAsync(string serverId, CancellationToken cancellationToken = default);
@@ -88,6 +94,14 @@ public interface INexoraApiClient
     Task<bool> ResetEmergencyStopAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ScreenshotEvidenceDto>> ListDesktopEvidenceAsync(string? taskId = null, CancellationToken cancellationToken = default);
 
+    // Phase 15: Autonomous Desktop Loop
+    Task<AutonomousSessionStateDto> StartAutonomousSessionAsync(AutonomousSessionConfigDto config, CancellationToken cancellationToken = default);
+    Task<AutonomousStepResultDto> ExecuteAutonomousStepAsync(string sessionId, DesktopActionRequestDto? action = null, CancellationToken cancellationToken = default);
+    Task<AutonomousSessionStateDto> PauseAutonomousSessionAsync(string sessionId, CancellationToken cancellationToken = default);
+    Task<AutonomousSessionStateDto> ResumeAutonomousSessionAsync(string sessionId, CancellationToken cancellationToken = default);
+    Task<AutonomousSessionStateDto> StopAutonomousSessionAsync(string sessionId, string reason = "Stopped by operator", CancellationToken cancellationToken = default);
+    Task<AutonomousSessionStateDto> GetAutonomousSessionAsync(string sessionId, CancellationToken cancellationToken = default);
+
     // Phase 13: Scheduler and Background Work
     Task<IReadOnlyList<ScheduleDto>> ListSchedulesAsync(string? status = null, CancellationToken cancellationToken = default);
     Task<ScheduleDto> CreateScheduleAsync(ScheduleCreateRequest request, CancellationToken cancellationToken = default);
@@ -98,4 +112,11 @@ public interface INexoraApiClient
     Task<bool> DeleteScheduleAsync(string scheduleId, CancellationToken cancellationToken = default);
     Task<ScheduleRunDto> TriggerScheduleAsync(string scheduleId, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<ScheduleRunDto>> ListScheduleRunsAsync(string? scheduleId = null, string? status = null, int limit = 50, CancellationToken cancellationToken = default);
+
+    // Phase 15: Chat-First Experience and Conversations
+    Task<IReadOnlyList<Conversation>> ListConversationsAsync(CancellationToken cancellationToken = default);
+    Task<Conversation> CreateConversationAsync(string? title = null, CancellationToken cancellationToken = default);
+    Task<Conversation> GetConversationAsync(string conversationId, CancellationToken cancellationToken = default);
+    Task<bool> DeleteConversationAsync(string conversationId, CancellationToken cancellationToken = default);
+    Task<ConversationMessageResponse> SendChatMessageAsync(string conversationId, string content, ChatMode mode = ChatMode.Auto, string? modelOverride = null, CancellationToken cancellationToken = default);
 }

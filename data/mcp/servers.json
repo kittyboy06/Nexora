@@ -1,1 +1,80 @@
-{}
+{
+  "srv-approve-test": {
+    "config": {
+      "id": "srv-approve-test",
+      "name": "Approve Test Server",
+      "description": "",
+      "transport": "stdio",
+      "command": "python",
+      "args": [
+        "-V"
+      ],
+      "env": {},
+      "working_dir": null,
+      "is_approved": true,
+      "is_enabled": true
+    },
+    "status": "APPROVED",
+    "fingerprint": "1373b9051f2f355a433f20ae65f36479ff9340ad080d7357b03ea025641346d7",
+    "approved_fingerprint": "1373b9051f2f355a433f20ae65f36479ff9340ad080d7357b03ea025641346d7",
+    "approved_at": "2026-11-08T04:13:14.539724+00:00",
+    "approved_by": "test_operator",
+    "advertised_tools": [],
+    "protocol_version": null,
+    "last_connected_at": null,
+    "last_error": null,
+    "ping_latency_ms": null
+  },
+  "srv-16b6e60e": {
+    "config": {
+      "id": "srv-16b6e60e",
+      "name": "Approve Test Server",
+      "description": "",
+      "transport": "stdio",
+      "command": "python",
+      "args": [
+        "-V"
+      ],
+      "env": {},
+      "working_dir": null,
+      "is_approved": true,
+      "is_enabled": true
+    },
+    "status": "APPROVED",
+    "fingerprint": "1373b9051f2f355a433f20ae65f36479ff9340ad080d7357b03ea025641346d7",
+    "approved_fingerprint": "1373b9051f2f355a433f20ae65f36479ff9340ad080d7357b03ea025641346d7",
+    "approved_at": "2026-11-08T04:14:29.944646+00:00",
+    "approved_by": "test_operator",
+    "advertised_tools": [],
+    "protocol_version": null,
+    "last_connected_at": null,
+    "last_error": null,
+    "ping_latency_ms": null
+  },
+  "srv-7feac00a": {
+    "config": {
+      "id": "srv-7feac00a",
+      "name": "Approve Test Server",
+      "description": "",
+      "transport": "stdio",
+      "command": "python",
+      "args": [
+        "-V"
+      ],
+      "env": {},
+      "working_dir": null,
+      "is_approved": true,
+      "is_enabled": true
+    },
+    "status": "APPROVED",
+    "fingerprint": "1373b9051f2f355a433f20ae65f36479ff9340ad080d7357b03ea025641346d7",
+    "approved_fingerprint": "1373b9051f2f355a433f20ae65f36479ff9340ad080d7357b03ea025641346d7",
+    "approved_at": "2026-11-08T04:41:18.476095+00:00",
+    "approved_by": "test_operator",
+    "advertised_tools": [],
+    "protocol_version": null,
+    "last_connected_at": null,
+    "last_error": null,
+    "ping_latency_ms": null
+  }
+}

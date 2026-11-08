@@ -51,6 +51,19 @@ public partial class McpViewModel : ObservableObject
     [ObservableProperty]
     private string _newServerWorkingDir = string.Empty;
 
+    // Safe Onboarding Wizard (Phase 15)
+    [ObservableProperty]
+    private McpInspectionReportDto? _inspectionReport;
+
+    [ObservableProperty]
+    private McpTestConnectionResultDto? _testResult;
+
+    [ObservableProperty]
+    private bool _isOnboardInspecting;
+
+    [ObservableProperty]
+    private bool _isOnboardTesting;
+
     // Vault creation form properties
     [ObservableProperty]
     private string _newSecretKey = string.Empty;
@@ -277,6 +290,131 @@ public partial class McpViewModel : ObservableObject
         }
     }
 
+    private McpServerCreateRequestDto BuildCreateRequest()
+    {
+        var args = string.IsNullOrWhiteSpace(NewServerArgs)
+            ? new List<string>()
+            : NewServerArgs.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+
+        var env = new Dictionary<string, string>();
+        if (!string.IsNullOrWhiteSpace(NewServerEnv))
+        {
+            var lines = NewServerEnv.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var line in lines)
+            {
+                var idx = line.IndexOf('=');
+                if (idx > 0)
+                {
+                    var k = line.Substring(0, idx).Trim();
+                    var v = line.Substring(idx + 1).Trim();
+                    env[k] = v;
+                }
+            }
+        }
+
+        return new McpServerCreateRequestDto
+        {
+            Id = NewServerId.Trim().ToLowerInvariant(),
+            Name = string.IsNullOrWhiteSpace(NewServerName) ? NewServerId.Trim() : NewServerName.Trim(),
+            Description = NewServerDescription.Trim(),
+            Command = NewServerCommand.Trim(),
+            Args = args,
+            Env = env,
+            WorkingDir = string.IsNullOrWhiteSpace(NewServerWorkingDir) ? null : NewServerWorkingDir.Trim(),
+        };
+    }
+
+    [RelayCommand]
+    public async Task InspectNewServerAsync()
+    {
+        if (string.IsNullOrWhiteSpace(NewServerCommand))
+        {
+            StatusMessage = "Please specify an executable command to inspect.";
+            return;
+        }
+
+        IsOnboardInspecting = true;
+        StatusMessage = "Inspecting manifest for security risks...";
+        try
+        {
+            var req = BuildCreateRequest();
+            InspectionReport = await _apiClient.InspectMcpManifestAsync(req);
+            StatusMessage = InspectionReport.IsValid
+                ? $"Manifest inspected safely. Fingerprint: {InspectionReport.Fingerprint[..8]}... (Risk: {InspectionReport.RiskLevel})"
+                : $"Security warnings detected ({InspectionReport.Warnings.Count}). Review required.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Inspection error: {ex.Message}";
+        }
+        finally
+        {
+            IsOnboardInspecting = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task TestNewServerConnectionAsync()
+    {
+        if (string.IsNullOrWhiteSpace(NewServerCommand))
+        {
+            StatusMessage = "Please specify an executable command to test.";
+            return;
+        }
+
+        IsOnboardTesting = true;
+        StatusMessage = "Performing safe non-executing handshake probe...";
+        try
+        {
+            var req = BuildCreateRequest();
+            TestResult = await _apiClient.TestMcpConnectionAsync(req);
+            StatusMessage = TestResult.Success
+                ? $"Probe succeeded ({TestResult.LatencyMs}ms). Discovered {TestResult.DiscoveredToolsCount} tools. Process terminated."
+                : $"Connection probe failed: {TestResult.ErrorMessage}";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Probe failed: {ex.Message}";
+        }
+        finally
+        {
+            IsOnboardTesting = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task ApproveAndRegisterAsync()
+    {
+        if (string.IsNullOrWhiteSpace(NewServerId) || string.IsNullOrWhiteSpace(NewServerCommand))
+        {
+            StatusMessage = "Server ID and Command are required.";
+            return;
+        }
+
+        try
+        {
+            StatusMessage = "Registering MCP server...";
+            var req = BuildCreateRequest();
+            var registered = await _apiClient.RegisterMcpServerAsync(req);
+
+            StatusMessage = "Binding cryptographic approval fingerprint...";
+            var approved = await _apiClient.ApproveMcpManifestAsync(new McpOnboardApproveRequestDto
+            {
+                ServerId = registered.Config.Id,
+                Fingerprint = registered.Fingerprint,
+                Operator = "operator"
+            });
+
+            ClearNewServerForm();
+            await LoadServersAsync();
+            StatusMessage = $"Server '{approved.Config.Name}' registered & approved with fingerprint {approved.Fingerprint[..8]}...";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Registration failed: {ex.Message}";
+        }
+    }
+
     [RelayCommand]
     public async Task RegisterServerAsync()
     {
@@ -290,60 +428,35 @@ public partial class McpViewModel : ObservableObject
         StatusMessage = $"Registering server '{NewServerId}'...";
         try
         {
-            var args = string.IsNullOrWhiteSpace(NewServerArgs)
-                ? new List<string>()
-                : NewServerArgs.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
-
-            var env = new Dictionary<string, string>();
-            if (!string.IsNullOrWhiteSpace(NewServerEnv))
-            {
-                var lines = NewServerEnv.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-                foreach (var line in lines)
-                {
-                    var idx = line.IndexOf('=');
-                    if (idx > 0)
-                    {
-                        var k = line.Substring(0, idx).Trim();
-                        var v = line.Substring(idx + 1).Trim();
-                        env[k] = v;
-                    }
-                }
-            }
-
-            var req = new McpServerCreateRequestDto
-            {
-                Id = NewServerId.Trim().ToLowerInvariant(),
-                Name = string.IsNullOrWhiteSpace(NewServerName) ? NewServerId.Trim() : NewServerName.Trim(),
-                Description = NewServerDescription.Trim(),
-                Command = NewServerCommand.Trim(),
-                Args = args,
-                Env = env,
-                WorkingDir = string.IsNullOrWhiteSpace(NewServerWorkingDir) ? null : NewServerWorkingDir.Trim(),
-            };
-
+            var req = BuildCreateRequest();
             var created = await _apiClient.RegisterMcpServerAsync(req);
             Servers.Add(created);
             SelectServer(created);
 
-            // Reset form
-            NewServerId = string.Empty;
-            NewServerName = string.Empty;
-            NewServerDescription = string.Empty;
-            NewServerCommand = string.Empty;
-            NewServerArgs = string.Empty;
-            NewServerEnv = string.Empty;
-            NewServerWorkingDir = string.Empty;
-
+            ClearNewServerForm();
             StatusMessage = $"Registered server '{created.Config.Id}' (requires operator approval).";
         }
         catch (Exception ex)
         {
-            StatusMessage = $"Registration failed: {ex.Message}";
+            StatusMessage = $"Registration error: {ex.Message}";
         }
         finally
         {
             IsLoading = false;
         }
+    }
+
+    private void ClearNewServerForm()
+    {
+        NewServerId = string.Empty;
+        NewServerName = string.Empty;
+        NewServerDescription = string.Empty;
+        NewServerCommand = string.Empty;
+        NewServerArgs = string.Empty;
+        NewServerEnv = string.Empty;
+        NewServerWorkingDir = string.Empty;
+        InspectionReport = null;
+        TestResult = null;
     }
 
     [RelayCommand]

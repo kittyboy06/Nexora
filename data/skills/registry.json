@@ -2,5 +2,9 @@
   "nexora-git-workflow": {
     "is_enabled": true,
     "active_version": "1.0.0"
+  },
+  "api-skill": {
+    "is_enabled": false,
+    "active_version": "1.0.0"
   }
 }

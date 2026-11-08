@@ -53,3 +53,10 @@ public record SetActiveModelResponse(
     [property: JsonPropertyName("status")] string Status,
     [property: JsonPropertyName("active_model")] string ActiveModel
 );
+
+public enum AppThemeMode
+{
+    SystemDefault = 0,
+    Light = 1,
+    Dark = 2
+}

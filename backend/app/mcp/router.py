@@ -6,14 +6,18 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 
 from backend.app.mcp.bridge import McpCapabilityBridge
 from backend.app.mcp.models import (
+    McpInspectionReport,
+    McpOnboardApproveRequest,
     McpServerConfig,
     McpServerCreateRequest,
     McpServerRecord,
     McpServerStatus,
     McpServerUpdateRequest,
+    McpTestConnectionResult,
     McpVaultItemSummary,
     McpVaultWriteRequest,
 )
+from backend.app.mcp.onboarding import McpOnboardingService
 from backend.app.mcp.protocol import McpProtocolError
 from backend.app.mcp.registry import McpServerRegistry
 from backend.app.mcp.session import McpSecurityError, McpSessionPool
@@ -39,6 +43,13 @@ def get_mcp_vault(request: Request) -> McpVaultService:
         vault = McpVaultService()
         request.app.state.mcp_vault = vault
     return vault
+
+
+def get_mcp_onboarding(
+    registry: McpServerRegistry = Depends(get_mcp_registry),
+    vault: McpVaultService = Depends(get_mcp_vault),
+) -> McpOnboardingService:
+    return McpOnboardingService(registry=registry, vault=vault)
 
 
 def get_mcp_session_pool(request: Request) -> McpSessionPool:
@@ -92,6 +103,41 @@ async def delete_vault_secret(
     if not deleted:
         raise HTTPException(status_code=404, detail=f"Secret '{key}' not found in vault.")
     return {"status": "deleted", "key": key}
+
+
+# ---------------------------------------------------------------------------
+# Safe Onboarding Wizard Endpoints (Phase 15)
+# ---------------------------------------------------------------------------
+
+
+@router.post("/onboard/inspect", response_model=McpInspectionReport)
+async def inspect_mcp_manifest(
+    config: McpServerConfig,
+    onboarding: McpOnboardingService = Depends(get_mcp_onboarding),
+) -> McpInspectionReport:
+    """Inspect and assess security risk of an MCP launch configuration."""
+    return onboarding.inspect_manifest(config)
+
+
+@router.post("/onboard/test", response_model=McpTestConnectionResult)
+async def test_mcp_connection(
+    config: McpServerConfig,
+    onboarding: McpOnboardingService = Depends(get_mcp_onboarding),
+) -> McpTestConnectionResult:
+    """Execute safe non-executing handshake probe and discover tools."""
+    return await onboarding.test_connection(config)
+
+
+@router.post("/onboard/approve", response_model=McpServerRecord)
+async def approve_mcp_manifest(
+    req: McpOnboardApproveRequest,
+    onboarding: McpOnboardingService = Depends(get_mcp_onboarding),
+) -> McpServerRecord:
+    """Approve MCP server manifest and bind immutable fingerprint."""
+    record = onboarding.approve_manifest(req.server_id, operator=req.operator)
+    if not record:
+        raise HTTPException(status_code=404, detail=f"Server '{req.server_id}' not found.")
+    return record
 
 
 # ---------------------------------------------------------------------------

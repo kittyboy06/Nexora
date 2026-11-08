@@ -143,3 +143,11 @@ class CommandExecutionTimeoutException(NexoraException):
 
 
 
+
+
+class ConversationNotFoundException(NexoraException):
+    """Raised when the requested conversation does not exist."""
+
+    def __init__(self, conversation_id: str, details: dict | list | None = None):
+        message = f"Conversation '{conversation_id}' was not found."
+        super().__init__(message=message, code="CONVERSATION_NOT_FOUND", status_code=404, details=details)

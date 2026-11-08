@@ -10,8 +10,11 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from backend.app.api.routes.agent import router as agent_router
 from backend.app.api.routes.chat import router as chat_router
+from backend.app.api.routes.conversation import router as conversation_router
 from backend.app.api.routes.health import router as health_router
 from backend.app.api.routes.ollama import router as ollama_router
+from backend.app.conversation.intent_classifier import IntentClassifier
+from backend.app.services.conversation_service import ConversationService
 from backend.app.skills.router import router as skills_router
 from backend.app.skills.manager import SkillManager
 from backend.app.skills.discovery import GitHubDiscoveryService
@@ -272,7 +275,18 @@ async def lifespan(app: FastAPI):
     quarantine_pruner.start_background_sweep()
     app.state.quarantine_pruner = quarantine_pruner
 
-    logger.info("Phase 2, 3, 6, 7, 8, and 14 components initialized.")
+    # Phase 15 Chat-First Conversation Service
+    intent_classifier = IntentClassifier(ollama=ollama_service, guard=guard)
+    conversation_service = ConversationService(
+        settings=settings,
+        ollama=ollama_service,
+        guard=guard,
+        intent_classifier=intent_classifier,
+        task_manager=task_manager,
+    )
+    app.state.conversation_service = conversation_service
+
+    logger.info("Phase 2, 3, 6, 7, 8, 14, and 15 components initialized.")
 
     yield
 
@@ -351,6 +365,7 @@ def create_app() -> FastAPI:
     app.include_router(health_router, prefix="/api")
     app.include_router(ollama_router, prefix="/api")
     app.include_router(chat_router, prefix="/api")
+    app.include_router(conversation_router, prefix="/api")
     app.include_router(agent_router, prefix="/api")
     app.include_router(skills_router, prefix="/api")
     app.include_router(mcp_router, prefix="/api")

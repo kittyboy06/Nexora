@@ -7,22 +7,18 @@
     Title="NEXORA Desktop Control Plane"
     mc:Ignorable="d">
 
-    <Window.SystemBackdrop>
-        <MicaBackdrop />
-    </Window.SystemBackdrop>
-
-    <Grid x:Name="MainRootGrid" Background="Transparent">
+    <Grid x:Name="MainRootGrid" Background="{ThemeResource CanvasBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Top Header Bar -->
+        <!-- Top Header Bar (Warm Utility) -->
         <Border Grid.Row="0"
-                Background="{ThemeResource LayerFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                Background="{ThemeResource SurfaceMutedBrush}"
+                BorderBrush="{ThemeResource BorderBrush}"
                 BorderThickness="0,0,0,1"
-                Padding="20,12">
+                Padding="16,10">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -30,109 +26,513 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <!-- App Branding -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                    <Border Background="{ThemeResource AccentFillColorDefaultBrush}"
-                            CornerRadius="8"
-                            Width="36" Height="36">
-                        <FontIcon Glyph="&#xE7E8;" Foreground="White" FontSize="18" />
+                <!-- App Branding (Warm Utility Solid Copper Badge) -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <Border Background="{ThemeResource AccentCopperBrush}"
+                            CornerRadius="{StaticResource ControlCornerRadius}"
+                            Width="32" Height="32">
+                        <FontIcon Glyph="&#xE7E8;" Foreground="{ThemeResource AccentTextBrush}" FontSize="16" />
                     </Border>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="NEXORA" FontWeight="Bold" FontSize="16" />
-                        <TextBlock Text="Autonomous Agent Desktop Control Plane" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="NEXORA" FontWeight="Bold" FontSize="15" Foreground="{ThemeResource TextPrimaryBrush}" FontFamily="{StaticResource FontFamilyUi}" />
+                        <TextBlock Text="Desktop Control Plane" FontSize="10" Foreground="{ThemeResource TextSecondaryBrush}" FontFamily="{StaticResource FontFamilyUi}" />
                     </StackPanel>
                 </StackPanel>
 
-                <!-- Center: Navigation View Switcher (Tasks vs Skills) -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8" VerticalAlignment="Center">
-                    <Button Command="{Binding ShowTasksViewCommand}"
-                            Padding="12,6">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <FontIcon Glyph="&#xE7C3;" FontSize="13" />
-                            <TextBlock Text="Agent Tasks" FontSize="12" FontWeight="SemiBold" />
+                <!-- Center: Navigation Tabs with Solid Copper Activity Rule -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4" VerticalAlignment="Center">
+                    <Button Command="{Binding ShowChatViewCommand}" Padding="10,5" BorderThickness="0" Background="Transparent">
+                        <StackPanel Spacing="2">
+                            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE8BD;" FontSize="12" Foreground="{ThemeResource TextPrimaryBrush}" />
+                                <TextBlock Text="Chat" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimaryBrush}" />
+                            </StackPanel>
+                            <Border Height="3" Background="{ThemeResource AccentCopperBrush}"
+                                    Visibility="{Binding IsChatViewVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    CornerRadius="1" Margin="0,2,0,0" />
                         </StackPanel>
                     </Button>
-                    <Button Command="{Binding ShowSkillsViewCommand}"
-                            Padding="12,6">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <FontIcon Glyph="&#xEA86;" FontSize="13" />
-                            <TextBlock Text="Skills &amp; Discovery" FontSize="12" FontWeight="SemiBold" />
+
+                    <Button Command="{Binding ShowTasksViewCommand}" Padding="10,5" BorderThickness="0" Background="Transparent">
+                        <StackPanel Spacing="2">
+                            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE82D;" FontSize="12" Foreground="{ThemeResource TextPrimaryBrush}" />
+                                <TextBlock Text="Tasks" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimaryBrush}" />
+                            </StackPanel>
+                            <Border Height="3" Background="{ThemeResource AccentCopperBrush}"
+                                    Visibility="{Binding IsTasksViewVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    CornerRadius="1" Margin="0,2,0,0" />
                         </StackPanel>
                     </Button>
-                    <Button Command="{Binding ShowMcpViewCommand}"
-                            Padding="12,6">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <FontIcon Glyph="&#xE74C;" FontSize="13" />
-                            <TextBlock Text="MCP Platform" FontSize="12" FontWeight="SemiBold" />
+
+                    <Button Command="{Binding ShowSkillsViewCommand}" Padding="10,5" BorderThickness="0" Background="Transparent">
+                        <StackPanel Spacing="2">
+                            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE74C;" FontSize="12" Foreground="{ThemeResource TextPrimaryBrush}" />
+                                <TextBlock Text="Skills" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimaryBrush}" />
+                            </StackPanel>
+                            <Border Height="3" Background="{ThemeResource AccentCopperBrush}"
+                                    Visibility="{Binding IsSkillsViewVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    CornerRadius="1" Margin="0,2,0,0" />
                         </StackPanel>
                     </Button>
-                    <Button Command="{Binding ShowGeneratedToolsViewCommand}"
-                            Padding="12,6">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <FontIcon Glyph="&#xE7BE;" FontSize="13" />
-                            <TextBlock Text="Generated Tools" FontSize="12" FontWeight="SemiBold" />
+
+                    <Button Command="{Binding ShowMcpViewCommand}" Padding="10,5" BorderThickness="0" Background="Transparent">
+                        <StackPanel Spacing="2">
+                            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE9F5;" FontSize="12" Foreground="{ThemeResource TextPrimaryBrush}" />
+                                <TextBlock Text="MCP" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimaryBrush}" />
+                            </StackPanel>
+                            <Border Height="3" Background="{ThemeResource AccentCopperBrush}"
+                                    Visibility="{Binding IsMcpViewVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    CornerRadius="1" Margin="0,2,0,0" />
                         </StackPanel>
                     </Button>
-                    <Button Command="{Binding ShowMemoryViewCommand}"
-                            Padding="12,6">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <FontIcon Glyph="&#xE753;" FontSize="13" />
-                            <TextBlock Text="Memory &amp; Persistence" FontSize="12" FontWeight="SemiBold" />
+
+                    <Button Command="{Binding ShowGeneratedToolsViewCommand}" Padding="10,5" BorderThickness="0" Background="Transparent">
+                        <StackPanel Spacing="2">
+                            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE7BE;" FontSize="12" Foreground="{ThemeResource TextPrimaryBrush}" />
+                                <TextBlock Text="Tools" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimaryBrush}" />
+                            </StackPanel>
+                            <Border Height="3" Background="{ThemeResource AccentCopperBrush}"
+                                    Visibility="{Binding IsGeneratedToolsViewVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    CornerRadius="1" Margin="0,2,0,0" />
                         </StackPanel>
                     </Button>
-                    <Button Command="{Binding ShowDesktopVisionViewCommand}"
-                            Padding="12,6">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <FontIcon Glyph="&#xE7F4;" FontSize="13" />
-                            <TextBlock Text="Desktop Vision &amp; UI" FontSize="12" FontWeight="SemiBold" />
+
+                    <Button Command="{Binding ShowMemoryViewCommand}" Padding="10,5" BorderThickness="0" Background="Transparent">
+                        <StackPanel Spacing="2">
+                            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE753;" FontSize="12" Foreground="{ThemeResource TextPrimaryBrush}" />
+                                <TextBlock Text="Memory" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimaryBrush}" />
+                            </StackPanel>
+                            <Border Height="3" Background="{ThemeResource AccentCopperBrush}"
+                                    Visibility="{Binding IsMemoryViewVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    CornerRadius="1" Margin="0,2,0,0" />
                         </StackPanel>
                     </Button>
-                    <Button Command="{Binding ShowSchedulerViewCommand}"
-                            Padding="12,6">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <FontIcon Glyph="&#xE823;" FontSize="13" />
-                            <TextBlock Text="Scheduler &amp; Automation" FontSize="12" FontWeight="SemiBold" />
+
+                    <Button Command="{Binding ShowDesktopVisionViewCommand}" Padding="10,5" BorderThickness="0" Background="Transparent">
+                        <StackPanel Spacing="2">
+                            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE7F4;" FontSize="12" Foreground="{ThemeResource TextPrimaryBrush}" />
+                                <TextBlock Text="Desktop Vision" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimaryBrush}" />
+                            </StackPanel>
+                            <Border Height="3" Background="{ThemeResource AccentCopperBrush}"
+                                    Visibility="{Binding IsDesktopVisionViewVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    CornerRadius="1" Margin="0,2,0,0" />
+                        </StackPanel>
+                    </Button>
+
+                    <Button Command="{Binding ShowSchedulerViewCommand}" Padding="10,5" BorderThickness="0" Background="Transparent">
+                        <StackPanel Spacing="2">
+                            <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Center">
+                                <FontIcon Glyph="&#xE787;" FontSize="12" Foreground="{ThemeResource TextPrimaryBrush}" />
+                                <TextBlock Text="Scheduler" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimaryBrush}" />
+                            </StackPanel>
+                            <Border Height="3" Background="{ThemeResource AccentCopperBrush}"
+                                    Visibility="{Binding IsSchedulerViewVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    CornerRadius="1" Margin="0,2,0,0" />
                         </StackPanel>
                     </Button>
                 </StackPanel>
 
-                <!-- Status Pills & Actions -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                <!-- Actions: Emergency Stop, Status, Theme, Refresh -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                     <!-- Global Emergency Stop Button -->
                     <Button Command="{Binding DesktopVision.TriggerEmergencyStopCommand}"
-                            Background="#D13438" Foreground="White"
+                            Background="{ThemeResource StatusDangerBrush}" Foreground="White"
+                            CornerRadius="{StaticResource ControlCornerRadius}"
                             ToolTipService.ToolTip="Emergency Stop: Instantly halt all active desktop automation"
                             Padding="10,6">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <FontIcon Glyph="&#xE711;" FontSize="13" Foreground="White" />
-                            <TextBlock Text="EMERGENCY STOP" FontSize="12" FontWeight="Bold" />
+                            <FontIcon Glyph="&#xE711;" FontSize="12" Foreground="White" />
+                            <TextBlock Text="Emergency Stop" FontSize="11" FontWeight="Bold" />
                         </StackPanel>
                     </Button>
+
+                    <!-- Theme Switcher Menu -->
+                    <Button ToolTipService.ToolTip="Switch Visual Theme (System / Light / Dark)"
+                            CornerRadius="{StaticResource ControlCornerRadius}"
+                            Padding="8,5">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <FontIcon Glyph="&#xE771;" FontSize="12" />
+                            <TextBlock Text="Theme" FontSize="11" />
+                        </StackPanel>
+                        <Button.Flyout>
+                            <MenuFlyout>
+                                <MenuFlyoutItem Text="System Default" Command="{Binding SetThemeCommand}" CommandParameter="system" />
+                                <MenuFlyoutItem Text="Light (Paper &amp; Clay)" Command="{Binding SetThemeCommand}" CommandParameter="light" />
+                                <MenuFlyoutItem Text="Dark (Walnut &amp; Ink)" Command="{Binding SetThemeCommand}" CommandParameter="dark" />
+                            </MenuFlyout>
+                        </Button.Flyout>
+                    </Button>
+
                     <!-- Backend Status Pill -->
-                    <Border CornerRadius="12"
-                            Padding="10,4"
+                    <Border CornerRadius="{StaticResource ControlCornerRadius}"
+                            Padding="8,4"
                             BorderThickness="1"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}">
+                            BorderBrush="{ThemeResource BorderBrush}"
+                            Background="{ThemeResource SurfaceBrush}">
                         <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                            <Ellipse Width="8" Height="8"
+                            <Ellipse Width="7" Height="7"
                                      Fill="{Binding IsBackendOnline, Converter={StaticResource StatusToBrushConverter}}" />
                             <TextBlock Text="{Binding StatusMessage}"
-                                       FontSize="12" FontWeight="SemiBold" />
+                                       FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimaryBrush}" />
                         </StackPanel>
                     </Border>
 
                     <!-- Reload / Refresh Button -->
                     <Button Command="{Binding RefreshStatusCommand}"
+                            CornerRadius="{StaticResource ControlCornerRadius}"
                             ToolTipService.ToolTip="Refresh Status and Model Profiles"
-                            Padding="8,6">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <FontIcon Glyph="&#xE72C;" FontSize="13" />
-                            <TextBlock Text="Refresh" FontSize="12" />
-                        </StackPanel>
+                            Padding="8,5">
+                        <FontIcon Glyph="&#xE72C;" FontSize="12" />
                     </Button>
                 </StackPanel>
             </Grid>
         </Border>
+
+        <!-- CHAT-FIRST WORKSPACE AREA: 2 Columns (Phase 15 Warm Utility) -->
+        <Grid Grid.Row="1" Padding="16" ColumnSpacing="16"
+              Visibility="{Binding IsChatViewVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="280" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- LEFT COLUMN: Conversation History Sidebar -->
+            <Border Grid.Column="0"
+                    Background="{ThemeResource SurfaceMutedBrush}"
+                    BorderBrush="{ThemeResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource PanelCornerRadius}"
+                    Padding="14">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Sidebar Header: Title and New Chat Button -->
+                    <Grid Grid.Row="0" Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock Text="Conversations" FontWeight="SemiBold" FontSize="14" Foreground="{ThemeResource TextPrimaryBrush}" FontFamily="{StaticResource FontFamilyUi}" />
+                            <TextBlock Text="Local History" FontSize="10" Foreground="{ThemeResource TextSecondaryBrush}" FontFamily="{StaticResource FontFamilyUi}" />
+                        </StackPanel>
+                        <Button Grid.Column="1"
+                                Command="{Binding Chat.NewConversationCommand}"
+                                Background="{ThemeResource AccentCopperBrush}"
+                                Foreground="{ThemeResource AccentTextBrush}"
+                                CornerRadius="{StaticResource ControlCornerRadius}"
+                                Padding="8,4"
+                                ToolTipService.ToolTip="Start New Conversation">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <FontIcon Glyph="&#xE710;" FontSize="11" Foreground="{ThemeResource AccentTextBrush}" />
+                                <TextBlock Text="New" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource AccentTextBrush}" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <!-- Conversation List -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding Chat.Conversations}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{ThemeResource SurfaceBrush}"
+                                            BorderBrush="{ThemeResource BorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="{StaticResource ControlCornerRadius}"
+                                            Padding="10,8"
+                                            Margin="0,0,0,6">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Button Grid.Column="0"
+                                                    HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Left"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Padding="0"
+                                                    Command="{Binding ElementName=MainRootGrid, Path=DataContext.Chat.SelectConversationCommand}"
+                                                    CommandParameter="{Binding}">
+                                                <StackPanel Spacing="2">
+                                                    <TextBlock Text="{Binding Title}"
+                                                               FontWeight="SemiBold"
+                                                               FontSize="12"
+                                                               Foreground="{ThemeResource TextPrimaryBrush}"
+                                                               FontFamily="{StaticResource FontFamilyUi}"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               MaxLines="1" />
+                                                    <TextBlock Text="{Binding UpdatedAt}"
+                                                               FontSize="10"
+                                                               Foreground="{ThemeResource TextSecondaryBrush}"
+                                                               FontFamily="{StaticResource FontFamilyUi}" />
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Grid.Column="1"
+                                                    Background="Transparent"
+                                                    BorderThickness="0"
+                                                    Padding="4"
+                                                    Command="{Binding ElementName=MainRootGrid, Path=DataContext.Chat.DeleteConversationCommand}"
+                                                    CommandParameter="{Binding}"
+                                                    ToolTipService.ToolTip="Delete Conversation">
+                                                <FontIcon Glyph="&#xE74D;" FontSize="11" Foreground="{ThemeResource TextSecondaryBrush}" />
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- RIGHT COLUMN: Active Chat & Transcript -->
+            <Border Grid.Column="1"
+                    Background="{ThemeResource SurfaceBrush}"
+                    BorderBrush="{ThemeResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource PanelCornerRadius}"
+                    Padding="16">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Header with Copper Activity Rule -->
+                    <Border Grid.Row="0"
+                            BorderBrush="{ThemeResource BorderBrush}"
+                            BorderThickness="0,0,0,1"
+                            Padding="0,0,0,12"
+                            Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" BorderThickness="3,0,0,0" BorderBrush="{ThemeResource AccentCopperBrush}" Padding="10,0,0,0">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="{Binding Chat.CurrentConversation.Title, TargetNullValue='Chat'}"
+                                               FontWeight="SemiBold"
+                                               FontSize="15"
+                                               Foreground="{ThemeResource TextPrimaryBrush}"
+                                               FontFamily="{StaticResource FontFamilyUi}" />
+                                    <TextBlock Text="Local model connected"
+                                               FontSize="11"
+                                               Foreground="{ThemeResource TextSecondaryBrush}"
+                                               FontFamily="{StaticResource FontFamilyUi}" />
+                                </StackPanel>
+                            </Border>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <Border CornerRadius="{StaticResource ControlCornerRadius}" Padding="8,4" Background="{ThemeResource SurfaceMutedBrush}" BorderBrush="{ThemeResource BorderBrush}" BorderThickness="1">
+                                    <TextBlock Text="{Binding ActiveModel, TargetNullValue='Local Ollama'}" FontSize="11" FontFamily="{StaticResource FontFamilyCode}" Foreground="{ThemeResource TextPrimaryBrush}" />
+                                </Border>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- Transcript Messages ScrollViewer -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="12">
+                            <!-- Messages List -->
+                            <ItemsControl ItemsSource="{Binding Chat.Messages}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Margin="0,0,0,8"
+                                                Padding="12,10"
+                                                CornerRadius="{StaticResource ControlCornerRadius}"
+                                                Background="{ThemeResource SurfaceMutedBrush}"
+                                                BorderBrush="{ThemeResource BorderBrush}"
+                                                BorderThickness="1">
+                                            <StackPanel Spacing="6">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                                                        <TextBlock Text="{Binding Role}"
+                                                                   FontWeight="Bold"
+                                                                   FontSize="11"
+                                                                   Foreground="{ThemeResource AccentCopperBrush}"
+                                                                   FontFamily="{StaticResource FontFamilyUi}" />
+                                                        <TextBlock Text="{Binding Model}"
+                                                                   FontSize="10"
+                                                                   Foreground="{ThemeResource TextSecondaryBrush}"
+                                                                   FontFamily="{StaticResource FontFamilyCode}"
+                                                                   Visibility="{Binding Model, Converter={StaticResource NullToVisibilityConverter}}" />
+                                                    </StackPanel>
+                                                    <TextBlock Grid.Column="1"
+                                                               Text="{Binding CreatedAt}"
+                                                               FontSize="10"
+                                                               Foreground="{ThemeResource TextSecondaryBrush}"
+                                                               FontFamily="{StaticResource FontFamilyUi}" />
+                                                </Grid>
+                                                <TextBlock Text="{Binding Content}"
+                                                           TextWrapping="Wrap"
+                                                           IsTextSelectionEnabled="True"
+                                                           Foreground="{ThemeResource TextPrimaryBrush}"
+                                                           FontFamily="{StaticResource FontFamilyUi}"
+                                                           FontSize="13" />
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
+                            <!-- Linked Work Items (if any spawned) -->
+                            <ItemsControl ItemsSource="{Binding Chat.WorkItems}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Margin="0,4,0,8"
+                                                Padding="12"
+                                                CornerRadius="{StaticResource ControlCornerRadius}"
+                                                Background="{ThemeResource SurfaceMutedBrush}"
+                                                BorderBrush="{ThemeResource AccentCopperBrush}"
+                                                BorderThickness="1">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0" Spacing="4">
+                                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                                        <TextBlock Text="WORK ITEM CREATED"
+                                                                   FontWeight="Bold"
+                                                                   FontSize="10"
+                                                                   Foreground="{ThemeResource AccentCopperBrush}"
+                                                                   FontFamily="{StaticResource FontFamilyUi}" />
+                                                        <Border Background="{ThemeResource SurfaceBrush}"
+                                                                BorderBrush="{ThemeResource BorderBrush}"
+                                                                BorderThickness="1"
+                                                                CornerRadius="{StaticResource ControlCornerRadius}"
+                                                                Padding="6,1">
+                                                            <TextBlock Text="{Binding Intent}" FontSize="10" FontWeight="SemiBold" Foreground="{ThemeResource TextPrimaryBrush}" />
+                                                        </Border>
+                                                        <Border Background="{ThemeResource SurfaceBrush}"
+                                                                BorderBrush="{ThemeResource BorderBrush}"
+                                                                BorderThickness="1"
+                                                                CornerRadius="{StaticResource ControlCornerRadius}"
+                                                                Padding="6,1">
+                                                            <TextBlock Text="{Binding Status}" FontSize="10" Foreground="{ThemeResource TextSecondaryBrush}" />
+                                                        </Border>
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding Summary}"
+                                                               FontWeight="SemiBold"
+                                                               FontSize="13"
+                                                               TextWrapping="Wrap"
+                                                               Foreground="{ThemeResource TextPrimaryBrush}" />
+                                                    <TextBlock Text="{Binding TargetModule}"
+                                                               FontSize="11"
+                                                               FontFamily="{StaticResource FontFamilyCode}"
+                                                               Foreground="{ThemeResource TextSecondaryBrush}" />
+                                                </StackPanel>
+                                                <Button Grid.Column="1"
+                                                        VerticalAlignment="Center"
+                                                        Command="{Binding ElementName=MainRootGrid, Path=DataContext.Chat.NavigateToWorkItemCommand}"
+                                                        CommandParameter="{Binding}"
+                                                        CornerRadius="{StaticResource ControlCornerRadius}"
+                                                        Padding="12,6">
+                                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                                        <FontIcon Glyph="&#xE8A7;" FontSize="12" />
+                                                        <TextBlock Text="Open" FontSize="12" FontWeight="SemiBold" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Error / Status Notice -->
+                    <StackPanel Grid.Row="2" Spacing="4" Margin="0,8,0,0">
+                        <ProgressBar IsIndeterminate="True"
+                                     Foreground="{ThemeResource AccentCopperBrush}"
+                                     Visibility="{Binding Chat.IsSending, Converter={StaticResource BoolToVisibilityConverter}}" />
+                        <TextBlock Text="{Binding Chat.ErrorMessage}"
+                                   Foreground="{ThemeResource StatusDangerBrush}"
+                                   FontSize="12"
+                                   TextWrapping="Wrap"
+                                   Visibility="{Binding Chat.ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}" />
+                    </StackPanel>
+
+                    <!-- Composer Box -->
+                    <Border Grid.Row="3"
+                            Margin="0,8,0,0"
+                            Padding="12"
+                            Background="{ThemeResource SurfaceMutedBrush}"
+                            BorderBrush="{ThemeResource BorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="{StaticResource ControlCornerRadius}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <TextBox Grid.Row="0"
+                                     PlaceholderText="Write a message..."
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     MinHeight="70"
+                                     MaxHeight="160"
+                                     CornerRadius="{StaticResource ControlCornerRadius}"
+                                     FontFamily="{StaticResource FontFamilyUi}"
+                                     Text="{Binding Chat.ComposerText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+
+                            <Grid Grid.Row="1" Margin="0,8,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Mode Selector -->
+                                <ComboBox Grid.Column="0"
+                                          SelectedValue="{Binding Chat.SelectedModeTag, Mode=TwoWay}"
+                                          SelectedValuePath="Tag"
+                                          Width="180"
+                                          FontSize="12"
+                                          CornerRadius="{StaticResource ControlCornerRadius}">
+                                    <ComboBoxItem Content="Auto (Hybrid Routing)" Tag="auto" IsSelected="True" />
+                                    <ComboBoxItem Content="Answer Only (No Task)" Tag="answer_only" />
+                                    <ComboBoxItem Content="Action Task" Tag="task" />
+                                    <ComboBoxItem Content="Research" Tag="research" />
+                                    <ComboBoxItem Content="Desktop Vision" Tag="desktop_vision" />
+                                    <ComboBoxItem Content="Schedule" Tag="schedule" />
+                                </ComboBox>
+
+                                <!-- Send Button -->
+                                <Button Grid.Column="2"
+                                        Command="{Binding Chat.SendMessageCommand}"
+                                        Background="{ThemeResource AccentCopperBrush}"
+                                        Foreground="{ThemeResource AccentTextBrush}"
+                                        CornerRadius="{StaticResource ControlCornerRadius}"
+                                        Padding="16,6">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <FontIcon Glyph="&#xE724;" FontSize="13" Foreground="{ThemeResource AccentTextBrush}" />
+                                        <TextBlock Text="Send" FontSize="12" FontWeight="SemiBold" Foreground="{ThemeResource AccentTextBrush}" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
 
         <!-- MAIN TASK WORKSPACE AREA: 2 Columns -->
         <Grid Grid.Row="1" Padding="20" ColumnSpacing="20"
@@ -582,13 +982,49 @@
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Text="Installed Skills" FontWeight="SemiBold" FontSize="15" VerticalAlignment="Center" />
-                                    <Button Grid.Column="1" Command="{Binding Skills.LoadInstalledSkillsCommand}" Padding="8,4">
-                                        <StackPanel Orientation="Horizontal" Spacing="4">
-                                            <FontIcon Glyph="&#xE72C;" FontSize="11" />
-                                            <TextBlock Text="Refresh" FontSize="11" />
-                                        </StackPanel>
-                                    </Button>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                                        <Button Command="{Binding Skills.OpenSkillsDirectoryCommand}" Padding="8,4"
+                                                ToolTipService.ToolTip="Open local skills directory in Windows Explorer">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <FontIcon Glyph="&#xE8B7;" FontSize="11" />
+                                                <TextBlock Text="Open Folder" FontSize="11" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button Command="{Binding Skills.LoadInstalledSkillsCommand}" Padding="8,4">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <FontIcon Glyph="&#xE72C;" FontSize="11" />
+                                                <TextBlock Text="Refresh" FontSize="11" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
                                 </Grid>
+
+                                <!-- Local Folder Import Bar -->
+                                <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="6"
+                                        Padding="8">
+                                    <Grid ColumnSpacing="6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBox Grid.Column="0"
+                                                 PlaceholderText="Import local folder (e.g. C:\skills\my-skill)..."
+                                                 FontSize="11"
+                                                 Text="{Binding Skills.ImportFolderPath, Mode=TwoWay}" />
+                                        <Button Grid.Column="1"
+                                                Command="{Binding Skills.ImportFromFolderCommand}"
+                                                Style="{ThemeResource AccentButtonStyle}"
+                                                Padding="10,4">
+                                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                                <FontIcon Glyph="&#xE8B5;" FontSize="11" />
+                                                <TextBlock Text="Import" FontSize="11" />
+                                            </StackPanel>
+                                        </Button>
+                                    </Grid>
+                                </Border>
 
                                 <ListView Grid.Row="1"
                                           ItemsSource="{Binding Skills.InstalledSkills}"
@@ -795,6 +1231,9 @@
                                                         <Button Content="Preview" Padding="8,3" FontSize="11"
                                                                 Command="{Binding DataContext.Skills.PreviewCandidateCommand, ElementName=MainRootGrid}"
                                                                 CommandParameter="{Binding}" />
+                                                        <Button Content="README" Padding="8,3" FontSize="11"
+                                                                Command="{Binding DataContext.Skills.PreviewReadmeCommand, ElementName=MainRootGrid}"
+                                                                CommandParameter="{Binding}" />
                                                         <Button Content="Install" Padding="8,3" FontSize="11"
                                                                 Style="{ThemeResource AccentButtonStyle}"
                                                                 Command="{Binding DataContext.Skills.InstallCandidateCommand, ElementName=MainRootGrid}"
@@ -982,8 +1421,8 @@
                                     </ListView.ItemTemplate>
                                 </ListView>
 
-                                <!-- Add Server Expander -->
-                                <Expander Grid.Row="2" Header="Add MCP Server" HorizontalAlignment="Stretch">
+                                <!-- Safe Onboarding Wizard Expander (Phase 15) -->
+                                <Expander Grid.Row="2" Header="Add MCP Server (Safe Onboarding Wizard)" HorizontalAlignment="Stretch">
                                     <StackPanel Spacing="8" Padding="8">
                                         <TextBox Text="{Binding Mcp.NewServerId, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                  Header="Server ID (slug)" PlaceholderText="e.g. filesystem" />
@@ -995,10 +1434,70 @@
                                                  Header="Arguments (space-separated)" PlaceholderText="e.g. -y @modelcontextprotocol/server-filesystem" />
                                         <TextBox Text="{Binding Mcp.NewServerEnv, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                  Header="Environment (KEY=ref:vault/KEY or KEY=VAL)" AcceptsReturn="True" Height="60" />
-                                        <Button Content="Register Server"
-                                                Style="{ThemeResource AccentButtonStyle}"
-                                                Command="{Binding Mcp.RegisterServerCommand}"
-                                                HorizontalAlignment="Stretch" />
+
+                                        <!-- Probe & Verification Buttons -->
+                                        <Grid ColumnSpacing="8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Button Grid.Column="0"
+                                                    Content="Inspect Security"
+                                                    Command="{Binding Mcp.InspectNewServerCommand}"
+                                                    HorizontalAlignment="Stretch"
+                                                    Padding="8,4" />
+                                            <Button Grid.Column="1"
+                                                    Content="Test Handshake"
+                                                    Command="{Binding Mcp.TestNewServerConnectionCommand}"
+                                                    HorizontalAlignment="Stretch"
+                                                    Padding="8,4" />
+                                        </Grid>
+
+                                        <!-- Inspection Report Summary (if inspected) -->
+                                        <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="6"
+                                                Padding="8"
+                                                Visibility="{Binding Mcp.InspectionReport, Converter={StaticResource NullToVisibilityConverter}}">
+                                            <StackPanel Spacing="4">
+                                                <TextBlock Text="INSPECTION REPORT" FontWeight="Bold" FontSize="10" Foreground="{ThemeResource AccentFillColorDefaultBrush}" />
+                                                <TextBlock Text="{Binding Mcp.InspectionReport.Fingerprint}" FontSize="10" FontFamily="Consolas" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding Mcp.InspectionReport.RiskLevel}" FontSize="11" FontWeight="SemiBold" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Test Result Summary (if tested) -->
+                                        <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="6"
+                                                Padding="8"
+                                                Visibility="{Binding Mcp.TestResult, Converter={StaticResource NullToVisibilityConverter}}">
+                                            <StackPanel Spacing="4">
+                                                <TextBlock Text="HANDSHAKE PROBE RESULT" FontWeight="Bold" FontSize="10" Foreground="MediumSeaGreen" />
+                                                <TextBlock Text="{Binding Mcp.TestResult.ProtocolVersion}" FontSize="11" />
+                                                <TextBlock Text="{Binding Mcp.TestResult.ErrorMessage}" FontSize="11" Foreground="IndianRed"
+                                                           Visibility="{Binding Mcp.TestResult.ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <!-- Action Registration Buttons -->
+                                        <Grid ColumnSpacing="8" Margin="0,4,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Button Grid.Column="0"
+                                                    Content="Save Draft"
+                                                    Command="{Binding Mcp.RegisterServerCommand}"
+                                                    HorizontalAlignment="Stretch" />
+                                            <Button Grid.Column="1"
+                                                    Content="Approve &amp; Bind"
+                                                    Style="{ThemeResource AccentButtonStyle}"
+                                                    Command="{Binding Mcp.ApproveAndRegisterCommand}"
+                                                    HorizontalAlignment="Stretch" />
+                                        </Grid>
                                     </StackPanel>
                                 </Expander>
                             </Grid>
@@ -2086,6 +2585,179 @@
                                 </ListView.ItemTemplate>
                             </ListView>
                         </Border>
+                    </Grid>
+                </TabViewItem>
+
+                <!-- TAB 4: AUTONOMOUS DESKTOP LOOP -->
+                <TabViewItem Header="Autonomous Desktop">
+                    <TabViewItem.IconSource>
+                        <FontIconSource Glyph="&#xE768;" />
+                    </TabViewItem.IconSource>
+                    <Grid RowSpacing="12" Margin="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Header -->
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Spacing="2">
+                                <TextBlock Text="Bounded Autonomous Desktop Loop" FontSize="16" FontWeight="Bold" />
+                                <TextBlock Text="Self-directed UI navigation governed by strict budgets, window focus guards, and instant emergency stop" FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Padding="10,4" CornerRadius="12"
+                                    Background="{ThemeResource AccentFillColorDefaultBrush}">
+                                <TextBlock Text="{Binding DesktopVision.AutonomyStatusText, FallbackValue='IDLE'}"
+                                           FontWeight="Bold" FontSize="12" Foreground="White" />
+                            </Border>
+                        </Grid>
+
+                        <!-- Content Grid: Config on left, Session state & controls on right -->
+                        <Grid Grid.Row="1" ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="380" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- LEFT: Autonomy Configuration Card -->
+                            <Border Grid.Column="0"
+                                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="16">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <StackPanel Spacing="12">
+                                        <TextBlock Text="Autonomy Budget &amp; Target" FontWeight="Bold" FontSize="14" />
+
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="Goal / Directive" FontSize="12" FontWeight="SemiBold" />
+                                            <TextBox PlaceholderText="e.g. Open Notepad and type summary report"
+                                                     AcceptsReturn="True"
+                                                     TextWrapping="Wrap"
+                                                     MinHeight="70"
+                                                     Text="{Binding DesktopVision.AutonomyGoal, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                        </StackPanel>
+
+                                        <Grid ColumnSpacing="8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Spacing="4">
+                                                <TextBlock Text="Max Actions" FontSize="12" FontWeight="SemiBold" />
+                                                <TextBox Text="{Binding DesktopVision.AutonomyMaxActions, Mode=TwoWay}" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Spacing="4">
+                                                <TextBlock Text="Duration (sec)" FontSize="12" FontWeight="SemiBold" />
+                                                <TextBox Text="{Binding DesktopVision.AutonomyMaxDurationSeconds, Mode=TwoWay}" />
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="Target Window Binding" FontSize="12" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding DesktopVision.ActiveBinding.WindowTitle, FallbackValue='(Auto-select active or selected window)'}"
+                                                       FontSize="11" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                                        </StackPanel>
+
+                                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,8,0,0">
+                                            <Button Content="Start Session"
+                                                    Style="{ThemeResource AccentButtonStyle}"
+                                                    Command="{Binding DesktopVision.StartAutonomyCommand}"
+                                                    Padding="14,6" />
+                                            <Button Content="Step (Next Action)"
+                                                    Command="{Binding DesktopVision.StepAutonomyCommand}"
+                                                    Padding="12,6" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Border>
+
+                            <!-- RIGHT: Session Status, Progress, and Emergency Controls -->
+                            <Border Grid.Column="1"
+                                    Background="{ThemeResource LayerFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="16">
+                                <StackPanel Spacing="16">
+                                    <TextBlock Text="Runtime Execution Status" FontWeight="Bold" FontSize="14" />
+
+                                    <!-- Session Card -->
+                                    <Border Padding="14"
+                                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="6">
+                                        <Grid RowSpacing="8">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="140" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Session ID:" FontWeight="SemiBold" FontSize="12" />
+                                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding DesktopVision.ActiveAutonomySession.SessionId, FallbackValue='No active session'}" FontFamily="Consolas" FontSize="12" />
+
+                                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Budget Consumed:" FontWeight="SemiBold" FontSize="12" />
+                                            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                                                <TextBlock Text="{Binding DesktopVision.ActiveAutonomySession.ActionCount, FallbackValue='0'}" FontWeight="Bold" FontSize="12" />
+                                                <TextBlock Text="/" FontSize="12" />
+                                                <TextBlock Text="{Binding DesktopVision.ActiveAutonomySession.MaxActions, FallbackValue='0'}" FontSize="12" />
+                                                <TextBlock Text="actions" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            </StackPanel>
+
+                                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Time Elapsed:" FontWeight="SemiBold" FontSize="12" />
+                                            <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                                                <TextBlock Text="{Binding DesktopVision.ActiveAutonomySession.ElapsedSeconds, FallbackValue='0.0'}" FontSize="12" />
+                                                <TextBlock Text="/" FontSize="12" />
+                                                <TextBlock Text="{Binding DesktopVision.ActiveAutonomySession.MaxDurationSeconds, FallbackValue='0.0'}" FontSize="12" />
+                                                <TextBlock Text="seconds" FontSize="12" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            </StackPanel>
+
+                                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Last Message:" FontWeight="SemiBold" FontSize="12" />
+                                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding DesktopVision.ActiveAutonomySession.LastActionMessage, FallbackValue='Ready'}" FontSize="12" TextWrapping="Wrap" />
+                                        </Grid>
+                                    </Border>
+
+                                    <!-- Autonomy Actions Bar -->
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <Button Content="Pause"
+                                                Command="{Binding DesktopVision.PauseAutonomyCommand}"
+                                                Padding="14,6" />
+                                        <Button Content="Resume"
+                                                Command="{Binding DesktopVision.ResumeAutonomyCommand}"
+                                                Padding="14,6" />
+                                        <Button Content="Stop Session"
+                                                Command="{Binding DesktopVision.StopAutonomyCommand}"
+                                                Background="#D13438" Foreground="White"
+                                                Padding="14,6" />
+                                    </StackPanel>
+
+                                    <!-- Focus and Guardrail Alert -->
+                                    <Border Padding="12"
+                                            Background="{ThemeResource SystemFillColorCautionBackgroundBrush}"
+                                            BorderThickness="1"
+                                            BorderBrush="{ThemeResource SystemFillColorCautionBrush}"
+                                            CornerRadius="6">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <FontIcon Glyph="&#xE7BA;" FontSize="14" Foreground="{ThemeResource SystemFillColorCautionBrush}" />
+                                            <TextBlock Text="Window Focus Guard ensures actions strictly target allowed HWNDs. If focus drifts, autonomy pauses instantly."
+                                                       FontSize="11" TextWrapping="Wrap" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
                     </Grid>
                 </TabViewItem>
             </TabView>

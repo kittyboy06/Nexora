@@ -59,6 +59,18 @@ public class McpServerRecordDto
     [JsonPropertyName("status")]
     public string Status { get; set; } = "DISCOVERED";
 
+    [JsonPropertyName("fingerprint")]
+    public string Fingerprint { get; set; } = string.Empty;
+
+    [JsonPropertyName("approved_fingerprint")]
+    public string? ApprovedFingerprint { get; set; }
+
+    [JsonPropertyName("approved_at")]
+    public string? ApprovedAt { get; set; }
+
+    [JsonPropertyName("approved_by")]
+    public string? ApprovedBy { get; set; }
+
     [JsonPropertyName("advertised_tools")]
     public List<McpToolDefinitionDto> AdvertisedTools { get; set; } = new();
 
@@ -157,4 +169,64 @@ public class McpPingResponseDto
 
     [JsonPropertyName("latency_ms")]
     public double LatencyMs { get; set; }
+}
+
+public class McpInspectionReportDto
+{
+    [JsonPropertyName("server_id")]
+    public string ServerId { get; set; } = string.Empty;
+
+    [JsonPropertyName("fingerprint")]
+    public string Fingerprint { get; set; } = string.Empty;
+
+    [JsonPropertyName("risk_level")]
+    public string RiskLevel { get; set; } = "SENSITIVE";
+
+    [JsonPropertyName("warnings")]
+    public List<string> Warnings { get; set; } = new();
+
+    [JsonPropertyName("referenced_secrets")]
+    public List<string> ReferencedSecrets { get; set; } = new();
+
+    [JsonPropertyName("missing_secrets")]
+    public List<string> MissingSecrets { get; set; } = new();
+
+    [JsonPropertyName("is_valid")]
+    public bool IsValid { get; set; }
+}
+
+public class McpTestConnectionResultDto
+{
+    [JsonPropertyName("server_id")]
+    public string ServerId { get; set; } = string.Empty;
+
+    [JsonPropertyName("success")]
+    public bool Success { get; set; }
+
+    [JsonPropertyName("protocol_version")]
+    public string? ProtocolVersion { get; set; }
+
+    [JsonPropertyName("discovered_tools_count")]
+    public int DiscoveredToolsCount { get; set; }
+
+    [JsonPropertyName("tools")]
+    public List<McpToolDefinitionDto> Tools { get; set; } = new();
+
+    [JsonPropertyName("latency_ms")]
+    public double? LatencyMs { get; set; }
+
+    [JsonPropertyName("error_message")]
+    public string? ErrorMessage { get; set; }
+}
+
+public class McpOnboardApproveRequestDto
+{
+    [JsonPropertyName("server_id")]
+    public string ServerId { get; set; } = string.Empty;
+
+    [JsonPropertyName("fingerprint")]
+    public string Fingerprint { get; set; } = string.Empty;
+
+    [JsonPropertyName("operator")]
+    public string Operator { get; set; } = "operator";
 }

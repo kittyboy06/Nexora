@@ -112,3 +112,41 @@ class ScreenshotEvidence(BaseModel):
     is_redacted: bool = False
     created_at: str
     expires_at: str
+
+
+class AutonomousSessionConfig(BaseModel):
+    """Budget and boundary configuration for autonomous desktop interaction."""
+
+    session_id: str
+    goal: str
+    allowed_hwnds: list[int] = Field(default_factory=list)
+    max_actions: int = Field(default=30, ge=1, le=100)
+    max_duration_seconds: float = Field(default=600.0, ge=10.0, le=3600.0)
+    require_confirmation: bool = False
+
+
+class AutonomousSessionState(BaseModel):
+    """Runtime tracking of an active or completed autonomous desktop session."""
+
+    session_id: str
+    goal: str
+    status: str  # "READY", "RUNNING", "PAUSED", "STOPPED", "EXHAUSTED", "EMERGENCY_STOPPED"
+    action_count: int = 0
+    max_actions: int = 30
+    elapsed_seconds: float = 0.0
+    max_duration_seconds: float = 600.0
+    bound_hwnd: Optional[int] = None
+    last_action_message: Optional[str] = None
+    created_at: str
+    updated_at: str
+
+
+class AutonomousStepResult(BaseModel):
+    """Step execution response from the autonomous desktop loop."""
+
+    session_id: str
+    step_number: int
+    action_result: Optional[DesktopActionResult] = None
+    session_state: AutonomousSessionState
+    is_terminal: bool = False
+    terminal_reason: Optional[str] = None

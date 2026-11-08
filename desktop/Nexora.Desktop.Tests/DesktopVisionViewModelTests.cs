@@ -186,4 +186,118 @@ public class DesktopVisionViewModelTests
         Assert.False(vm.IsEmergencyStopActive);
         Assert.Contains("Emergency stop reset", vm.StatusMessage);
     }
+
+    [Fact]
+    public async Task StartAutonomyAsync_ValidConfig_InitializesSession()
+    {
+        var mockClient = new Mock<INexoraApiClient>();
+        var sessionState = new AutonomousSessionStateDto
+        {
+            SessionId = "sess_test1",
+            Goal = "Automate calculator sum",
+            Status = "RUNNING",
+            ActionCount = 0,
+            MaxActions = 15,
+            MaxDurationSeconds = 300.0,
+            LastActionMessage = "Session initialized.",
+        };
+
+        mockClient
+            .Setup(c => c.StartAutonomousSessionAsync(It.IsAny<AutonomousSessionConfigDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(sessionState);
+
+        var vm = new DesktopVisionViewModel(mockClient.Object)
+        {
+            AutonomyGoal = "Automate calculator sum",
+            AutonomyMaxActions = 15,
+            AutonomyMaxDurationSeconds = 300.0,
+        };
+
+        await vm.StartAutonomyCommand.ExecuteAsync(null);
+
+        Assert.NotNull(vm.ActiveAutonomySession);
+        Assert.Equal("sess_test1", vm.ActiveAutonomySession.SessionId);
+        Assert.True(vm.IsAutonomyRunning);
+        Assert.False(vm.IsAutonomyPaused);
+        Assert.Equal("RUNNING", vm.AutonomyStatusText);
+        Assert.Contains("Autonomous session sess_test1 initialized", vm.StatusMessage);
+    }
+
+    [Fact]
+    public async Task StepAutonomyAsync_AdvancesSessionAndUpdatesBudget()
+    {
+        var mockClient = new Mock<INexoraApiClient>();
+        var stepResult = new AutonomousStepResultDto
+        {
+            SessionId = "sess_step1",
+            StepNumber = 1,
+            IsTerminal = false,
+            ActionResult = new DesktopActionResultDto
+            {
+                ActionId = "act_1",
+                Status = "SUCCESS",
+                Message = "Clicked element 42",
+            },
+            SessionState = new AutonomousSessionStateDto
+            {
+                SessionId = "sess_step1",
+                Status = "RUNNING",
+                ActionCount = 1,
+                MaxActions = 5,
+            },
+        };
+
+        mockClient
+            .Setup(c => c.ExecuteAutonomousStepAsync("sess_step1", null, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(stepResult);
+        mockClient
+            .Setup(c => c.ListDesktopEvidenceAsync(It.IsAny<string?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ScreenshotEvidenceDto>());
+
+        var vm = new DesktopVisionViewModel(mockClient.Object)
+        {
+            ActiveAutonomySession = new AutonomousSessionStateDto { SessionId = "sess_step1", Status = "RUNNING" },
+            IsAutonomyRunning = true,
+        };
+
+        await vm.StepAutonomyCommand.ExecuteAsync(null);
+
+        Assert.Equal(1, vm.ActiveAutonomySession.ActionCount);
+        Assert.Equal("RUNNING", vm.AutonomyStatusText);
+        Assert.Contains("Step 1: Clicked element 42", vm.StatusMessage);
+    }
+
+    [Fact]
+    public async Task PauseResumeStopAutonomyAsync_UpdatesSessionStatus()
+    {
+        var mockClient = new Mock<INexoraApiClient>();
+        var pausedState = new AutonomousSessionStateDto { SessionId = "sess_1", Status = "PAUSED" };
+        var resumedState = new AutonomousSessionStateDto { SessionId = "sess_1", Status = "RUNNING" };
+        var stoppedState = new AutonomousSessionStateDto { SessionId = "sess_1", Status = "STOPPED" };
+
+        mockClient.Setup(c => c.PauseAutonomousSessionAsync("sess_1", It.IsAny<CancellationToken>())).ReturnsAsync(pausedState);
+        mockClient.Setup(c => c.ResumeAutonomousSessionAsync("sess_1", It.IsAny<CancellationToken>())).ReturnsAsync(resumedState);
+        mockClient.Setup(c => c.StopAutonomousSessionAsync("sess_1", "Stopped by operator", It.IsAny<CancellationToken>())).ReturnsAsync(stoppedState);
+
+        var vm = new DesktopVisionViewModel(mockClient.Object)
+        {
+            ActiveAutonomySession = new AutonomousSessionStateDto { SessionId = "sess_1", Status = "RUNNING" },
+            IsAutonomyRunning = true,
+        };
+
+        // Pause
+        await vm.PauseAutonomyCommand.ExecuteAsync(null);
+        Assert.True(vm.IsAutonomyPaused);
+        Assert.Equal("PAUSED", vm.AutonomyStatusText);
+
+        // Resume
+        await vm.ResumeAutonomyCommand.ExecuteAsync(null);
+        Assert.False(vm.IsAutonomyPaused);
+        Assert.Equal("RUNNING", vm.AutonomyStatusText);
+
+        // Stop
+        await vm.StopAutonomyCommand.ExecuteAsync(null);
+        Assert.False(vm.IsAutonomyRunning);
+        Assert.Equal("STOPPED", vm.AutonomyStatusText);
+    }
 }

@@ -39,6 +39,21 @@ public partial class SkillsViewModel : ObservableObject
     [ObservableProperty]
     private string? _markdownPreview;
 
+    [ObservableProperty]
+    private string? _readmePreview;
+
+    [ObservableProperty]
+    private string _importFolderPath = string.Empty;
+
+    [ObservableProperty]
+    private string _importManifestYaml = string.Empty;
+
+    [ObservableProperty]
+    private string _importInstructions = string.Empty;
+
+    [ObservableProperty]
+    private bool _enableOnImport;
+
     public ObservableCollection<SkillSummaryDto> InstalledSkills { get; } = new();
     public ObservableCollection<SkillDiscoveryCandidateDto> DiscoveryCandidates { get; } = new();
 
@@ -209,6 +224,107 @@ public partial class SkillsViewModel : ObservableObject
         catch
         {
             // Ignore rate limit status failure
+        }
+    }
+
+    [RelayCommand]
+    public async Task ImportFromFolderAsync(string? path = null)
+    {
+        var targetPath = !string.IsNullOrWhiteSpace(path) ? path : ImportFolderPath;
+        if (string.IsNullOrWhiteSpace(targetPath))
+        {
+            StatusMessage = "Please specify a folder path to import.";
+            return;
+        }
+
+        try
+        {
+            StatusMessage = $"Importing skill from folder: {targetPath}...";
+            var request = new SkillImportFolderRequestDto
+            {
+                FolderPath = targetPath,
+                EnableImmediately = EnableOnImport,
+            };
+            var bundle = await _apiClient.ImportSkillFolderAsync(request);
+            ImportFolderPath = string.Empty;
+            await LoadInstalledSkillsAsync();
+            StatusMessage = $"Imported '{bundle.Manifest.Name}' (v{bundle.Manifest.Version}). Status: {(bundle.IsEnabled ? "Enabled" : "Disabled (review required)")}";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Import failed: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public async Task ImportFromPasteAsync()
+    {
+        if (string.IsNullOrWhiteSpace(ImportManifestYaml) || string.IsNullOrWhiteSpace(ImportInstructions))
+        {
+            StatusMessage = "Both manifest YAML and instructions Markdown are required.";
+            return;
+        }
+
+        try
+        {
+            StatusMessage = "Importing pasted skill...";
+            var request = new SkillImportPasteRequestDto
+            {
+                ManifestYaml = ImportManifestYaml,
+                Instructions = ImportInstructions,
+                EnableImmediately = EnableOnImport,
+                SourceNote = "pasted",
+            };
+            var bundle = await _apiClient.ImportSkillPasteAsync(request);
+            ImportManifestYaml = string.Empty;
+            ImportInstructions = string.Empty;
+            await LoadInstalledSkillsAsync();
+            StatusMessage = $"Pasted skill '{bundle.Manifest.Name}' imported! Status: {(bundle.IsEnabled ? "Enabled" : "Disabled (review required)")}";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Paste import failed: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public async Task PreviewReadmeAsync(SkillDiscoveryCandidateDto? candidate)
+    {
+        if (candidate == null) return;
+        try
+        {
+            StatusMessage = $"Fetching sanitized README from {candidate.Owner}/{candidate.Repo}...";
+            var res = await _apiClient.PreviewSkillReadmeAsync(candidate.Owner, candidate.Repo, candidate.DefaultBranch);
+            ReadmePreview = res.SanitizedMarkdown;
+            StatusMessage = $"README loaded ({res.Length} chars, sanitized).";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Failed loading README: {ex.Message}";
+        }
+    }
+
+    [RelayCommand]
+    public void OpenSkillsDirectory()
+    {
+        try
+        {
+            var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            var skillsDir = System.IO.Path.Combine(localAppData, "Nexora", "skills");
+            if (!System.IO.Directory.Exists(skillsDir))
+            {
+                System.IO.Directory.CreateDirectory(skillsDir);
+            }
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = skillsDir,
+                UseShellExecute = true,
+                Verb = "open"
+            });
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Could not open directory: {ex.Message}";
         }
     }
 }

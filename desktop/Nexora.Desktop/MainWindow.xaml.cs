@@ -1,5 +1,6 @@
 using System;
 using Microsoft.UI.Xaml;
+using Nexora.Desktop.Models;
 using Nexora.Desktop.ViewModels;
 using Windows.Graphics;
 
@@ -17,6 +18,16 @@ public sealed partial class MainWindow : Window
         if (Content is FrameworkElement root)
         {
             root.DataContext = ViewModel;
+
+            ViewModel.ThemeChanged += mode =>
+            {
+                root.RequestedTheme = mode switch
+                {
+                    AppThemeMode.Light => ElementTheme.Light,
+                    AppThemeMode.Dark => ElementTheme.Dark,
+                    _ => ElementTheme.Default
+                };
+            };
         }
 
         Title = "NEXORA Desktop Control Plane";

@@ -1,5 +1,6 @@
 """MCP Server Configuration and Lifecycle State Registry."""
 
+from datetime import datetime, timezone
 import json
 import logging
 from pathlib import Path
@@ -12,6 +13,7 @@ from backend.app.mcp.models import (
     McpServerStatus,
     McpServerUpdateRequest,
     McpToolDefinition,
+    compute_manifest_fingerprint,
 )
 
 logger = logging.getLogger("nexora.mcp.registry")
@@ -73,14 +75,24 @@ class McpServerRegistry:
     def register_server(self, config: McpServerConfig) -> McpServerRecord:
         """Register a new server configuration. Requires operator approval before launch."""
         status = McpServerStatus.APPROVED if config.is_approved else McpServerStatus.DISCOVERED
+        fp = compute_manifest_fingerprint(
+            command=config.command,
+            args=config.args,
+            env=config.env,
+            working_dir=config.working_dir,
+        )
         record = McpServerRecord(
             config=config,
             status=status,
+            fingerprint=fp,
+            approved_fingerprint=fp if config.is_approved else None,
+            approved_at=datetime.now(timezone.utc).isoformat() if config.is_approved else None,
+            approved_by="operator" if config.is_approved else None,
             advertised_tools=[],
         )
         self._servers[config.id] = record
         self._save_to_disk()
-        logger.info("Registered MCP server '%s' (status: %s)", config.id, status)
+        logger.info("Registered MCP server '%s' (status: %s, fp: %s)", config.id, status, fp[:10])
         return record
 
     def update_server(self, server_id: str, update: McpServerUpdateRequest) -> Optional[McpServerRecord]:
@@ -111,8 +123,16 @@ class McpServerRegistry:
         if update.is_enabled is not None:
             cfg.is_enabled = update.is_enabled
 
-        # Reset approval if security-relevant fields were modified
-        if security_altered:
+        new_fp = compute_manifest_fingerprint(
+            command=cfg.command,
+            args=cfg.args,
+            env=cfg.env,
+            working_dir=cfg.working_dir,
+        )
+        record.fingerprint = new_fp
+
+        # Reset approval if security-relevant fields were modified or fingerprint changed
+        if security_altered or new_fp != record.approved_fingerprint:
             cfg.is_approved = False
             record.status = McpServerStatus.DISCOVERED
             logger.warning(
@@ -123,16 +143,27 @@ class McpServerRegistry:
         self._save_to_disk()
         return record
 
-    def approve_server(self, server_id: str) -> Optional[McpServerRecord]:
+    def approve_server(self, server_id: str, operator: str = "operator") -> Optional[McpServerRecord]:
         """Mark a server's launch configuration as approved by the operator."""
         record = self._servers.get(server_id)
         if not record:
             return None
 
+        fp = compute_manifest_fingerprint(
+            command=record.config.command,
+            args=record.config.args,
+            env=record.config.env,
+            working_dir=record.config.working_dir,
+        )
+        record.fingerprint = fp
+        record.approved_fingerprint = fp
+        record.approved_at = datetime.now(timezone.utc).isoformat()
+        record.approved_by = operator
         record.config.is_approved = True
         record.status = McpServerStatus.APPROVED
         self._save_to_disk()
-        logger.info("MCP server '%s' approved by operator.", server_id)
+        logger.info("MCP server '%s' approved by %s (fp: %s).", server_id, operator, fp[:10])
+        return record
         return record
 
     def update_runtime_state(

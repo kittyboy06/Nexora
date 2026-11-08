@@ -28,6 +28,7 @@ class TaskManager:
         self.permissions = permissions
         self._task_lock = asyncio.Lock()
         self._active_task_id: str | None = None
+        self._running_task: asyncio.Task | None = None
 
     @property
     def is_busy(self) -> bool:
@@ -38,27 +39,79 @@ class TaskManager:
         """Background wrapper acquiring the single-task execution lock."""
         async with self._task_lock:
             self._active_task_id = task_id
+            self._running_task = asyncio.current_task()
             logger.info("Acquired task execution lock for %s", task_id)
             try:
                 await self.orchestrator.run_task(task_id, pre_authorized_step_id=pre_authorized_step_id)
+            except asyncio.CancelledError:
+                logger.info("Task %s background execution was cancelled.", task_id)
+                try:
+                    current = await self.state_manager.get_task(task_id)
+                    if current.status not in (TaskStatus.CANCELLED, TaskStatus.FAILED, TaskStatus.COMPLETED):
+                        await self.state_manager.transition_state(
+                            task_id,
+                            TaskStatus.CANCELLED,
+                            error_message="Cancelled by user.",
+                        )
+                except Exception:
+                    pass
+                raise
             except Exception as exc:
                 logger.exception("Unexpected exception in background orchestrator for %s: %s", task_id, exc)
                 try:
-                    await self.state_manager.transition_state(
-                        task_id,
-                        TaskStatus.FAILED,
-                        error_message=f"Unhandled engine error: {exc}",
-                    )
+                    current = await self.state_manager.get_task(task_id)
+                    if current.status not in (TaskStatus.CANCELLED, TaskStatus.FAILED, TaskStatus.COMPLETED):
+                        await self.state_manager.transition_state(
+                            task_id,
+                            TaskStatus.FAILED,
+                            error_message=f"Unhandled engine error: {exc}",
+                        )
                 except Exception:
                     pass
             finally:
                 self._active_task_id = None
+                self._running_task = None
                 logger.info("Released task execution lock for %s", task_id)
 
     async def create_and_start_task(
         self, prompt: str, background_tasks: BackgroundTasks, model_profile_id: str | None = None
     ) -> AgentTask:
         """Create a new task and dispatch background execution if capacity is available."""
+        # If lock is held, verify if the currently active task has already terminated or been cancelled
+        if self._task_lock.locked():
+            if self._active_task_id:
+                try:
+                    active = await self.state_manager.get_task(self._active_task_id)
+                    if active.status in (TaskStatus.CANCELLED, TaskStatus.COMPLETED, TaskStatus.FAILED):
+                        logger.warning(
+                            "Lock held for %s but task status is terminal (%s). Forcing background cleanup...",
+                            self._active_task_id, active.status
+                        )
+                        if self._running_task and not self._running_task.done():
+                            self._running_task.cancel()
+                        # Yield to let lock release
+                        for _ in range(10):
+                            if not self._task_lock.locked():
+                                break
+                            await asyncio.sleep(0.05)
+                        # Fail-safe: if lock is STILL held for a terminal task, break the dead lock
+                        if self._task_lock.locked():
+                            logger.warning(
+                                "Lock deadlocked for terminal task %s (%s). Force-resetting task lock.",
+                                self._active_task_id, active.status
+                            )
+                            self._task_lock = asyncio.Lock()
+                            self._active_task_id = None
+                            self._running_task = None
+                except Exception as exc:
+                    logger.warning("Error checking active task terminal status: %s", exc)
+            else:
+                # Orphaned lock with no active task ID
+                logger.warning("Lock held with no active task ID. Force-resetting task lock.")
+                self._task_lock = asyncio.Lock()
+                self._active_task_id = None
+                self._running_task = None
+
         if self._task_lock.locked():
             logger.warning("Rejecting task creation: TaskManager is currently running task %s", self._active_task_id)
             raise TaskRunnerBusyException(
@@ -110,4 +163,26 @@ class TaskManager:
 
     async def cancel_task(self, task_id: str) -> AgentTask:
         """Cancel a task if it is active."""
-        return await self.state_manager.transition_state(task_id, TaskStatus.CANCELLED, error_message="Cancelled by user.")
+        try:
+            task = await self.state_manager.transition_state(task_id, TaskStatus.CANCELLED, error_message="Cancelled by user.")
+        except Exception:
+            task = await self.state_manager.get_task(task_id)
+
+        # Immediately cancel the background task if active
+        if self._active_task_id == task_id and self._running_task and not self._running_task.done():
+            logger.info("Immediately cancelling running background asyncio task for %s", task_id)
+            self._running_task.cancel()
+            # Wait briefly for cancellation to propagate and release the lock
+            for _ in range(10):
+                if not self._task_lock.locked():
+                    break
+                await asyncio.sleep(0.05)
+
+        # Fail-safe: if the lock is STILL held by this cancelled task or orphaned, reset it immediately
+        if self._task_lock.locked() and (self._active_task_id == task_id or self._active_task_id is None):
+            logger.warning("Force-resetting task lock after cancellation of %s", task_id)
+            self._task_lock = asyncio.Lock()
+            self._active_task_id = None
+            self._running_task = None
+
+        return task

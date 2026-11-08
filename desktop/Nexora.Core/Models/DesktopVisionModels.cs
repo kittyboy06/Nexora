@@ -176,3 +176,81 @@ public class ScreenshotEvidenceDto
     [JsonPropertyName("expires_at")]
     public string ExpiresAt { get; set; } = string.Empty;
 }
+
+public class AutonomousSessionConfigDto
+{
+    [JsonPropertyName("session_id")]
+    public string SessionId { get; set; } = string.Empty;
+
+    [JsonPropertyName("goal")]
+    public string Goal { get; set; } = string.Empty;
+
+    [JsonPropertyName("allowed_hwnds")]
+    public List<int> AllowedHwnds { get; set; } = new();
+
+    [JsonPropertyName("max_actions")]
+    public int MaxActions { get; set; } = 30;
+
+    [JsonPropertyName("max_duration_seconds")]
+    public double MaxDurationSeconds { get; set; } = 600.0;
+
+    [JsonPropertyName("require_confirmation")]
+    public bool RequireConfirmation { get; set; }
+}
+
+public class AutonomousSessionStateDto
+{
+    [JsonPropertyName("session_id")]
+    public string SessionId { get; set; } = string.Empty;
+
+    [JsonPropertyName("goal")]
+    public string Goal { get; set; } = string.Empty;
+
+    [JsonPropertyName("status")]
+    public string Status { get; set; } = "READY";
+
+    [JsonPropertyName("action_count")]
+    public int ActionCount { get; set; }
+
+    [JsonPropertyName("max_actions")]
+    public int MaxActions { get; set; } = 30;
+
+    [JsonPropertyName("elapsed_seconds")]
+    public double ElapsedSeconds { get; set; }
+
+    [JsonPropertyName("max_duration_seconds")]
+    public double MaxDurationSeconds { get; set; } = 600.0;
+
+    [JsonPropertyName("bound_hwnd")]
+    public int? BoundHwnd { get; set; }
+
+    [JsonPropertyName("last_action_message")]
+    public string? LastActionMessage { get; set; }
+
+    [JsonPropertyName("created_at")]
+    public string CreatedAt { get; set; } = string.Empty;
+
+    [JsonPropertyName("updated_at")]
+    public string UpdatedAt { get; set; } = string.Empty;
+}
+
+public class AutonomousStepResultDto
+{
+    [JsonPropertyName("session_id")]
+    public string SessionId { get; set; } = string.Empty;
+
+    [JsonPropertyName("step_number")]
+    public int StepNumber { get; set; }
+
+    [JsonPropertyName("action_result")]
+    public DesktopActionResultDto? ActionResult { get; set; }
+
+    [JsonPropertyName("session_state")]
+    public AutonomousSessionStateDto SessionState { get; set; } = new();
+
+    [JsonPropertyName("is_terminal")]
+    public bool IsTerminal { get; set; }
+
+    [JsonPropertyName("terminal_reason")]
+    public string? TerminalReason { get; set; }
+}

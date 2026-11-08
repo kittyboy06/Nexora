@@ -172,4 +172,118 @@ public class McpViewModelTests
         mockClient.Verify(c => c.DeleteMcpVaultSecretAsync("API_KEY", It.IsAny<CancellationToken>()), Times.Once);
         Assert.Empty(vm.VaultSecrets);
     }
+
+    [Fact]
+    public async Task InspectNewServerAsync_PopulatesInspectionReport()
+    {
+        var mockClient = new Mock<INexoraApiClient>();
+        var report = new McpInspectionReportDto
+        {
+            ServerId = "fs-srv",
+            Fingerprint = "abcd1234ef567890abcd1234ef567890abcd1234ef567890abcd1234ef567890",
+            RiskLevel = "SENSITIVE",
+            Warnings = new List<string>(),
+            IsValid = true,
+        };
+
+        mockClient
+            .Setup(c => c.InspectMcpManifestAsync(It.IsAny<McpServerCreateRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(report);
+
+        var vm = new McpViewModel(mockClient.Object)
+        {
+            NewServerId = "fs-srv",
+            NewServerCommand = "npx",
+            NewServerArgs = "-y @modelcontextprotocol/server-filesystem",
+        };
+
+        await vm.InspectNewServerCommand.ExecuteAsync(null);
+
+        mockClient.Verify(c => c.InspectMcpManifestAsync(It.IsAny<McpServerCreateRequestDto>(), It.IsAny<CancellationToken>()), Times.Once);
+        Assert.NotNull(vm.InspectionReport);
+        Assert.Equal("fs-srv", vm.InspectionReport.ServerId);
+        Assert.True(vm.InspectionReport.IsValid);
+        Assert.Contains("Manifest inspected safely", vm.StatusMessage);
+    }
+
+    [Fact]
+    public async Task TestNewServerConnectionAsync_PopulatesTestResult()
+    {
+        var mockClient = new Mock<INexoraApiClient>();
+        var result = new McpTestConnectionResultDto
+        {
+            ServerId = "test-node",
+            Success = true,
+            DiscoveredToolsCount = 3,
+            LatencyMs = 45.2,
+        };
+
+        mockClient
+            .Setup(c => c.TestMcpConnectionAsync(It.IsAny<McpServerCreateRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(result);
+
+        var vm = new McpViewModel(mockClient.Object)
+        {
+            NewServerId = "test-node",
+            NewServerCommand = "node",
+            NewServerArgs = "server.js",
+        };
+
+        await vm.TestNewServerConnectionCommand.ExecuteAsync(null);
+
+        mockClient.Verify(c => c.TestMcpConnectionAsync(It.IsAny<McpServerCreateRequestDto>(), It.IsAny<CancellationToken>()), Times.Once);
+        Assert.NotNull(vm.TestResult);
+        Assert.True(vm.TestResult.Success);
+        Assert.Equal(3, vm.TestResult.DiscoveredToolsCount);
+        Assert.Contains("Probe succeeded", vm.StatusMessage);
+    }
+
+    [Fact]
+    public async Task ApproveAndRegisterAsync_BindsFingerprintAndRefreshes()
+    {
+        var mockClient = new Mock<INexoraApiClient>();
+        var registeredRecord = new McpServerRecordDto
+        {
+            Config = new McpServerConfigDto { Id = "db-mcp", Name = "Database MCP", Command = "python" },
+            Fingerprint = "11223344556677889900aabbccddeeff11223344556677889900aabbccddeeff",
+            Status = "DISCOVERED",
+        };
+
+        var approvedRecord = new McpServerRecordDto
+        {
+            Config = new McpServerConfigDto { Id = "db-mcp", Name = "Database MCP", Command = "python", IsApproved = true },
+            Fingerprint = registeredRecord.Fingerprint,
+            ApprovedFingerprint = registeredRecord.Fingerprint,
+            Status = "APPROVED",
+        };
+
+        mockClient
+            .Setup(c => c.RegisterMcpServerAsync(It.IsAny<McpServerCreateRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(registeredRecord);
+
+        mockClient
+            .Setup(c => c.ApproveMcpManifestAsync(It.IsAny<McpOnboardApproveRequestDto>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(approvedRecord);
+
+        mockClient
+            .Setup(c => c.ListMcpServersAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<McpServerRecordDto> { approvedRecord });
+
+        var vm = new McpViewModel(mockClient.Object)
+        {
+            NewServerId = "db-mcp",
+            NewServerName = "Database MCP",
+            NewServerCommand = "python",
+            NewServerArgs = "-m db_mcp",
+        };
+
+        await vm.ApproveAndRegisterCommand.ExecuteAsync(null);
+
+        mockClient.Verify(c => c.RegisterMcpServerAsync(It.IsAny<McpServerCreateRequestDto>(), It.IsAny<CancellationToken>()), Times.Once);
+        mockClient.Verify(c => c.ApproveMcpManifestAsync(It.IsAny<McpOnboardApproveRequestDto>(), It.IsAny<CancellationToken>()), Times.Once);
+        Assert.Single(vm.Servers);
+        Assert.Equal("db-mcp", vm.Servers[0].Config.Id);
+        Assert.Contains("registered & approved", vm.StatusMessage);
+        Assert.Empty(vm.NewServerId);
+    }
 }

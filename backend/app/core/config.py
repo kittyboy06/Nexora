@@ -61,6 +61,9 @@ class Settings(BaseSettings):
     # Phase 13 Scheduler and Background Work
     SCHEDULER_DATA_DIR: str = "data/scheduler"
 
+    # Phase 15 Chat-First Experience
+    CONVERSATION_DATA_DIR: str = "data/conversations"
+
     # Phase 3 Real-World Tool Limits
     WORKSPACE_DIR: str = "data/workspace"
     MAX_FILE_SIZE_BYTES: int = 5_000_000  # 5 MB
@@ -212,6 +215,17 @@ class Settings(BaseSettings):
     def get_scheduler_data_dir(self) -> Path:
         """Resolve data/scheduler directory relative to workspace or absolute."""
         p = Path(self.SCHEDULER_DATA_DIR)
+        if p.is_absolute():
+            return p
+        if Path.cwd().name == "backend":
+            candidate = Path.cwd().parent / p
+        else:
+            candidate = Path.cwd() / p
+        return candidate.resolve()
+
+    def get_conversation_data_dir(self) -> Path:
+        """Resolve data/conversations directory relative to workspace or absolute."""
+        p = Path(self.CONVERSATION_DATA_DIR)
         if p.is_absolute():
             return p
         if Path.cwd().name == "backend":

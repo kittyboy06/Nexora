@@ -1,0 +1,32 @@
+{
+  "conversation_id": "conv_cfd9a731321e",
+  "title": "Hello, how are you today?",
+  "created_at": "2026-11-07T17:28:33.978468Z",
+  "updated_at": "2026-11-07T17:28:33.985242Z",
+  "archived": false,
+  "messages": [
+    {
+      "message_id": "msg_37d12511063b",
+      "conversation_id": "conv_cfd9a731321e",
+      "role": "user",
+      "content": "Hello, how are you today?",
+      "mode": "auto",
+      "model": null,
+      "routing": null,
+      "work_item_ids": [],
+      "created_at": "2026-11-07T17:28:33.982913Z"
+    },
+    {
+      "message_id": "msg_0ddbea499e75",
+      "conversation_id": "conv_cfd9a731321e",
+      "role": "assistant",
+      "content": "Hello! I am NEXORA, your local autonomous assistant. How can I help you today?",
+      "mode": "auto",
+      "model": "mock-model:latest",
+      "routing": null,
+      "work_item_ids": [],
+      "created_at": "2026-11-07T17:28:33.985242Z"
+    }
+  ],
+  "work_items": []
+}

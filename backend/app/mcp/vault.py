@@ -116,6 +116,11 @@ class McpVaultService:
         data = self._load_data()
         return data["secrets"].get(key)
 
+    def has_secret(self, key: str) -> bool:
+        """Check whether a secret key exists in the vault without decrypting it."""
+        data = self._load_data()
+        return key in data.get("secrets", {})
+
     def delete_secret(self, key: str) -> bool:
         """Remove a secret from the encrypted vault."""
         data = self._load_data()

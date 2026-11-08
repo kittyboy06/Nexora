@@ -11,6 +11,7 @@ from backend.app.mcp.models import (
     McpServerRecord,
     McpServerStatus,
     McpToolDefinition,
+    compute_manifest_fingerprint,
 )
 from backend.app.mcp.protocol import McpProtocolError, McpProtocolHandler
 from backend.app.mcp.registry import McpServerRegistry
@@ -62,6 +63,20 @@ class McpClientSession:
             if not self.record.config.is_approved:
                 raise McpSecurityError(
                     f"Cannot connect to MCP server '{self.record.config.id}': Launch configuration is not approved by operator."
+                )
+
+            # Fingerprint integrity verification
+            current_fp = compute_manifest_fingerprint(
+                command=self.record.config.command,
+                args=self.record.config.args,
+                env=self.record.config.env,
+                working_dir=self.record.config.working_dir,
+            )
+            if self.record.approved_fingerprint and self.record.approved_fingerprint != current_fp:
+                self.record.config.is_approved = False
+                self.record.status = McpServerStatus.DISCOVERED
+                raise McpSecurityError(
+                    f"Cannot connect to MCP server '{self.record.config.id}': Launch configuration has been modified since approval (fingerprint mismatch). Re-authorization required."
                 )
 
             if not self.record.config.is_enabled:

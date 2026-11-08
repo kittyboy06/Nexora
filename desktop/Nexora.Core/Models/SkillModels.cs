@@ -194,3 +194,45 @@ public class GitHubRateLimitStatusDto
     [JsonPropertyName("is_authenticated")]
     public bool IsAuthenticated { get; set; }
 }
+
+public class SkillImportFolderRequestDto
+{
+    [JsonPropertyName("folder_path")]
+    public string FolderPath { get; set; } = string.Empty;
+
+    [JsonPropertyName("enable_immediately")]
+    public bool EnableImmediately { get; set; }
+}
+
+public class SkillImportPasteRequestDto
+{
+    [JsonPropertyName("manifest_yaml")]
+    public string ManifestYaml { get; set; } = string.Empty;
+
+    [JsonPropertyName("instructions")]
+    public string Instructions { get; set; } = string.Empty;
+
+    [JsonPropertyName("enable_immediately")]
+    public bool EnableImmediately { get; set; }
+
+    [JsonPropertyName("source_note")]
+    public string? SourceNote { get; set; } = "pasted";
+}
+
+public class SkillReadmePreviewResponseDto
+{
+    [JsonPropertyName("owner")]
+    public string Owner { get; set; } = string.Empty;
+
+    [JsonPropertyName("repo")]
+    public string Repo { get; set; } = string.Empty;
+
+    [JsonPropertyName("branch")]
+    public string Branch { get; set; } = "main";
+
+    [JsonPropertyName("sanitized_markdown")]
+    public string SanitizedMarkdown { get; set; } = string.Empty;
+
+    [JsonPropertyName("length")]
+    public int Length { get; set; }
+}

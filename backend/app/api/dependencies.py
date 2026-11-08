@@ -224,3 +224,29 @@ def get_task_manager(
         )
         request.app.state.task_manager = tm
     return tm
+
+
+from backend.app.conversation.intent_classifier import IntentClassifier
+from backend.app.services.conversation_service import ConversationService
+
+
+def get_conversation_service(
+    request: Request,
+    settings: Settings = Depends(get_app_settings),
+    ollama: OllamaService = Depends(get_ollama_service),
+    guard: InferenceGuard = Depends(get_inference_guard),
+) -> ConversationService:
+    """Dependency provider for Phase 15 ConversationService."""
+    service: ConversationService = getattr(request.app.state, "conversation_service", None)
+    if service is None:
+        classifier = IntentClassifier(ollama=ollama, guard=guard)
+        task_manager = getattr(request.app.state, "task_manager", None)
+        service = ConversationService(
+            settings=settings,
+            ollama=ollama,
+            guard=guard,
+            intent_classifier=classifier,
+            task_manager=task_manager,
+        )
+        request.app.state.conversation_service = service
+    return service

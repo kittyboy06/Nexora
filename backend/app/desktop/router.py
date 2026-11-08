@@ -7,8 +7,12 @@ from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
+from backend.app.desktop.autonomy import AutonomousSessionController
 from backend.app.desktop.guard import ShieldedWindowException
 from backend.app.desktop.models import (
+    AutonomousSessionConfig,
+    AutonomousSessionState,
+    AutonomousStepResult,
     DesktopActionRequest,
     DesktopActionResult,
     ScreenshotEvidence,
@@ -182,3 +186,99 @@ async def get_evidence_file(
         raise HTTPException(status_code=404, detail=f"Screenshot file for {image_id} not found")
 
     return FileResponse(ev.file_path, media_type="image/png")
+
+
+# ---------------------------------------------------------------------------
+# Autonomous Desktop Session Endpoints (Phase 15)
+# ---------------------------------------------------------------------------
+
+
+def get_autonomy_controller(request: Request) -> AutonomousSessionController:
+    controller = getattr(request.app.state, "desktop_autonomy", None)
+    if not controller:
+        service = getattr(request.app.state, "desktop_service", None)
+        if not service:
+            raise HTTPException(status_code=503, detail="Desktop service is not initialized")
+        controller = AutonomousSessionController(desktop_service=service)
+        request.app.state.desktop_autonomy = controller
+    return controller
+
+
+@router.post("/autonomy/start", response_model=AutonomousSessionState)
+async def start_autonomous_session(
+    config: AutonomousSessionConfig,
+    request: Request,
+) -> AutonomousSessionState:
+    """Start a bounded autonomous desktop session."""
+    controller = get_autonomy_controller(request)
+    try:
+        return controller.start_session(config)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/autonomy/{session_id}/step", response_model=AutonomousStepResult)
+async def execute_autonomous_step(
+    session_id: str,
+    request: Request,
+    action: Optional[DesktopActionRequest] = None,
+) -> AutonomousStepResult:
+    """Execute a single bounded step within an autonomous session."""
+    controller = get_autonomy_controller(request)
+    try:
+        return await controller.execute_step(session_id=session_id, action=action)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.post("/autonomy/{session_id}/pause", response_model=AutonomousSessionState)
+async def pause_autonomous_session(
+    session_id: str,
+    request: Request,
+) -> AutonomousSessionState:
+    """Pause an active autonomous session."""
+    controller = get_autonomy_controller(request)
+    state = controller.pause_session(session_id)
+    if not state:
+        raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found.")
+    return state
+
+
+@router.post("/autonomy/{session_id}/resume", response_model=AutonomousSessionState)
+async def resume_autonomous_session(
+    session_id: str,
+    request: Request,
+) -> AutonomousSessionState:
+    """Resume a paused autonomous session."""
+    controller = get_autonomy_controller(request)
+    state = controller.resume_session(session_id)
+    if not state:
+        raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found.")
+    return state
+
+
+@router.post("/autonomy/{session_id}/stop", response_model=AutonomousSessionState)
+async def stop_autonomous_session(
+    session_id: str,
+    request: Request,
+    reason: Optional[str] = "Stopped by operator",
+) -> AutonomousSessionState:
+    """Permanently stop an autonomous session."""
+    controller = get_autonomy_controller(request)
+    state = controller.stop_session(session_id, reason=reason or "Stopped by operator")
+    if not state:
+        raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found.")
+    return state
+
+
+@router.get("/autonomy/{session_id}", response_model=AutonomousSessionState)
+async def get_autonomous_session(
+    session_id: str,
+    request: Request,
+) -> AutonomousSessionState:
+    """Retrieve runtime state of an autonomous session."""
+    controller = get_autonomy_controller(request)
+    state = controller.get_session(session_id)
+    if not state:
+        raise HTTPException(status_code=404, detail=f"Session '{session_id}' not found.")
+    return state

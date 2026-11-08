@@ -1,10 +1,29 @@
 """Domain Models for Phase 8: Universal MCP Platform."""
 
+import hashlib
+import json
 from enum import Enum
 from typing import Any, Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field
 
 from backend.app.models.agent import RiskLevel
+
+
+def compute_manifest_fingerprint(
+    command: str,
+    args: list[str],
+    env: dict[str, str],
+    working_dir: Optional[str] = None,
+) -> str:
+    """Compute deterministic SHA-256 fingerprint over normalized launch configuration."""
+    canonical = {
+        "command": command.strip().lower(),
+        "args": [str(a).strip() for a in args],
+        "working_dir": str(working_dir).strip().lower() if working_dir else "",
+        "env_keys": sorted(list(env.keys())),
+    }
+    encoded = json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
 
 
 class McpServerStatus(str, Enum):
@@ -68,6 +87,10 @@ class McpServerRecord(BaseModel):
 
     config: McpServerConfig
     status: McpServerStatus = McpServerStatus.DISCOVERED
+    fingerprint: str = ""
+    approved_fingerprint: Optional[str] = None
+    approved_at: Optional[str] = None
+    approved_by: Optional[str] = None
     advertised_tools: list[McpToolDefinition] = Field(default_factory=list)
     protocol_version: Optional[str] = None
     last_connected_at: Optional[str] = None
@@ -120,3 +143,35 @@ class McpServerUpdateRequest(BaseModel):
     env: Optional[dict[str, str]] = None
     working_dir: Optional[str] = None
     is_enabled: Optional[bool] = None
+
+
+class McpInspectionReport(BaseModel):
+    """Static inspection and risk assessment report for an MCP launch configuration."""
+
+    server_id: str
+    fingerprint: str
+    risk_level: RiskLevel = RiskLevel.SENSITIVE
+    warnings: list[str] = Field(default_factory=list)
+    referenced_secrets: list[str] = Field(default_factory=list)
+    missing_secrets: list[str] = Field(default_factory=list)
+    is_valid: bool = True
+
+
+class McpTestConnectionResult(BaseModel):
+    """Result of safe non-executing MCP handshake probe."""
+
+    server_id: str
+    success: bool
+    protocol_version: Optional[str] = None
+    discovered_tools_count: int = 0
+    tools: list[McpToolDefinition] = Field(default_factory=list)
+    latency_ms: Optional[float] = None
+    error_message: Optional[str] = None
+
+
+class McpOnboardApproveRequest(BaseModel):
+    """Payload to authorize an MCP server configuration by binding its immutable fingerprint."""
+
+    server_id: str
+    fingerprint: str
+    operator: str = "operator"

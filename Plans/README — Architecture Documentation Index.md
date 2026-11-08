@@ -47,3 +47,8 @@ The `Modules/` documents define subsystem contracts shared by more than one phas
 ## Required implementation workflow
 
 For every milestone: inspect current code and tests; read the phase/module documents; write or update the detailed implementation checklist; implement a small vertical slice; add focused tests; run only tests appropriate to the environment; record what actually passed; update the phase status. Do not move past a stated gate merely because code has been written.
+# Phase 15 — NEXORA 1.2 Chat-First Experience
+
+- [Phase 15 — Chat-First Experience and Autonomous Desktop Specification](Phase%2015%20%E2%80%94%20Chat-First%20Experience%20and%20Autonomous%20Desktop%20Specification.md)
+- [Phase 15 — Chat-First Experience and Autonomous Desktop Implementation Plan](Phase%2015%20%E2%80%94%20Chat-First%20Experience%20and%20Autonomous%20Desktop%20Implementation%20Plan.md)
+

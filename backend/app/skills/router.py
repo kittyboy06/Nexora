@@ -10,14 +10,18 @@ from backend.app.skills.discovery import (
     GitHubResourceNotFoundError,
     RateLimitExceededError,
 )
+from backend.app.skills.importer import SkillImportError, SkillImporterService
 from backend.app.skills.manager import SkillManager
 from backend.app.skills.models import (
     GitHubRateLimitStatus,
     InstallSkillRequest,
     SkillBundle,
     SkillDiscoveryCandidate,
+    SkillImportFolderRequest,
+    SkillImportPasteRequest,
     SkillPatchRequest,
     SkillProvenance,
+    SkillReadmePreviewResponse,
     SkillSummary,
 )
 
@@ -33,6 +37,11 @@ def get_skill_manager(request: Request) -> SkillManager:
         manager = SkillManager()
         request.app.state.skill_manager = manager
     return manager
+
+
+def get_skill_importer(manager: SkillManager = Depends(get_skill_manager)) -> SkillImporterService:
+    """Dependency providing the SkillImporterService bound to the active SkillManager."""
+    return SkillImporterService(manager=manager)
 
 
 def get_github_discovery(request: Request) -> GitHubDiscoveryService:
@@ -156,6 +165,63 @@ async def install_skill(
     except Exception as e:
         logger.error("Failed to install skill bundle: %s", e)
         raise HTTPException(status_code=500, detail=f"Failed to install skill: {e}")
+
+
+@router.post("/import/folder", response_model=SkillBundle)
+async def import_skill_folder(
+    req: SkillImportFolderRequest,
+    importer: SkillImporterService = Depends(get_skill_importer),
+) -> SkillBundle:
+    """Import a skill bundle from a local directory, disabled by default for review."""
+    try:
+        return importer.import_from_folder(
+            folder_path=req.folder_path,
+            enable_immediately=req.enable_immediately,
+        )
+    except SkillImportError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error("Failed to import skill folder: %s", e)
+        raise HTTPException(status_code=500, detail=f"Failed to import skill folder: {e}")
+
+
+@router.post("/import/paste", response_model=SkillBundle)
+async def import_skill_paste(
+    req: SkillImportPasteRequest,
+    importer: SkillImporterService = Depends(get_skill_importer),
+) -> SkillBundle:
+    """Import a skill bundle directly from YAML/JSON manifest and markdown instructions."""
+    try:
+        return importer.import_from_paste(
+            manifest_yaml=req.manifest_yaml,
+            instructions=req.instructions,
+            enable_immediately=req.enable_immediately,
+            source_note=req.source_note or "pasted",
+        )
+    except SkillImportError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error("Failed to import pasted skill: %s", e)
+        raise HTTPException(status_code=500, detail=f"Failed to import pasted skill: {e}")
+
+
+@router.get("/preview/readme", response_model=SkillReadmePreviewResponse)
+async def preview_github_readme(
+    owner: str = Query(..., description="GitHub repository owner"),
+    repo: str = Query(..., description="GitHub repository name"),
+    branch: str = Query("main", description="Target Git branch"),
+    discovery: GitHubDiscoveryService = Depends(get_github_discovery),
+) -> SkillReadmePreviewResponse:
+    """Retrieve and sanitize GitHub repository README markdown."""
+    try:
+        data = await discovery.fetch_sanitized_readme(owner=owner, repo=repo, branch=branch)
+        return SkillReadmePreviewResponse(**data)
+    except GitHubResourceNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except RateLimitExceededError as e:
+        raise HTTPException(status_code=429, detail=str(e))
+    except GitHubDiscoveryError as e:
+        raise HTTPException(status_code=502, detail=f"GitHub API gateway error: {e}")
 
 
 @router.get("/{skill_id}", response_model=SkillBundle)

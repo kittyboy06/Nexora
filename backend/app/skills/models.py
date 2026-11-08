@@ -151,3 +151,29 @@ class GitHubRateLimitStatus(BaseModel):
     remaining: int = 60
     reset_at: Optional[str] = None
     is_authenticated: bool = False
+
+
+class SkillImportFolderRequest(BaseModel):
+    """Payload to import a skill from a local filesystem folder."""
+
+    folder_path: str = Field(..., description="Absolute or relative path to directory containing skill")
+    enable_immediately: bool = Field(default=False, description="Whether to enable immediately without review")
+
+
+class SkillImportPasteRequest(BaseModel):
+    """Payload to import a skill directly from YAML/JSON and instructions markdown."""
+
+    manifest_yaml: str = Field(..., description="YAML or JSON skill manifest")
+    instructions: str = Field(..., description="Markdown guidance body")
+    enable_immediately: bool = Field(default=False, description="Whether to enable immediately without review")
+    source_note: Optional[str] = Field(default="pasted", description="Audit note identifying provenance")
+
+
+class SkillReadmePreviewResponse(BaseModel):
+    """Sanitized GitHub repository README preview."""
+
+    owner: str
+    repo: str
+    branch: str = "main"
+    sanitized_markdown: str
+    length: int = 0

@@ -41,6 +41,10 @@ class EmergencyStopManager:
             logger.critical("EMERGENCY STOP ENGAGED: %s", reason)
             return True
 
+    def trigger_stop(self, reason: str = "Operator manual emergency stop") -> bool:
+        """Convenience alias for trigger_emergency_stop."""
+        return self.trigger_emergency_stop(reason)
+
     def reset(self, authorized: bool = True) -> bool:
         """Reset the emergency stop state once safe."""
         if not authorized:

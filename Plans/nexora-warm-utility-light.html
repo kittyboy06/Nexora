@@ -1,0 +1,638 @@
+﻿<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NEXORA 1.2 - Warm Utility Desktop Productivity Control Plane</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Verbatim Tailwind Configuration -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-surface": "#241912",
+            "surface-bright": "#fff8f5",
+            "secondary-fixed": "#feddbd",
+            "on-error-container": "#93000a",
+            "tertiary-fixed": "#baeafa",
+            "surface-container-highest": "#f3dfd2",
+            "surface-container": "#ffeadd",
+            "inverse-primary": "#f3bb90",
+            "on-tertiary-fixed-variant": "#1a4d5a",
+            "surface-tint": "#7f5531",
+            "error": "#ba1a1a",
+            "inverse-on-surface": "#ffede3",
+            "tertiary": "#20525f",
+            "primary-container": "#855a36",
+            "on-error": "#ffffff",
+            "surface-container-low": "#fff1e9",
+            "surface-container-high": "#f9e4d7",
+            "primary-fixed-dim": "#f3bb90",
+            "inverse-surface": "#3a2e25",
+            "primary": "#6a4321",
+            "on-secondary-fixed": "#281805",
+            "background": "#fff8f5",
+            "on-primary": "#ffffff",
+            "tertiary-container": "#3b6a78",
+            "secondary-container": "#feddbd",
+            "on-tertiary-container": "#b8e8f9",
+            "on-primary-fixed": "#2f1500",
+            "surface-dim": "#ead6ca",
+            "primary-fixed": "#ffdcc3",
+            "outline": "#83746b",
+            "error-container": "#ffdad6",
+            "surface": "#fff8f5",
+            "on-surface-variant": "#50443c",
+            "surface-container-lowest": "#ffffff",
+            "secondary-fixed-dim": "#e0c1a3",
+            "on-background": "#241912",
+            "surface-variant": "#f3dfd2",
+            "on-primary-fixed-variant": "#643e1c",
+            "on-secondary-container": "#786047",
+            "secondary": "#725a41",
+            "on-primary-container": "#ffdabe",
+            "on-tertiary-fixed": "#001f27",
+            "on-secondary": "#ffffff",
+            "outline-variant": "#d5c3b8",
+            "on-secondary-fixed-variant": "#58432c",
+            "tertiary-fixed-dim": "#9ecede",
+            "on-tertiary": "#ffffff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.125rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "full": "0.75rem"
+          },
+          "spacing": {
+            "space-xl": "1.5rem",
+            "gutter": "1rem",
+            "margin-tablet": "1rem",
+            "space-md": "0.75rem",
+            "margin-mobile": "0.75rem",
+            "space-sm": "0.5rem",
+            "space-lg": "1rem",
+            "margin": "1.5rem",
+            "gutter-tablet": "0.75rem",
+            "space-xs": "0.25rem",
+            "gutter-mobile": "0.5rem"
+          },
+          "fontFamily": {
+            "headline-xl-mobile": [
+              "Segoe UI Variable"
+            ],
+            "body-lg": [
+              "Segoe UI Variable"
+            ],
+            "body-md": [
+              "Segoe UI Variable"
+            ],
+            "label-lg": [
+              "Cascadia Mono"
+            ],
+            "label-sm": [
+              "Cascadia Mono"
+            ],
+            "body-sm": [
+              "Segoe UI Variable"
+            ],
+            "label-md": [
+              "Cascadia Mono"
+            ],
+            "headline-sm": [
+              "Segoe UI Variable"
+            ],
+            "headline-xl": [
+              "Segoe UI Variable"
+            ],
+            "headline-lg": [
+              "Segoe UI Variable"
+            ],
+            "headline-md": [
+              "Segoe UI Variable"
+            ]
+          },
+          "fontSize": {
+            "headline-xl-mobile": [
+              "1.5rem",
+              {
+                "lineHeight": "2rem",
+                "fontWeight": "600"
+              }
+            ],
+            "body-lg": [
+              "1rem",
+              {
+                "lineHeight": "1.5rem",
+                "fontWeight": "400"
+              }
+            ],
+            "body-md": [
+              "0.875rem",
+              {
+                "lineHeight": "1.25rem",
+                "fontWeight": "400"
+              }
+            ],
+            "label-lg": [
+              "0.875rem",
+              {
+                "lineHeight": "1.25rem",
+                "fontWeight": "500"
+              }
+            ],
+            "label-sm": [
+              "0.6875rem",
+              {
+                "lineHeight": "0.875rem",
+                "fontWeight": "500"
+              }
+            ],
+            "body-sm": [
+              "0.75rem",
+              {
+                "lineHeight": "1rem",
+                "fontWeight": "400"
+              }
+            ],
+            "label-md": [
+              "0.75rem",
+              {
+                "lineHeight": "1rem",
+                "fontWeight": "500"
+              }
+            ],
+            "headline-sm": [
+              "1.125rem",
+              {
+                "lineHeight": "1.5rem",
+                "fontWeight": "600"
+              }
+            ],
+            "headline-xl": [
+              "2rem",
+              {
+                "lineHeight": "2.5rem",
+                "fontWeight": "600"
+              }
+            ],
+            "headline-lg": [
+              "1.5rem",
+              {
+                "lineHeight": "2rem",
+                "fontWeight": "600"
+              }
+            ],
+            "headline-md": [
+              "1.25rem",
+              {
+                "lineHeight": "1.75rem",
+                "fontWeight": "600"
+              }
+            ]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    /* Strict Flat Design Rules: No Drop Shadows, No Blurred Glows, Crisp Subpixel Controls */
+    * {
+      box-shadow: none !important;
+      text-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-font-smoothing: antialiased;
+    }
+    /* Scrollbar styling conforming to physical warm utility palette */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #E9E1D4;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CDBEAB;
+      border-radius: 2px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #9E8368;
+    }
+    .material-symbols-outlined {
+      font-size: 18px;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body class="bg-[#F4F0E8] text-[#2C2119] font-body-md text-body-md antialiased overflow-hidden selection:bg-[#E1D2BF] selection:text-[#2C2119]">
+<!-- Shell Wrapper: 100vh 3-Column Layout -->
+<div class="flex h-screen w-screen overflow-hidden">
+<!-- 1. LEFT NAVIGATION RAIL (Shared Component: SideNavBar) -->
+<!-- Blueprint: h-screen w-[220px] shrink-0 border-r border-[#CDBEAB] bg-[#E9E1D4] -->
+<aside class="h-screen w-[220px] shrink-0 border-r border-[#CDBEAB] bg-[#E9E1D4] flex flex-col justify-between p-space-sm select-none z-20">
+<!-- Upper Section: Branding, CTA, Navigation Items -->
+<div class="flex flex-col gap-space-sm">
+<!-- Header Branding -->
+<div class="px-2 pt-1 pb-2 flex items-center justify-between border-b border-[#CDBEAB]/60">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm font-bold text-[#2C2119] tracking-wider">NEXORA</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 bg-[#E1D2BF] text-[#695747] rounded-[3px] border border-[#CDBEAB]">1.2</span>
+</div>
+<span class="material-symbols-outlined text-[#695747] cursor-pointer hover:text-[#2C2119]" data-icon="tune">tune</span>
+</div>
+<!-- System Context Subtitle -->
+<div class="px-2 text-[10px] font-label-sm uppercase tracking-wider text-[#695747]">
+          Productivity Control Plane
+        </div>
+<!-- Primary CTA: "New chat" -->
+<div class="pt-1">
+<button class="w-full bg-[#855A36] hover:bg-[#6D482B] active:bg-[#4E331E] text-white font-headline-sm text-body-md font-semibold py-2 px-3 rounded-[4px] flex items-center justify-between transition-colors duration-150">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-white" data-icon="chat">chat</span>
+<span>New chat</span>
+</div>
+<kbd class="font-label-sm text-label-sm text-white/80 bg-[#6D482B] px-1.5 py-0.5 rounded-[2px] border border-white/20">Ctrl+N</kbd>
+</button>
+</div>
+<!-- Tab Items (Exact labels & icons from JSON) -->
+<nav class="flex flex-col gap-0.5 mt-2 overflow-y-auto max-h-[calc(100vh-320px)] pr-0.5">
+<!-- Active Tab: Chat (Rule: style_active_navigation & prompt instructions) -->
+<a class="bg-[#E1D2BF] text-[#2C2119] border-l-[3px] border-[#855A36] font-semibold px-3 py-2 flex items-center justify-between rounded-r-[3px] transition-colors duration-150" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[#855A36]" data-icon="chat" data-weight="fill" style="font-variation-settings: 'FILL' 1;">chat</span>
+<span class="font-body-md text-body-md">Chat</span>
+</div>
+<span class="w-1.5 h-1.5 rounded-full bg-[#855A36]"></span>
+</a>
+<!-- Inactive Tab: Tasks with 1 pending badge -->
+<a class="text-[#695747] hover:bg-[#FFFDF8]/70 hover:text-[#2C2119] px-3 py-2 flex items-center justify-between rounded-[3px] transition-colors duration-150" href="#">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[#695747]" data-icon="checklist">checklist</span>
+<span class="font-body-md text-body-md">Tasks</span>
+</div>
+<span class="font-label-sm text-[10px] px-1.5 py-0.2 bg-[#E1D2BF] text-[#9A651B] border border-[#CDBEAB] rounded-[3px] font-semibold">1 pending</span>
+</a>
+<!-- Tab: Fleet -->
+<a class="text-[#695747] hover:bg-[#FFFDF8]/70 hover:text-[#2C2119] px-3 py-2 flex items-center gap-2.5 rounded-[3px] transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[#695747]" data-icon="devices">devices</span>
+<span class="font-body-md text-body-md">Fleet</span>
+</a>
+<!-- Tab: Skills -->
+<a class="text-[#695747] hover:bg-[#FFFDF8]/70 hover:text-[#2C2119] px-3 py-2 flex items-center gap-2.5 rounded-[3px] transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[#695747]" data-icon="psychology">psychology</span>
+<span class="font-body-md text-body-md">Skills</span>
+</a>
+<!-- Tab: MCP servers -->
+<a class="text-[#695747] hover:bg-[#FFFDF8]/70 hover:text-[#2C2119] px-3 py-2 flex items-center gap-2.5 rounded-[3px] transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[#695747]" data-icon="dns">dns</span>
+<span class="font-body-md text-body-md">MCP servers</span>
+</a>
+<!-- Tab: Research -->
+<a class="text-[#695747] hover:bg-[#FFFDF8]/70 hover:text-[#2C2119] px-3 py-2 flex items-center gap-2.5 rounded-[3px] transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[#695747]" data-icon="search">search</span>
+<span class="font-body-md text-body-md">Research</span>
+</a>
+<!-- Tab: Desktop Vision -->
+<a class="text-[#695747] hover:bg-[#FFFDF8]/70 hover:text-[#2C2119] px-3 py-2 flex items-center gap-2.5 rounded-[3px] transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[#695747]" data-icon="visibility">visibility</span>
+<span class="font-body-md text-body-md">Desktop Vision</span>
+</a>
+<!-- Tab: Scheduler -->
+<a class="text-[#695747] hover:bg-[#FFFDF8]/70 hover:text-[#2C2119] px-3 py-2 flex items-center gap-2.5 rounded-[3px] transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[#695747]" data-icon="schedule">schedule</span>
+<span class="font-body-md text-body-md">Scheduler</span>
+</a>
+<!-- Tab: Memory -->
+<a class="text-[#695747] hover:bg-[#FFFDF8]/70 hover:text-[#2C2119] px-3 py-2 flex items-center gap-2.5 rounded-[3px] transition-colors duration-150" href="#">
+<span class="material-symbols-outlined text-[#695747]" data-icon="memory">memory</span>
+<span class="font-body-md text-body-md">Memory</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Section: Diagnostics & Settings (footer items from JSON) -->
+<div class="pt-3 border-t border-[#CDBEAB] flex flex-col gap-1.5">
+<!-- Status Indicator: Local model connected -->
+<div class="px-2 py-1.5 flex items-center gap-2 text-body-sm font-body-sm text-[#695747]">
+<span class="w-2 h-2 rounded-full bg-[#3E6A4D] shrink-0" title="Connected"></span>
+<span class="truncate">Local model connected</span>
+</div>
+<!-- Settings tab -->
+<a class="px-2 py-1.5 flex items-center gap-2 rounded-[3px] text-body-sm font-body-sm text-[#695747] hover:bg-[#FFFDF8]/70 hover:text-[#2C2119] transition-colors" href="#">
+<span class="material-symbols-outlined text-[#695747]" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</div>
+</aside>
+<!-- RIGHT WORKSPACE WRAPPER (TopNavBar + Central Stream + Context Inspector) -->
+<div class="flex-1 flex flex-col h-screen overflow-hidden">
+<!-- 2. TOP COMMAND BAR (Shared Component: TopNavBar) -->
+<header class="h-12 shrink-0 bg-[#FFFDF8] border-b border-[#CDBEAB] px-space-md flex items-center justify-between z-10">
+<!-- Left: Product Identity / Breadcrumb navigation -->
+<div class="flex items-center gap-2">
+<span class="text-body-md font-body-md text-[#695747]">Workspace /</span>
+<span class="text-body-md font-body-md font-semibold text-[#2C2119]">Chat</span>
+</div>
+<!-- Center: Search input "Search NEXORA (Ctrl+K)" -->
+<div class="relative w-[340px]">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[#9A8B7D] text-[16px]" data-icon="search">search</span>
+<input class="w-full h-8 bg-[#F4F0E8] border border-[#CDBEAB] rounded-[4px] pl-8 pr-12 text-body-sm font-body-sm text-[#2C2119] placeholder-[#9A8B7D] focus:outline-none focus:border-[#855A36] focus:ring-0" placeholder="Search NEXORA (Ctrl+K)" type="text"/>
+<kbd class="absolute right-2 top-1/2 -translate-y-1/2 font-label-sm text-[10px] text-[#695747] bg-[#FFFDF8] px-1.5 py-0.5 border border-[#CDBEAB] rounded-[2px]">Ctrl+K</kbd>
+</div>
+<!-- Right Controls: Model Pill, Health, Emergency Stop, Action Icons -->
+<div class="flex items-center gap-2.5">
+<!-- Model indicator pill -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 bg-[#F4F0E8] border border-[#CDBEAB] rounded-[3px] text-label-sm font-label-sm text-[#2C2119]">
+<span class="text-[#695747]">Model:</span>
+<span class="font-semibold">Auto (qwen3.5:9b)</span>
+</div>
+<!-- Health badge -->
+<div class="flex items-center gap-1.5 px-2.5 py-1 bg-[#FFFDF8] border border-[#3E6A4D] rounded-[3px] text-body-sm font-body-sm text-[#3E6A4D] font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-[#3E6A4D]"></span>
+<span>Engine: Healthy</span>
+</div>
+<!-- Icons from JSON: tune, notifications -->
+<button class="p-1 text-[#695747] hover:text-[#2C2119] hover:bg-[#E9E1D4] rounded-[3px]" title="Fine Tune Parameters">
+<span class="material-symbols-outlined" data-icon="tune">tune</span>
+</button>
+<button class="p-1 text-[#695747] hover:text-[#2C2119] hover:bg-[#E9E1D4] rounded-[3px]" title="Notifications">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<!-- Emergency Action: Stop all -->
+<button class="bg-[#A33E35] hover:bg-[#8e352d] active:bg-[#6e2720] text-white font-body-sm font-semibold px-3 py-1.5 rounded-[4px] flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="cancel">cancel</span>
+<span>Stop all</span>
+</button>
+</div>
+</header>
+<!-- Central Split Content: Chat Stream (Flexible) + Context Inspector (320px) -->
+<div class="flex-1 flex overflow-hidden">
+<!-- 3. MAIN CENTRAL CHAT STREAM -->
+<main class="flex-1 bg-[#F4F0E8] flex flex-col justify-between overflow-hidden">
+<!-- Conversation Stream Scroll Area -->
+<div class="flex-1 overflow-y-auto p-6 lg:p-8 space-y-6">
+<!-- Stream Session Header -->
+<div class="flex items-center justify-between pb-3 border-b border-[#CDBEAB]">
+<div class="flex items-center gap-3">
+<div class="w-[3px] h-6 bg-[#855A36]"></div>
+<h1 class="text-headline-md font-headline-md font-semibold text-[#2C2119]">New conversation</h1>
+<span class="font-label-sm text-label-sm px-2 py-0.5 bg-[#E9E1D4] text-[#695747] border border-[#CDBEAB] rounded-[3px]">SESSION-ID: #NX-8821</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-2.5 py-1 bg-[#FFFDF8] border border-[#CDBEAB] text-body-sm text-[#2C2119] hover:bg-[#E9E1D4] rounded-[4px] flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]" data-icon="bookmark">bookmark</span>
+<span>Pin</span>
+</button>
+<button class="px-2.5 py-1 bg-[#FFFDF8] border border-[#CDBEAB] text-body-sm text-[#2C2119] hover:bg-[#E9E1D4] rounded-[4px] flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]" data-icon="history">history</span>
+<span>Logs</span>
+</button>
+</div>
+</div>
+<!-- Message 1: User Message -->
+<div class="w-full bg-[#E9E1D4] border border-[#CDBEAB] rounded-[6px] p-4 space-y-2">
+<div class="flex items-center justify-between border-b border-[#CDBEAB]/60 pb-2">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 bg-[#855A36] text-white flex items-center justify-center rounded-[2px] font-label-sm text-[11px] font-bold">LO</div>
+<span class="font-body-md font-semibold text-[#2C2119]">Local Operator</span>
+<span class="font-label-sm text-label-sm text-[#695747] bg-[#FFFDF8] px-1.5 py-0.2 rounded border border-[#CDBEAB]">USER:AUTH</span>
+</div>
+<span class="font-label-sm text-label-sm text-[#695747]">10:42 AM</span>
+</div>
+<p class="text-body-md text-[#2C2119] leading-relaxed">
+                Review the system architecture and prepare a deployment task.
+              </p>
+</div>
+<!-- Message 2: Assistant Message -->
+<div class="w-full bg-[#FFFDF8] border border-[#CDBEAB] rounded-[6px] p-5 space-y-4">
+<!-- Assistant Header -->
+<div class="flex items-center justify-between border-b border-[#CDBEAB] pb-2.5">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 bg-[#2C2119] text-white flex items-center justify-center rounded-[2px] font-label-sm text-[11px] font-bold">NX</div>
+<span class="font-body-md font-semibold text-[#2C2119]">NEXORA Core</span>
+<span class="font-label-sm text-label-sm text-[#695747] bg-[#F4F0E8] border border-[#CDBEAB] px-1.5 py-0.2 rounded-[3px]">qwen3.5:9b</span>
+<span class="font-label-sm text-[10px] text-[#3E6A4D] bg-[#FFFDF8] border border-[#3E6A4D] px-1.5 py-0.2 rounded-[3px]">DETERMINISTIC</span>
+</div>
+<span class="font-label-sm text-label-sm text-[#695747]">10:42 AM</span>
+</div>
+<!-- Assistant Body Content -->
+<div class="space-y-3">
+<p class="text-body-md text-[#2C2119] leading-relaxed">
+                  The architecture verification is complete. An isolated 3-step deployment workflow has been drafted based on local manifests and daemon configurations.
+                </p>
+<!-- Technical Citations & Metadata tags -->
+<div class="flex flex-wrap items-center gap-2 pt-1">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#E9E1D4] border border-[#CDBEAB] rounded-[3px] text-label-sm font-label-sm text-[#2C2119]">
+<span class="material-symbols-outlined text-[14px] text-[#695747]" data-icon="description">description</span>
+<span>3 architecture documents attached: spec.md, policy.json, schema.sql</span>
+</div>
+<div class="inline-flex items-center gap-1 px-2 py-1 bg-[#F4F0E8] border border-[#CDBEAB] rounded-[3px] text-label-sm font-label-sm text-[#695747]">
+<span class="material-symbols-outlined text-[13px] text-[#3E6A4D]" data-icon="verified">verified</span>
+<span>Schema valid</span>
+</div>
+</div>
+<!-- Actionable Work Card with solid warning left border -->
+<div class="mt-4 bg-[#FFFDF8] border border-[#CDBEAB] border-l-4 border-l-[#9A651B] rounded-[6px] p-4 space-y-3">
+<div class="flex items-start justify-between">
+<div>
+<div class="flex items-center gap-2">
+<span class="font-body-md font-semibold text-[#2C2119]">Task workflow: Deployment pipeline</span>
+<span class="font-label-sm text-[10px] px-1.5 py-0.5 bg-[#E1D2BF] text-[#9A651B] font-semibold border border-[#CDBEAB] rounded-[3px]">ACTION PENDING</span>
+</div>
+<div class="font-label-sm text-label-sm text-[#695747] mt-0.5">
+                        3 steps Â· Controlled action level Â· Target: Local daemon
+                      </div>
+</div>
+<span class="font-label-sm text-label-sm text-[#695747]">TASK ID: #DP-092</span>
+</div>
+<!-- Step Previews Container -->
+<div class="bg-[#F4F0E8] border border-[#CDBEAB] rounded-[4px] p-3 space-y-2">
+<div class="flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm px-1 bg-[#FFFDF8] border border-[#CDBEAB] rounded-[2px] text-[#2C2119]">01</span>
+<span class="text-[#2C2119] font-medium">Validate daemon socket</span>
+</div>
+<span class="font-label-sm text-label-sm text-[#3E6A4D]">READY</span>
+</div>
+<div class="h-px bg-[#CDBEAB]"></div>
+<div class="flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm px-1 bg-[#FFFDF8] border border-[#CDBEAB] rounded-[2px] text-[#2C2119]">02</span>
+<span class="text-[#2C2119] font-medium">Build local bundle</span>
+</div>
+<span class="font-label-sm text-label-sm text-[#695747]">STAGED</span>
+</div>
+<div class="h-px bg-[#CDBEAB]"></div>
+<div class="flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm px-1 bg-[#FFFDF8] border border-[#CDBEAB] rounded-[2px] text-[#2C2119]">03</span>
+<span class="text-[#2C2119] font-medium">Run sanity probe</span>
+</div>
+<span class="font-label-sm text-label-sm text-[#695747]">AWAITING PREDECESSOR</span>
+</div>
+</div>
+<!-- Card Action Buttons -->
+<div class="flex items-center gap-2 pt-1">
+<button class="bg-[#855A36] hover:bg-[#6D482B] active:bg-[#4E331E] text-white font-body-sm font-semibold px-4 py-1.5 rounded-[4px] flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="play_arrow">play_arrow</span>
+<span>Review task</span>
+</button>
+<button class="bg-transparent hover:bg-[#E9E1D4] text-[#695747] hover:text-[#2C2119] border border-[#CDBEAB] font-body-sm px-3 py-1.5 rounded-[4px] transition-colors">
+                      Dismiss
+                    </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Anchored Prompt Composer -->
+<div class="p-4 lg:p-6 bg-[#F4F0E8] border-t border-[#CDBEAB]">
+<div class="bg-[#FFFDF8] border border-[#CDBEAB] rounded-[6px] p-3 flex flex-col gap-2">
+<!-- Text Area -->
+<textarea class="w-full bg-transparent resize-none border-0 p-1 text-body-md font-body-md text-[#2C2119] placeholder-[#695747] focus:ring-0 focus:outline-none" placeholder="Write a message" rows="2"></textarea>
+<!-- Bottom Composer Toolbar -->
+<div class="flex items-center justify-between pt-2 border-t border-[#CDBEAB]/60">
+<!-- Left controls -->
+<div class="flex items-center gap-2">
+<button class="px-2.5 py-1 bg-[#F4F0E8] border border-[#CDBEAB] hover:bg-[#E9E1D4] text-body-sm text-[#2C2119] rounded-[4px] flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px] text-[#695747]" data-icon="attach_file">attach_file</span>
+<span>Add file</span>
+</button>
+<div class="flex items-center gap-1 px-2.5 py-1 bg-[#F4F0E8] border border-[#CDBEAB] rounded-[4px] text-label-sm font-label-sm text-[#2C2119]">
+<span class="material-symbols-outlined text-[14px] text-[#855A36]" data-icon="alt_route">alt_route</span>
+<span>Auto route</span>
+</div>
+</div>
+<!-- Right Send Action -->
+<div class="flex items-center gap-2">
+<kbd class="font-label-sm text-[10px] text-[#695747] bg-[#F4F0E8] px-1.5 py-0.5 border border-[#CDBEAB] rounded-[2px]">Ctrl+Enter</kbd>
+<button class="bg-[#855A36] hover:bg-[#6D482B] active:bg-[#4E331E] text-white font-body-sm font-semibold px-4 py-1.5 rounded-[4px] flex items-center gap-1.5 transition-colors">
+<span>Send</span>
+<span class="material-symbols-outlined text-[15px]" data-icon="arrow_upward">arrow_upward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Guardrail & System Telemetry Subtext -->
+<div class="mt-2 flex items-center justify-between text-body-sm text-[#695747] px-1">
+<span>Execution policy: Enforce local sandboxing for execution tasks</span>
+<span class="font-label-sm text-label-sm">Latency: 18ms Â· Context: 3.2k / 32k</span>
+</div>
+</div>
+</main>
+<!-- 4. RIGHT CONTEXT INSPECTOR (320px) -->
+<aside class="w-[320px] shrink-0 bg-[#E9E1D4] border-l border-[#CDBEAB] p-5 flex flex-col justify-between overflow-y-auto select-none">
+<div class="space-y-5">
+<!-- Header -->
+<div class="flex items-center justify-between">
+<h2 class="text-[12px] uppercase tracking-wider font-semibold text-[#695747]">Current work item</h2>
+<span class="material-symbols-outlined text-[#695747] hover:text-[#2C2119] cursor-pointer" data-icon="dock_to_right">dock_to_right</span>
+</div>
+<!-- Active Task Card -->
+<div class="bg-[#FFFDF8] border border-[#CDBEAB] rounded-[6px] p-4 space-y-4">
+<!-- Header & Badge -->
+<div class="space-y-1.5">
+<span class="inline-block px-2 py-0.5 bg-[#E1D2BF] text-[#9A651B] border border-[#CDBEAB] rounded-[4px] text-[11px] font-semibold">
+                  Approval required
+                </span>
+<h3 class="text-body-lg font-headline-sm font-semibold text-[#2C2119]">Desktop assistant plan</h3>
+</div>
+<!-- Progress Bar -->
+<div class="space-y-1.5">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-[#695747]">
+<span>Progress</span>
+<span>0 of 3 steps completed</span>
+</div>
+<!-- Track & Copper Fill -->
+<div class="w-full h-2 bg-[#F4F0E8] border border-[#CDBEAB] rounded-[2px] overflow-hidden">
+<div class="h-full bg-[#855A36] w-[10%]"></div>
+</div>
+</div>
+<!-- Technical Details Key-Value Table -->
+<div class="border border-[#CDBEAB] rounded-[4px] divide-y divide-[#CDBEAB] text-body-sm">
+<div class="flex justify-between px-3 py-1.5 bg-[#FFFDF8]">
+<span class="text-[#695747]">Route</span>
+<span class="font-label-sm text-[#2C2119] font-medium">General planner</span>
+</div>
+<div class="flex justify-between px-3 py-1.5 bg-[#FFFDF8]">
+<span class="text-[#695747]">Risk</span>
+<span class="font-label-sm text-[#9A651B] font-semibold">Controlled</span>
+</div>
+<div class="flex justify-between px-3 py-1.5 bg-[#FFFDF8]">
+<span class="text-[#695747]">Actions</span>
+<span class="font-label-sm text-[#2C2119] font-medium">3 planned</span>
+</div>
+<div class="flex justify-between px-3 py-1.5 bg-[#FFFDF8]">
+<span class="text-[#695747]">Target</span>
+<span class="font-label-sm text-[#2C2119] font-medium">daemon.sock</span>
+</div>
+</div>
+<!-- Card Action Buttons -->
+<div class="space-y-2 pt-1">
+<button class="w-full bg-[#855A36] hover:bg-[#6D482B] active:bg-[#4E331E] text-white font-body-sm font-semibold py-2 px-3 rounded-[4px] flex items-center justify-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="open_in_new">open_in_new</span>
+<span>Open task</span>
+</button>
+<button class="w-full bg-transparent hover:bg-[#E9E1D4] text-[#695747] hover:text-[#2C2119] border border-[#CDBEAB] font-body-sm py-1.5 px-3 rounded-[4px] transition-colors">
+                  Cancel task
+                </button>
+</div>
+</div>
+<!-- Activity Log Section -->
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<h2 class="text-[12px] uppercase tracking-wider font-semibold text-[#695747]">Activity log</h2>
+<span class="font-label-sm text-[10px] text-[#695747]">SYNCED</span>
+</div>
+<!-- Timeline List with crisp geometric bullet nodes -->
+<div class="relative pl-4 space-y-4 border-l border-[#CDBEAB] ml-1.5 text-body-sm">
+<!-- Log Entry 1 -->
+<div class="relative">
+<div class="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#855A36] border-2 border-[#E9E1D4]"></div>
+<div class="text-[#2C2119] font-medium leading-tight">Task proposal created</div>
+<div class="font-label-sm text-label-sm text-[#695747] mt-0.5">10:43 AM</div>
+</div>
+<!-- Log Entry 2 -->
+<div class="relative">
+<div class="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#9E8368] border-2 border-[#E9E1D4]"></div>
+<div class="text-[#2C2119] font-medium leading-tight">References indexed</div>
+<div class="font-label-sm text-label-sm text-[#695747] mt-0.5">10:42 AM Â· 3 docs</div>
+</div>
+<!-- Log Entry 3 -->
+<div class="relative">
+<div class="absolute -left-[21px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#9E8368] border-2 border-[#E9E1D4]"></div>
+<div class="text-[#2C2119] font-medium leading-tight">Conversation started</div>
+<div class="font-label-sm text-label-sm text-[#695747] mt-0.5">10:42 AM Â· Local</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Telemetry Card inside Context Inspector -->
+<div class="mt-4 pt-3 border-t border-[#CDBEAB] space-y-2">
+<div class="flex items-center justify-between text-body-sm text-[#695747]">
+<span>Hardware host</span>
+<span class="font-label-sm text-label-sm text-[#3E6A4D] font-semibold">127.0.0.1:11434</span>
+</div>
+<div class="grid grid-cols-2 gap-2 text-center">
+<div class="bg-[#FFFDF8] border border-[#CDBEAB] p-1.5 rounded-[3px]">
+<div class="font-label-sm text-[10px] text-[#695747]">VRAM USAGE</div>
+<div class="font-label-md font-semibold text-[#2C2119]">5.8 / 16 GB</div>
+</div>
+<div class="bg-[#FFFDF8] border border-[#CDBEAB] p-1.5 rounded-[3px]">
+<div class="font-label-sm text-[10px] text-[#695747]">AVG INFERENCE</div>
+<div class="font-label-md font-semibold text-[#2C2119]">42 tok/s</div>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</div>
+</div>
+</body></html>
