@@ -89,3 +89,18 @@ def test_redaction_boundary_scrubs_secrets():
     assert "sk-" not in scrubbed
     assert "ghp_" not in scrubbed
     assert "[REDACTED_SECRET]" in scrubbed
+
+
+def test_conversation_message_request_mode_normalization():
+    """Verify that both PascalCase, camelCase, and snake_case modes validate cleanly."""
+    req1 = ConversationMessageRequest.model_validate({"content": "hi", "mode": "Auto"})
+    assert req1.mode == ChatMode.AUTO
+
+    req2 = ConversationMessageRequest.model_validate({"content": "hi", "mode": "AnswerOnly"})
+    assert req2.mode == ChatMode.ANSWER_ONLY
+
+    req3 = ConversationMessageRequest.model_validate({"content": "hi", "mode": "DesktopVision"})
+    assert req3.mode == ChatMode.DESKTOP_VISION
+
+    req4 = ConversationMessageRequest.model_validate({"content": "hi", "mode": "desktop_vision"})
+    assert req4.mode == ChatMode.DESKTOP_VISION

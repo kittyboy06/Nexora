@@ -129,9 +129,25 @@ public record ConversationCreateRequest(
 
 public record ConversationMessageRequest(
     [property: JsonPropertyName("content")] string Content,
-    [property: JsonPropertyName("mode")] ChatMode Mode = ChatMode.Auto,
+    [property: JsonPropertyName("mode")] string Mode,
     [property: JsonPropertyName("model_override")] string? ModelOverride = null
-);
+)
+{
+    public ConversationMessageRequest(string content, ChatMode mode = ChatMode.Auto, string? modelOverride = null)
+        : this(content, ToWireMode(mode), modelOverride)
+    {
+    }
+
+    public static string ToWireMode(ChatMode mode) => mode switch
+    {
+        ChatMode.AnswerOnly => "answer_only",
+        ChatMode.Task => "task",
+        ChatMode.Research => "research",
+        ChatMode.DesktopVision => "desktop_vision",
+        ChatMode.Schedule => "schedule",
+        _ => "auto"
+    };
+}
 
 public record ConversationResponse(
     [property: JsonPropertyName("conversation")] Conversation Conversation

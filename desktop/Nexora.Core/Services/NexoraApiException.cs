@@ -20,8 +20,17 @@ public class NexoraApiException : Exception
     public static NexoraApiException FromErrorResponse(ErrorResponse errorResponse, int statusCode)
     {
         var err = errorResponse.Error;
+        var msg = err?.Message ?? $"HTTP error {statusCode}";
+        if (err?.Details != null)
+        {
+            var detailsStr = err.Details.ToString();
+            if (!string.IsNullOrWhiteSpace(detailsStr) && detailsStr != "[]")
+            {
+                msg = $"{msg} ({detailsStr})";
+            }
+        }
         return new NexoraApiException(
-            message: err?.Message ?? $"HTTP error {statusCode}",
+            message: msg,
             code: err?.Code ?? "API_ERROR",
             statusCode: statusCode,
             details: err?.Details

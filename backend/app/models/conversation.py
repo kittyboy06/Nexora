@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from enum import Enum
+import re
 from typing import Any
 from uuid import uuid4
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class ChatMode(str, Enum):
@@ -76,6 +77,14 @@ class ConversationMessage(BaseModel):
     work_item_ids: list[str] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+    @field_validator("mode", mode="before")
+    @classmethod
+    def normalize_mode(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            s = re.sub(r"(?<!^)(?=[A-Z])", "_", v).lower()
+            return s
+        return v
+
 
 class ConversationEvent(BaseModel):
     """Lifecycle event emitted by an operational module back into a conversation."""
@@ -108,6 +117,14 @@ class ConversationMessageRequest(BaseModel):
     content: str = Field(..., min_length=1, description="Message prompt content")
     mode: ChatMode = Field(default=ChatMode.AUTO)
     model_override: str | None = None
+
+    @field_validator("mode", mode="before")
+    @classmethod
+    def normalize_mode(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            s = re.sub(r"(?<!^)(?=[A-Z])", "_", v).lower()
+            return s
+        return v
 
 
 class ConversationResponse(BaseModel):
